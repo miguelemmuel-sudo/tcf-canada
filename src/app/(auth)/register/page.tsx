@@ -40,43 +40,31 @@ export default function RegisterPage() {
     }
 
     try {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      if (supabaseUrl && !supabaseUrl.includes("your-supabase-url")) {
-        try {
-          const supabase = createClient();
-          const { error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              data: {
-                full_name: name,
-              },
-            },
-          });
-          if (error) {
-            console.warn("Supabase signup error:", error.message);
-          }
-        } catch (err) {
-          console.warn("Supabase connection issue, proceeding to dashboard:", err);
-        }
+      const supabase = createClient();
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name,
+          },
+        },
+      });
+
+      if (signUpError) {
+        setError(signUpError.message);
+        setLoading(false);
+        return;
       }
 
-      // Save users array in localStorage for realistic authentication
-      const storedUsersRaw = localStorage.getItem("griffon_registered_users");
-      const storedUsers = storedUsersRaw ? JSON.parse(storedUsersRaw) : [];
-      const updatedUsers = [...storedUsers.filter((u: any) => u.email !== email), { email, password, name }];
-      localStorage.setItem("griffon_registered_users", JSON.stringify(updatedUsers));
-
-      // Save active user info
+      // Successful registration via Supabase
       localStorage.setItem("griffon_user_name", name || email);
-      localStorage.setItem("griffon_user_email", email);
-      localStorage.setItem("griffon_user_new", "true"); // mark as new user with zero stats
-      router.push("/dashboard");
-    } catch {
-      localStorage.setItem("griffon_user_name", name || email || "Candidat");
       localStorage.setItem("griffon_user_email", email);
       localStorage.setItem("griffon_user_new", "true");
       router.push("/dashboard");
+    } catch (err: any) {
+      setError(err?.message || "Une erreur est survenue lors de l'inscription.");
+      setLoading(false);
     }
   };
 

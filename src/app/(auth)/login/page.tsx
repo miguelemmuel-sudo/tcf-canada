@@ -23,48 +23,38 @@ export default function LoginPage() {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
-    // Check against locally stored registered users
-    const storedUsersRaw = localStorage.getItem("griffon_registered_users");
-    const storedUsers: any[] = storedUsersRaw ? JSON.parse(storedUsersRaw) : [];
-
-    const foundUser = storedUsers.find((u) => u.email.toLowerCase() === email.toLowerCase());
-
-    if (!foundUser) {
-      setError("Aucun compte trouvé avec cet e-mail. Veuillez vous inscrire au préalable.");
-      setLoading(false);
-      return;
-    }
-
-    if (foundUser.password !== password) {
-      setError("Mot de passe incorrect.");
-      setLoading(false);
-      return;
-    }
-
     try {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      if (supabaseUrl && !supabaseUrl.includes("your-supabase-url")) {
-        try {
-          const supabase = createClient();
-          const { error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-          if (error) {
-            console.warn("Supabase auth error:", error.message);
-          }
-        } catch (err) {
-          console.warn("Supabase connection issue, proceeding to dashboard:", err);
+      const supabase = createClient();
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        setError(signInError.message === "Invalid login credentials" ? "Identifiants invalides." : signInError.message);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch user profile for name & subscription info
+      if (data.user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("full_name, subscription_type")
+          .eq("id", data.user.id)
+          .single();
+
+        localStorage.setItem("griffon_user_name", profile?.full_name || data.user.user_metadata?.full_name || email);
+        localStorage.setItem("griffon_user_email", email);
+        if (profile?.subscription_type) {
+          localStorage.setItem("griffon_user_plan", profile.subscription_type);
         }
       }
 
-      localStorage.setItem("griffon_user_name", foundUser.name || email);
-      localStorage.setItem("griffon_user_email", email);
       router.push("/dashboard");
-    } catch {
-      localStorage.setItem("griffon_user_name", foundUser.name || email);
-      localStorage.setItem("griffon_user_email", email);
-      router.push("/dashboard");
+    } catch (err: any) {
+      setError(err?.message || "Une erreur de connexion est survenue.");
+      setLoading(false);
     }
   };
 
