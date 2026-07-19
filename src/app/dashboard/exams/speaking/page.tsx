@@ -39,11 +39,12 @@ const ORAL_TASKS = [
 ];
 
 const AI_ORAL_FEEDBACK = [
-  "🎙️ Prononciation : Bonne clarté générale. Faites attention au son [r] français qui diffère de l'anglais.",
-  "📊 Fluidité : Quelques hésitations notées ('euh', 'um'). Travaillez sur des discours préparés pour gagner en aisance.",
-  "📚 Vocabulaire : Registre adapté à la situation. Enrichissez avec des expressions idiomatiques françaises.",
-  "🏗️ Structure : Introduction claire, développement logique. Conclusion à renforcer.",
-  "⭐ Niveau estimé : B1/B2 — Score : 65/100",
+  "🎯 Score officiel TCF Canada : 545 / 699 points — Niveau B2 (Avancé)",
+  "🏆 Niveau NCLC (Niveaux de compétence linguistique canadiens) : Niveau 8",
+  "🎙️ Prononciation : Bonne clarté générale. Articulation précise avec intonation naturelle.",
+  "📊 Fluidité : Rythme fluide avec très peu d'hésitations.",
+  "📚 Vocabulaire : Registre formel et varié adapté au contexte d'immigration canadienne.",
+  "🏗️ Structure : Discours bien structuré avec introduction claire, arguments étayés et conclusion pertinente.",
 ];
 
 type RecordState = "idle" | "prep" | "recording" | "done" | "playing";
@@ -69,10 +70,33 @@ export default function SpeakingExamPage() {
   const [globalTimeLeft, setGlobalTimeLeft] = useState(12 * 60);
   const [hasRecording, setHasRecording] = useState<boolean[]>(Array(ORAL_TASKS.length).fill(false));
   const [submitted, setSubmitted] = useState(false);
+  const [isSpeakingPrompt, setIsSpeakingPrompt] = useState(false);
+
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const audioSimRef = useRef<NodeJS.Timeout | null>(null);
 
   const task = ORAL_TASKS[currentTask];
+
+  // Vocalisation du sujet audio avec SpeechSynthesis
+  const speakPrompt = useCallback((text: string) => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "fr-FR";
+      utterance.rate = 0.95;
+      utterance.onstart = () => setIsSpeakingPrompt(true);
+      utterance.onend = () => setIsSpeakingPrompt(false);
+      utterance.onerror = () => setIsSpeakingPrompt(false);
+      window.speechSynthesis.speak(utterance);
+    }
+  }, []);
+
+  const stopSpeakingPrompt = useCallback(() => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+      setIsSpeakingPrompt(false);
+    }
+  }, []);
 
   // Chronomètre global
   useEffect(() => {
@@ -104,9 +128,47 @@ export default function SpeakingExamPage() {
     return () => clearInterval(timerRef.current!);
   }, [recordState, currentTask]);
 
-  const startRecording = useCallback(() => setRecordState("recording"), []);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const audioBlobUrlRef = useRef<string | null>(null);
+  const audioElemRef = useRef<HTMLAudioElement | null>(null);
+
+  const startRecording = useCallback(async () => {
+    try {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorderRef.current = new MediaRecorder(stream);
+        audioChunksRef.current = [];
+
+        mediaRecorderRef.current.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+          }
+        };
+
+        mediaRecorderRef.current.onstop = () => {
+          const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+          if (audioBlobUrlRef.current) {
+            URL.revokeObjectURL(audioBlobUrlRef.current);
+          }
+          audioBlobUrlRef.current = URL.createObjectURL(audioBlob);
+          // Stop media tracks
+          stream.getTracks().forEach((track) => track.stop());
+        };
+
+        mediaRecorderRef.current.start();
+      }
+    } catch (err) {
+      console.warn("Microphone non disponible ou refusé, mode simulation activé:", err);
+    }
+    setRecordState("recording");
+  }, []);
+
   const stopRecording = useCallback(() => {
     clearInterval(timerRef.current!);
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      mediaRecorderRef.current.stop();
+    }
     setRecordState("done");
     const newHasRec = [...hasRecording];
     newHasRec[currentTask] = true;
@@ -116,13 +178,66 @@ export default function SpeakingExamPage() {
   const playRecording = useCallback(() => {
     setRecordState("playing");
     setPlaybackProgress(0);
-    audioSimRef.current = setInterval(() => {
-      setPlaybackProgress((p) => {
-        if (p >= 100) { clearInterval(audioSimRef.current!); setRecordState("done"); return 100; }
-        return p + (100 / (task.speakTime * 6.67));
+
+    // Si on a enregistré un vrai fichier audio avec le microphone
+    if (audioBlobUrlRef.current) {
+      if (audioElemRef.current) {
+        audioElemRef.current.pause();
+      }
+      const audio = new Audio(audioBlobUrlRef.current);
+      audioElemRef.current = audio;
+
+      audio.ontimeupdate = () => {
+        if (audio.duration) {
+          setPlaybackProgress((audio.currentTime / audio.duration) * 100);
+        }
+      };
+
+      audio.onended = () => {
+        setPlaybackProgress(100);
+        setRecordState("done");
+      };
+
+      audio.play().catch(() => {
+        // fallback
+        setRecordState("done");
       });
-    }, 150);
-  }, [task.speakTime]);
+    } else if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      // Synthèse vocale de secours
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance("Voici la réécoute de votre enregistrement oral pour la " + task.title);
+      utterance.lang = "fr-FR";
+      utterance.rate = 1.0;
+
+      const startTime = Date.now();
+      const durationMs = task.speakTime * 1000;
+
+      audioSimRef.current = setInterval(() => {
+        const elapsed = Date.now() - startTime;
+        const p = Math.min(100, (elapsed / durationMs) * 100);
+        setPlaybackProgress(p);
+        if (p >= 100) {
+          clearInterval(audioSimRef.current!);
+          setRecordState("done");
+        }
+      }, 150);
+
+      utterance.onend = () => {
+        clearInterval(audioSimRef.current!);
+        setPlaybackProgress(100);
+        setRecordState("done");
+      };
+
+      window.speechSynthesis.speak(utterance);
+    } else {
+      audioSimRef.current = setInterval(() => {
+        setPlaybackProgress((p) => {
+          if (p >= 100) { clearInterval(audioSimRef.current!); setRecordState("done"); return 100; }
+          return p + (100 / (task.speakTime * 6.67));
+        });
+      }, 150);
+    }
+  }, [task.speakTime, task.title]);
 
   const handleAIEval = useCallback(async () => {
     setAiLoading(true);
@@ -135,6 +250,7 @@ export default function SpeakingExamPage() {
   const resetTask = () => {
     clearInterval(timerRef.current!);
     clearInterval(audioSimRef.current!);
+    stopSpeakingPrompt();
     setRecordState("idle");
     setAiFeedback(null);
     setPlaybackProgress(0);
@@ -220,8 +336,21 @@ export default function SpeakingExamPage() {
       {/* Sujet */}
       <Card className="border-border/50 bg-white dark:bg-slate-950">
         <CardHeader className="pb-3">
-          <Badge className="w-fit bg-emerald-100 text-emerald-700 border-none mb-2">Sujet</Badge>
-          <CardTitle className="text-base">{task.title}</CardTitle>
+          <div className="flex items-center justify-between">
+            <Badge className="w-fit bg-emerald-100 text-emerald-700 border-none">Sujet</Badge>
+            <button
+              onClick={() => isSpeakingPrompt ? stopSpeakingPrompt() : speakPrompt(task.prompt)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+                isSpeakingPrompt
+                  ? "bg-red-50 border-red-300 text-red-600 animate-pulse"
+                  : "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
+              }`}
+            >
+              <Volume2 className="h-3.5 w-3.5" />
+              {isSpeakingPrompt ? "Arrêter la lecture" : "Écouter le sujet"}
+            </button>
+          </div>
+          <CardTitle className="text-base mt-2">{task.title}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">

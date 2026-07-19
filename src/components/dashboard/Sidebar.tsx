@@ -3,152 +3,114 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
 import {
-  Home,
+  LayoutDashboard,
   BookOpen,
-  FileText,
-  HelpCircle,
+  FileCheck2,
   BarChart3,
-  History,
-  Trophy,
-  Award,
+  UserCheck,
+  Calendar,
+  CreditCard,
+  MessageSquare,
   User,
   Settings,
-  HeadphonesIcon,
   LogOut,
-  GraduationCap,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
-import { useState } from "react";
 
 const navItems = [
-  { href: "/dashboard", label: "Accueil", icon: Home },
-  { href: "/dashboard/courses", label: "Cours", icon: BookOpen },
-  { href: "/dashboard/exams", label: "Examens", icon: FileText },
-  { href: "/dashboard/quiz", label: "Quiz", icon: HelpCircle },
-  { href: "/dashboard/progress", label: "Progression", icon: BarChart3 },
-  { href: "/dashboard/history", label: "Historique", icon: History },
-  { href: "/dashboard/leaderboard", label: "Classement", icon: Trophy },
-  { href: "/dashboard/certificates", label: "Certificats", icon: Award },
-];
-
-const bottomNavItems = [
-  { href: "/dashboard/profile", label: "Profil", icon: User },
+  { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
+  { href: "/dashboard/courses", label: "Mes cours", icon: BookOpen },
+  { href: "/dashboard/exams", label: "Tests pratiques", icon: FileCheck2 },
+  { href: "/dashboard/results", label: "Résultats", icon: BarChart3 },
+  { href: "/dashboard/coaching", label: "Coaching", icon: UserCheck },
+  { href: "/dashboard/reservations", label: "Mes réservations", icon: Calendar },
+  { href: "/dashboard/payments", label: "Paiements", icon: CreditCard },
+  { href: "/dashboard/messages", label: "Messages", icon: MessageSquare, badge: "2" },
+  { href: "/dashboard/profile", label: "Mon profil", icon: User },
   { href: "/dashboard/settings", label: "Paramètres", icon: Settings },
-  { href: "/dashboard/support", label: "Support", icon: HeadphonesIcon },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <motion.aside
-      animate={{ width: collapsed ? 72 : 256 }}
-      transition={{ duration: 0.3, ease: "easeInOut" }}
-      className="relative flex flex-col h-screen bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 overflow-hidden flex-shrink-0"
-    >
-      {/* Logo */}
-      <div className="flex items-center h-16 px-4 border-b border-slate-200 dark:border-slate-800">
-        <Link href="/dashboard" className="flex items-center space-x-3 min-w-0">
-          <GraduationCap className="h-8 w-8 text-primary flex-shrink-0" />
-          {!collapsed && (
-            <motion.span
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="font-bold text-lg whitespace-nowrap overflow-hidden"
-            >
-              TCF Canada <span className="text-primary">Pro</span>
-            </motion.span>
-          )}
-        </Link>
+    <aside className="w-64 flex flex-col h-screen bg-[#07192f] text-slate-200 border-r border-slate-800 flex-shrink-0 select-none overflow-y-auto">
+      {/* Brand Header */}
+      <div className="flex items-center space-x-3 p-5 border-b border-slate-800/80">
+        <img src="/griffon_logo.png" alt="Griffon d'or" className="h-10 w-auto object-contain" />
+        <div className="flex flex-col">
+          <span className="text-lg font-black tracking-tight text-white uppercase leading-none">
+            GRIFFON D'OR
+          </span>
+          <span className="text-[10px] font-semibold text-amber-500 tracking-wide mt-0.5">
+            Préparation TCF Canada
+          </span>
+        </div>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
+      {/* Main Navigation Menu */}
+      <nav className="flex-1 py-4 px-3 space-y-1.5">
         {navItems.map((item) => {
-          const active = pathname === item.href;
+          const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
           return (
             <Link key={item.href} href={item.href}>
               <div
                 className={cn(
-                  "flex items-center space-x-3 px-3 py-2.5 rounded-xl transition-all duration-200 group",
+                  "flex items-center justify-between px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-150",
                   active
-                    ? "bg-primary text-white shadow-md shadow-primary/20"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-slate-200"
+                    ? "bg-[#1d4ed8] text-white shadow-lg shadow-blue-900/40 font-bold"
+                    : "text-slate-300 hover:bg-slate-800/60 hover:text-white"
                 )}
               >
-                <item.icon className="h-5 w-5 flex-shrink-0" />
-                {!collapsed && (
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-sm font-medium whitespace-nowrap"
-                  >
-                    {item.label}
-                  </motion.span>
+                <div className="flex items-center space-x-3.5">
+                  <item.icon className={cn("h-5 w-5", active ? "text-white" : "text-slate-400")} />
+                  <span>{item.label}</span>
+                </div>
+                {item.badge && (
+                  <span className="h-5 w-5 rounded-full bg-red-600 text-white text-xs font-bold flex items-center justify-center">
+                    {item.badge}
+                  </span>
                 )}
               </div>
             </Link>
           );
         })}
+
+        <button
+          onClick={() => {
+            localStorage.removeItem("griffon_user_name");
+            localStorage.removeItem("griffon_user_email");
+            window.location.href = "/";
+          }}
+          className="w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl text-slate-300 hover:bg-red-700/60 hover:text-white transition-all font-semibold text-sm mt-2"
+        >
+          <LogOut className="h-5 w-5 text-slate-400" />
+          <span>Déconnexion</span>
+        </button>
+
+
+
       </nav>
 
-      {/* Bottom Nav */}
-      <div className="py-4 px-2 space-y-1 border-t border-slate-200 dark:border-slate-800">
-        {bottomNavItems.map((item) => {
-          const active = pathname === item.href;
-          return (
-            <Link key={item.href} href={item.href}>
-              <div
-                className={cn(
-                  "flex items-center space-x-3 px-3 py-2.5 rounded-xl transition-all duration-200",
-                  active
-                    ? "bg-primary text-white shadow-md shadow-primary/20"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-slate-200"
-                )}
-              >
-                <item.icon className="h-5 w-5 flex-shrink-0" />
-                {!collapsed && (
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-sm font-medium whitespace-nowrap"
-                  >
-                    {item.label}
-                  </motion.span>
-                )}
-              </div>
-            </Link>
-          );
-        })}
-        <button className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200">
-          <LogOut className="h-5 w-5 flex-shrink-0" />
-          {!collapsed && (
-            <motion.span
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-sm font-medium whitespace-nowrap"
-            >
-              Déconnexion
-            </motion.span>
-          )}
-        </button>
+      {/* Bottom Promo Card */}
+      <div className="p-4 m-3 rounded-2xl bg-gradient-to-b from-[#0e2c52] to-[#0a1e38] border border-blue-800/40 text-center relative overflow-hidden">
+        <div className="text-xs font-semibold text-slate-300">Réussissez votre</div>
+        <div className="text-base font-extrabold text-white tracking-wide mt-0.5">TCF CANADA</div>
+        <div className="text-[11px] text-slate-300 mt-1 leading-tight">
+          Atteignez vos objectifs d'immigration et d'études !
+        </div>
+        <div className="mt-3 relative rounded-xl overflow-hidden shadow-md">
+          <img 
+            src="https://images.unsplash.com/photo-1517935703635-27c737822457?w=400&auto=format&fit=crop&q=80" 
+            alt="Toronto Canada skyline" 
+            className="w-full h-24 object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end justify-center pb-2">
+            <img src="https://flagcdn.com/ca.svg" alt="Drapeau Canada" className="h-4 w-auto rounded-[2px]" />
+          </div>
+        </div>
       </div>
-
-      {/* Collapse Toggle */}
-      <button
-        onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3 top-20 z-10 h-6 w-6 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center shadow-sm hover:bg-slate-50 transition-colors"
-      >
-        {collapsed ? (
-          <ChevronRight className="h-3 w-3 text-slate-500" />
-        ) : (
-          <ChevronLeft className="h-3 w-3 text-slate-500" />
-        )}
-      </button>
-    </motion.aside>
+    </aside>
   );
 }
+

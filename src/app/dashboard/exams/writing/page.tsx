@@ -53,11 +53,11 @@ Votre synthèse doit rendre compte des informations essentielles sans prendre po
 ];
 
 const AI_FEEDBACK = [
+  "🎯 Score officiel TCF Canada : 520 / 699 points — Niveau B2 (Avancé)",
+  "🏆 Équivalence NCLC (Immigration Canada) : Niveau 7",
   "✅ Votre texte est bien structuré avec une introduction et une conclusion claires.",
   "💡 Conseil : Enrichissez votre vocabulaire — remplacez \"faire\" par des verbes plus précis comme \"réaliser\", \"accomplir\", \"effectuer\".",
   "⚠️ Attention à l'accord des participes passés dans les phrases composées.",
-  "📝 Niveau estimé : B2 — Bonne maîtrise de la langue avec quelques imprécisions mineures.",
-  "🎯 Score IA : 68/100 — Continuez à vous entraîner !",
 ];
 
 const TOTAL_TIME = 60 * 60;

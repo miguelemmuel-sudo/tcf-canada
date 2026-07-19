@@ -16,7 +16,13 @@ import {
   BarChart3, 
   Award,
   ChevronRight,
-  Star
+  Star,
+  UserCheck,
+  Globe,
+  Trophy,
+  MessageCircle,
+  FileCheck2,
+  Users
 } from "lucide-react";
 import Link from "next/link";
 
@@ -33,41 +39,183 @@ export default function Home() {
   return (
     <>
       <Navbar />
-      <main className="flex-1 pt-16">
+      <main className="flex-1 pt-28">
         
-        {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-red-50 to-white dark:from-red-950/20 dark:to-background pt-24 pb-32">
-          <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
-          <div className="container mx-auto px-4 relative z-10">
-            <motion.div 
-              initial="hidden"
-              animate="visible"
-              variants={stagger}
-              className="text-center max-w-4xl mx-auto space-y-8"
-            >
-              <motion.div variants={fadeIn} className="flex justify-center mb-4">
-                <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200 dark:border-slate-800 shadow-sm">
-                  <img src="https://flagcdn.com/ca.svg" alt="Drapeau du Canada" className="h-5 w-auto rounded-[2px] shadow-sm" />
-                  <span className="text-sm md:text-base font-medium text-slate-700 dark:text-slate-200 flex items-center">
-                    <span className="font-serif italic font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-primary text-lg md:text-xl tracking-wide drop-shadow-sm">Griffon</span> d'or TCF, votre référence de test de langue
-                  </span>
+        {/* Hero Section Griffon D'or */}
+        <section className="relative overflow-hidden bg-slate-50 dark:bg-slate-950 pt-8 pb-16">
+          <div className="container mx-auto px-4">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              
+              {/* Left Text Block */}
+              <motion.div 
+                initial="hidden"
+                animate="visible"
+                variants={stagger}
+                className="lg:col-span-6 space-y-6"
+              >
+                <motion.span variants={fadeIn} className="text-amber-600 dark:text-amber-400 font-extrabold text-sm md:text-base tracking-widest uppercase block">
+                  RÉUSSISSEZ VOTRE TCF CANADA
+                </motion.span>
+
+                <motion.h1 variants={fadeIn} className="text-4xl md:text-6xl font-black tracking-tight text-[#0e2238] dark:text-white leading-[1.1]">
+                  Préparez votre TCF avec les experts <span className="text-amber-600 dark:text-amber-500">Griffon d'or</span>
+                </motion.h1>
+
+                <motion.p variants={fadeIn} className="text-slate-600 dark:text-slate-300 text-base md:text-lg leading-relaxed font-medium">
+                  Cours pratiques – Tests réels – Coaching personnalisé<br/>
+                  Atteignez vos objectifs d'immigration ou d'études au Canada.
+                </motion.p>
+
+                <motion.div variants={fadeIn} className="flex flex-col sm:flex-row items-center gap-4 pt-2">
+                  <Button 
+                    size="lg" 
+                    className="w-full sm:w-auto bg-[#0e2238] hover:bg-[#153252] text-white font-bold h-13 px-7 rounded-lg text-sm tracking-wide" 
+                    asChild
+                  >
+                    <Link href="#features">DÉCOUVRIR NOS FORMATIONS</Link>
+                  </Button>
+                  <Button 
+                    size="lg" 
+                    className="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white font-bold h-13 px-7 rounded-lg text-sm tracking-wide shadow-md" 
+                    asChild
+                  >
+                    <Link href="/register">ACCÉDER AU PACK GRIFFON D'OR</Link>
+                  </Button>
+                </motion.div>
+              </motion.div>
+
+              {/* Right Image Block with Floating elements */}
+              <motion.div 
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.7 }}
+                className="lg:col-span-6 relative flex justify-center"
+              >
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white dark:border-slate-800 max-w-lg w-full">
+                  <img 
+                    src="/griffon_student.png" 
+                    alt="Étudiante Griffon d'or TCF Canada" 
+                    className="w-full h-auto object-cover"
+                  />
+                  {/* Floating Whatsapp Button */}
+                  <a 
+                    href="https://wa.me/22653360101" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="absolute bottom-4 right-4 bg-emerald-500 hover:bg-emerald-600 text-white p-3.5 rounded-full shadow-lg transition-transform hover:scale-110 flex items-center justify-center"
+                    aria-label="Contact WhatsApp"
+                  >
+                    <MessageCircle className="h-6 w-6 fill-current" />
+                  </a>
                 </div>
               </motion.div>
-              <motion.h1 variants={fadeIn} className="text-5xl md:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                Préparez votre <span className="text-primary">TCF Canada</span> avec intelligence.
-              </motion.h1>
-              <motion.p variants={fadeIn} className="text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
-                Réussissez votre examen grâce à une plateforme complète comprenant des examens blancs, une IA correctrice, des statistiques avancées et un suivi personnalisé.
-              </motion.p>
-              <motion.div variants={fadeIn} className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-                <Button size="lg" className="w-full sm:w-auto rounded-full text-lg h-14 px-8 shadow-lg shadow-primary/25" asChild>
-                  <Link href="/register">Commencer maintenant <ChevronRight className="ml-2 h-5 w-5"/></Link>
-                </Button>
-                <Button size="lg" variant="outline" className="w-full sm:w-auto rounded-full text-lg h-14 px-8 bg-white/50 backdrop-blur-sm" asChild>
-                  <Link href="#features">Découvrir les fonctionnalités</Link>
-                </Button>
-              </motion.div>
+
+            </div>
+
+            {/* Floating 4 Cards Feature Banner */}
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+              className="mt-12 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800 p-6 md:p-8"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 divide-y md:divide-y-0 md:divide-x divide-slate-100 dark:divide-slate-800">
+                
+                <div className="flex items-start gap-4 pr-4 pt-4 md:pt-0">
+                  <div className="h-12 w-12 rounded-xl bg-amber-100 dark:bg-amber-950/60 flex items-center justify-center shrink-0">
+                    <BookOpen className="h-6 w-6 text-amber-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-base">Cours complets</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                      Des cours structurés pour maîtriser toutes les compétences du TCF Canada.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4 px-0 md:px-4 pt-4 md:pt-0">
+                  <div className="h-12 w-12 rounded-xl bg-amber-100 dark:bg-amber-950/60 flex items-center justify-center shrink-0">
+                    <FileCheck2 className="h-6 w-6 text-amber-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-base">Tests réels</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                      Entraînez-vous avec des tests réels et des examens blancs corrigés.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4 px-0 md:px-4 pt-4 md:pt-0">
+                  <div className="h-12 w-12 rounded-xl bg-amber-100 dark:bg-amber-950/60 flex items-center justify-center shrink-0">
+                    <UserCheck className="h-6 w-6 text-amber-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-base">Coaching personnalisé</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                      Bénéficiez d'un suivi individuel pour progresser efficacement.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4 pl-0 lg:pl-4 pt-4 md:pt-0">
+                  <div className="h-12 w-12 rounded-xl bg-amber-100 dark:bg-amber-950/60 flex items-center justify-center shrink-0">
+                    <Trophy className="h-6 w-6 text-amber-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-base">Réussite garantie</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                      Notre méthode efficace pour maximiser vos chances de réussite.
+                    </p>
+                  </div>
+                </div>
+
+              </div>
             </motion.div>
+
+            {/* Dark Key Statistics Banner */}
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.6 }}
+              className="mt-6 bg-[#0e2238] rounded-2xl shadow-xl p-6 md:p-8 text-white"
+            >
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 divide-x divide-slate-700/60">
+                
+                <div className="flex items-center gap-4 px-2">
+                  <Users className="h-10 w-10 text-amber-500 shrink-0" />
+                  <div>
+                    <div className="text-2xl md:text-3xl font-black text-amber-500">1200+</div>
+                    <div className="text-xs text-slate-300 font-medium">Étudiants formés</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 px-4">
+                  <FileCheck2 className="h-10 w-10 text-amber-500 shrink-0" />
+                  <div>
+                    <div className="text-2xl md:text-3xl font-black text-amber-500">95%</div>
+                    <div className="text-xs text-slate-300 font-medium">Taux de réussite</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 px-4">
+                  <Globe className="h-10 w-10 text-amber-500 shrink-0" />
+                  <div>
+                    <div className="text-2xl md:text-3xl font-black text-amber-500">15+</div>
+                    <div className="text-xs text-slate-300 font-medium">Pays représentés</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 px-4">
+                  <Trophy className="h-10 w-10 text-amber-500 shrink-0" />
+                  <div>
+                    <div className="text-2xl md:text-3xl font-black text-amber-500">5+</div>
+                    <div className="text-xs text-slate-300 font-medium">Années d'expérience</div>
+                  </div>
+                </div>
+
+              </div>
+            </motion.div>
+
           </div>
         </section>
 
@@ -75,8 +223,8 @@ export default function Home() {
         <section className="py-24 bg-slate-50 dark:bg-slate-900/50" id="features">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Pourquoi nous choisir ?</h2>
-              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Tout ce dont vous avez besoin pour obtenir le meilleur score possible, réuni au même endroit.</p>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 text-[#0e2238] dark:text-white">Pourquoi choisir Griffon d'or ?</h2>
+              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Tout ce dont vous avez besoin pour obtenir le meilleur score TCF Canada, réuni au même endroit.</p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -95,12 +243,12 @@ export default function Home() {
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
                 >
-                  <Card className="h-full border-border/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm hover:shadow-lg hover:border-primary/30 transition-all duration-300">
+                  <Card className="h-full border-border/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm hover:shadow-lg hover:border-amber-500/30 transition-all duration-300">
                     <CardHeader>
-                      <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                        <feature.icon className="h-6 w-6 text-primary" />
+                      <div className="h-12 w-12 rounded-xl bg-amber-500/10 flex items-center justify-center mb-4">
+                        <feature.icon className="h-6 w-6 text-amber-600" />
                       </div>
-                      <CardTitle className="text-xl">{feature.title}</CardTitle>
+                      <CardTitle className="text-xl text-[#0e2238] dark:text-white">{feature.title}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <CardDescription className="text-base">{feature.desc}</CardDescription>
@@ -122,7 +270,7 @@ export default function Home() {
                 viewport={{ once: true }}
                 className="space-y-8"
               >
-                <h2 className="text-3xl md:text-5xl font-bold leading-tight">Maîtrisez les 4 épreuves obligatoires</h2>
+                <h2 className="text-3xl md:text-5xl font-bold leading-tight text-[#0e2238] dark:text-white">Maîtrisez les 4 épreuves obligatoires</h2>
                 <p className="text-lg text-muted-foreground">Notre plateforme reproduit fidèlement l'interface officielle pour que vous soyez parfaitement à l'aise le jour J.</p>
                 <ul className="space-y-4">
                   {[
@@ -132,10 +280,10 @@ export default function Home() {
                     { label: "Expression Orale (3 tâches)", icon: Mic },
                   ].map((item, i) => (
                     <li key={i} className="flex items-center space-x-3 text-lg font-medium">
-                      <div className="h-8 w-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600">
+                      <div className="h-8 w-8 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600">
                         <CheckCircle2 className="h-5 w-5" />
                       </div>
-                      <span>{item.label}</span>
+                      <span className="text-slate-800 dark:text-slate-200">{item.label}</span>
                     </li>
                   ))}
                 </ul>
@@ -146,12 +294,11 @@ export default function Home() {
                 viewport={{ once: true }}
                 className="relative"
               >
-                <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-blue-500/20 rounded-3xl blur-3xl" />
+                <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/20 to-blue-500/20 rounded-3xl blur-3xl" />
                 <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl p-2 overflow-hidden aspect-video flex items-center justify-center">
-                   {/* Placeholder pour une image ou une démo */}
                    <div className="text-center space-y-4">
-                     <BrainCircuit className="h-16 w-16 mx-auto text-primary animate-pulse" />
-                     <p className="text-lg font-medium text-slate-500">Aperçu interactif de l'examen</p>
+                     <BrainCircuit className="h-16 w-16 mx-auto text-amber-600 animate-pulse" />
+                     <p className="text-lg font-semibold text-slate-700 dark:text-slate-300">Aperçu interactif de l'examen Griffon d'or</p>
                    </div>
                 </div>
               </motion.div>
@@ -159,102 +306,62 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Témoignages */}
-        <section className="py-24 bg-primary text-primary-foreground">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Ce qu'ils en pensent</h2>
-              <div className="flex justify-center space-x-1 text-yellow-400 mb-4">
-                {[1, 2, 3, 4, 5].map((i) => <Star key={i} className="h-6 w-6 fill-current" />)}
-              </div>
-              <p className="text-lg opacity-90 max-w-2xl mx-auto">Rejoignez des milliers de candidats qui ont réussi leur immigration grâce à TCF Canada Pro.</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {[
-                { name: "Amira T.", score: "C1", text: "L'IA pour la correction de l'expression écrite est incroyable. Elle m'a permis d'améliorer mon vocabulaire rapidement." },
-                { name: "Jean-Paul M.", score: "B2", text: "Les simulations sont identiques à l'examen officiel. Je n'ai eu aucune surprise le jour J. Je recommande vivement !" },
-                { name: "Sarah L.", score: "C2", text: "S'entraîner à l'oral seule était impossible avant de découvrir cette plateforme. L'évaluation vocale est très précise." },
-              ].map((review, i) => (
-                <Card key={i} className="bg-white/10 border-white/20 text-white backdrop-blur-md">
-                  <CardHeader>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="font-bold text-lg">{review.name}</div>
-                      <Badge variant="glass" className="bg-white/20 text-white border-none">Score obtenu : {review.score}</Badge>
-                    </div>
-                    <div className="flex text-yellow-400">
-                      {[1, 2, 3, 4, 5].map((s) => <Star key={s} className="h-4 w-4 fill-current" />)}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="opacity-90 italic">"{review.text}"</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* Pricing */}
-        <section className="py-24 bg-slate-50 dark:bg-slate-900/50" id="pricing">
+        <section className="py-24 bg-slate-50 dark:bg-slate-900/50" id="packs">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Tarifs Simples et Transparents</h2>
-              <p className="text-muted-foreground text-lg">Choisissez le plan qui correspond à votre rythme de révision.</p>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 text-[#0e2238] dark:text-white">Nos Packs de Formation</h2>
+              <p className="text-muted-foreground text-lg">Choisissez la formule adaptée à votre objectif TCF Canada.</p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto items-center">
               
-              {/* Gratuit */}
               <Card className="border-border/50 bg-white dark:bg-slate-900 shadow-sm">
                 <CardHeader className="text-center pb-8">
-                  <CardTitle className="text-2xl mb-2">Gratuit</CardTitle>
-                  <div className="text-4xl font-bold">0€<span className="text-lg text-muted-foreground font-normal">/mois</span></div>
+                  <CardTitle className="text-2xl mb-2 text-[#0e2238] dark:text-white">Pack Standard</CardTitle>
+                  <div className="text-4xl font-bold">29.000<span className="text-lg text-muted-foreground font-normal"> FCFA</span></div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <ul className="space-y-3 text-sm">
-                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-primary" /> Accès limité</li>
-                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-primary" /> 20 questions de test</li>
-                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-primary" /> 1 examen blanc complet</li>
-                    <li className="flex items-center opacity-50"><CheckCircle2 className="h-4 w-4 mr-2" /> Correction IA</li>
+                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Accès plateforme 30 jours</li>
+                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> 10 tests réels complets</li>
+                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Correction automatique</li>
                   </ul>
-                  <Button variant="outline" className="w-full mt-6" asChild><Link href="/register">Essayer</Link></Button>
+                  <Button variant="outline" className="w-full mt-6 border-amber-600 text-amber-600 hover:bg-amber-50" asChild><Link href="/register">S'inscrire</Link></Button>
                 </CardContent>
               </Card>
 
-              {/* Premium */}
-              <Card className="border-primary shadow-xl shadow-primary/10 bg-white dark:bg-slate-900 relative scale-105 z-10">
+              <Card className="border-amber-500 shadow-xl shadow-amber-500/10 bg-white dark:bg-slate-900 relative scale-105 z-10">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                  <Badge className="bg-primary text-white uppercase tracking-wider px-3 py-1">Populaire</Badge>
+                  <Badge className="bg-amber-600 text-white uppercase tracking-wider px-3 py-1 font-bold">Le plus populaire</Badge>
                 </div>
                 <CardHeader className="text-center pb-8 pt-8">
-                  <CardTitle className="text-2xl mb-2">Premium</CardTitle>
-                  <div className="text-4xl font-bold">29€<span className="text-lg text-muted-foreground font-normal">/mois</span></div>
+                  <CardTitle className="text-2xl mb-2 text-[#0e2238] dark:text-white">Pack Griffon d'Or</CardTitle>
+                  <div className="text-4xl font-bold text-amber-600">59.000<span className="text-lg text-muted-foreground font-normal"> FCFA</span></div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <ul className="space-y-3 text-sm font-medium">
-                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-primary" /> Toutes les fonctionnalités</li>
-                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-primary" /> Examens blancs illimités</li>
-                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-primary" /> Correction IA (Écrit & Oral)</li>
-                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-primary" /> Statistiques avancées</li>
+                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Accès illimité jusqu'à l'examen</li>
+                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Corrections IA + Formateurs humains</li>
+                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Simulations réelles illimitées</li>
+                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Support personnalisé</li>
                   </ul>
-                  <Button className="w-full mt-6" asChild><Link href="/register">Choisir Premium</Link></Button>
+                  <Button className="w-full mt-6 bg-amber-600 hover:bg-amber-700 text-white font-bold" asChild><Link href="/register">Rejoindre le Pack</Link></Button>
                 </CardContent>
               </Card>
 
-              {/* Premium Plus */}
               <Card className="border-border/50 bg-white dark:bg-slate-900 shadow-sm">
                 <CardHeader className="text-center pb-8">
-                  <CardTitle className="text-2xl mb-2">Premium Plus</CardTitle>
-                  <div className="text-4xl font-bold">89€<span className="text-lg text-muted-foreground font-normal">/3 mois</span></div>
+                  <CardTitle className="text-2xl mb-2 text-[#0e2238] dark:text-white">Pack VIP & Coaching</CardTitle>
+                  <div className="text-4xl font-bold">99.000<span className="text-lg text-muted-foreground font-normal"> FCFA</span></div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <ul className="space-y-3 text-sm">
-                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-primary" /> Tout le plan Premium</li>
-                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-primary" /> Corrections prioritaires</li>
-                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-primary" /> 2 sessions de Coaching</li>
-                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-primary" /> Support VIP 24/7</li>
+                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Tout le Pack Griffon d'Or</li>
+                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Coaching 1-on-1 avec expert</li>
+                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Suivi dossier d'immigration</li>
                   </ul>
-                  <Button variant="outline" className="w-full mt-6" asChild><Link href="/register">Choisir Premium Plus</Link></Button>
+                  <Button variant="outline" className="w-full mt-6 border-amber-600 text-amber-600 hover:bg-amber-50" asChild><Link href="/register">Postuler au VIP</Link></Button>
                 </CardContent>
               </Card>
 
@@ -267,3 +374,4 @@ export default function Home() {
     </>
   );
 }
+

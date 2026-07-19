@@ -1,0 +1,216 @@
+"use client";
+
+import { useState, useCallback } from "react";
+import Link from "next/link";
+import { 
+  PenTool, CheckCircle2, ChevronLeft, BrainCircuit, Clock, AlertCircle 
+} from "lucide-react";
+
+const LESSONS = [
+  {
+    id: 1, title: "Structure d'un courriel formel", duration: "12 min",
+    instruction: `Vous avez reçu un courriel d'invitation à un entretien d'emploi dans une entreprise canadienne. Rédigez une réponse formelle (80–120 mots) dans laquelle vous :
+• Remerciez pour l'invitation
+• Confirmez votre disponibilité
+• Posez une question sur le déroulement`,
+    minWords: 80, maxWords: 120,
+    modelAnswer: `Madame, Monsieur,
+
+Je vous remercie vivement de votre invitation à un entretien pour le poste que j'ai sollicité. Je suis ravi(e) de vous confirmer ma disponibilité pour la date proposée.
+
+Pourriez-vous me préciser si l'entretien se déroulera en présentiel ou en visioconférence, ainsi que la durée approximative ?
+
+Dans l'attente de votre retour, je vous prie d'agréer, Madame, Monsieur, l'expression de mes salutations distinguées.
+
+Prénom Nom`,
+    done: true
+  },
+  {
+    id: 2, title: "Rédaction d'une lettre officielle", duration: "15 min",
+    instruction: `Rédigez une lettre à la mairie de votre ville pour signaler un problème dans votre quartier (manque d'éclairage, problème de transport, etc.). Votre lettre doit contenir 100–150 mots et respecter la structure d'une lettre formelle.`,
+    minWords: 100, maxWords: 150,
+    modelAnswer: `Monsieur le Maire,
+
+Je me permets de vous écrire afin de vous signaler un problème persistant dans le quartier Saint-Michel : l'éclairage public est défaillant depuis plusieurs semaines, ce qui représente un danger pour les piétons, notamment le soir.
+
+Les résidents du quartier ont à plusieurs reprises contacté les services municipaux sans obtenir de réponse satisfaisante.
+
+Je vous serais reconnaissant(e) de bien vouloir prendre les mesures nécessaires afin de remédier à cette situation dans les meilleurs délais.
+
+Dans l'espoir d'une réponse favorable, je vous adresse, Monsieur le Maire, mes respectueuses salutations.
+
+Prénom Nom`,
+    done: false
+  },
+];
+
+const AI_WRITING_FEEDBACK = [
+  "✅ Structure : Votre courriel respecte bien la structure formelle (introduction, corps, salutation).",
+  "💡 Vocabulaire : Utilisez des formules de politesse plus variées : 'Je vous saurais gré de...', 'Il me serait agréable de...'",
+  "⚠️ Grammaire : Vérifiez l'accord des participes passés et la ponctuation après les virgules.",
+  "📝 Cohérence : Bon enchaînement des idées. Ajoutez plus de connecteurs logiques.",
+  "🎯 Score IA estimé : 71/100 — Niveau B1/B2 — Bon travail !",
+];
+
+function countWords(text: string) {
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
+
+export default function WritingCoursePage() {
+  const [currentLesson, setCurrentLesson] = useState(0);
+  const [text, setText] = useState("");
+  const [showModel, setShowModel] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiFeedback, setAiFeedback] = useState<string | null>(null);
+
+  const lesson = LESSONS[currentLesson];
+  const wordCount = countWords(text);
+  const wordStatus = wordCount < lesson.minWords ? "under" : wordCount > lesson.maxWords ? "over" : "ok";
+
+  const handleAI = useCallback(async () => {
+    if (!text.trim()) return;
+    setAiLoading(true);
+    setAiFeedback(null);
+    await new Promise(r => setTimeout(r, 2000));
+    setAiFeedback(AI_WRITING_FEEDBACK.join("\n\n"));
+    setAiLoading(false);
+  }, [text]);
+
+  const reset = () => { setText(""); setAiFeedback(null); setShowModel(false); };
+
+  return (
+    <div className="space-y-6 pb-12 max-w-4xl mx-auto">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-xs text-slate-500">
+        <Link href="/dashboard/courses" className="hover:text-amber-600 flex items-center gap-1">
+          <ChevronLeft className="h-3.5 w-3.5" /> Mes cours
+        </Link>
+        <span>/</span>
+        <span className="text-slate-800 dark:text-slate-200 font-semibold">Production écrite</span>
+      </div>
+
+      {/* Header */}
+      <div className="bg-gradient-to-r from-amber-500 to-amber-600 rounded-2xl p-6 text-white">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center">
+            <PenTool className="h-6 w-6" />
+          </div>
+          <div>
+            <h1 className="text-xl font-black">Production Écrite (PE)</h1>
+            <p className="text-amber-100 text-sm">Leçon {currentLesson + 1} sur {LESSONS.length}</p>
+          </div>
+        </div>
+        <div className="w-full bg-amber-700/50 rounded-full h-2 mt-3">
+          <div className="bg-white rounded-full h-2 transition-all" style={{ width: `${(currentLesson / LESSONS.length) * 100}%` }} />
+        </div>
+      </div>
+
+      {/* Lesson Tabs */}
+      <div className="flex gap-2">
+        {LESSONS.map((l, i) => (
+          <button key={l.id} onClick={() => { setCurrentLesson(i); reset(); }}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              i === currentLesson
+                ? "bg-amber-500 text-white"
+                : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 hover:border-amber-300"
+            }`}
+          >
+            {l.done && <CheckCircle2 className="h-3 w-3 text-emerald-400" />}
+            Leçon {i + 1}
+          </button>
+        ))}
+      </div>
+
+      {/* Instructions + Editor Split */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Instructions */}
+        <div className="bg-white dark:bg-slate-950 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-bold text-base text-slate-900 dark:text-white">{lesson.title}</h2>
+            <span className="text-xs text-slate-500 flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {lesson.duration}</span>
+          </div>
+
+          <div className="bg-amber-50 dark:bg-amber-950/20 rounded-xl p-4 border border-amber-200 dark:border-amber-900">
+            <p className="text-xs font-bold text-amber-700 dark:text-amber-300 uppercase tracking-wider mb-2">Consigne</p>
+            <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">{lesson.instruction}</p>
+          </div>
+
+          <div className="flex items-start gap-2 text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/20 rounded-lg p-3 border border-amber-200 dark:border-amber-900">
+            <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+            Longueur requise : {lesson.minWords}–{lesson.maxWords} mots
+          </div>
+
+          <button onClick={() => setShowModel(!showModel)}
+            className="text-xs font-bold text-amber-600 hover:underline flex items-center gap-1">
+            {showModel ? "Masquer" : "Voir"} l'exemple de réponse
+          </button>
+
+          {showModel && (
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed">
+              {lesson.modelAnswer}
+            </div>
+          )}
+        </div>
+
+        {/* Editor */}
+        <div className="bg-white dark:bg-slate-950 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-base text-slate-900 dark:text-white">Votre réponse</h3>
+            <span className={`text-xs font-bold px-2 py-0.5 rounded-md ${
+              wordStatus === "ok" ? "bg-emerald-100 text-emerald-700" :
+              wordStatus === "over" ? "bg-red-100 text-red-700" :
+              "bg-slate-100 text-slate-600"
+            }`}>
+              {wordCount} / {lesson.maxWords} mots
+            </span>
+          </div>
+
+          <textarea
+            value={text}
+            onChange={e => { setText(e.target.value); setAiFeedback(null); }}
+            placeholder={`Rédigez votre réponse ici...\n\nConseils :\n• Respectez la structure demandée\n• Vérifiez votre grammaire\n• Relisez avant de soumettre`}
+            className="w-full h-56 resize-none rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-4 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-all"
+          />
+
+          <div className="flex gap-2">
+            <button onClick={handleAI} disabled={aiLoading || !text.trim() || wordStatus === "under"}
+              className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5">
+              {aiLoading
+                ? <><span className="animate-spin">⚙</span> Analyse...</>
+                : <><BrainCircuit className="h-4 w-4" /> Corriger par IA</>
+              }
+            </button>
+            <button onClick={reset} className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold hover:bg-slate-50 transition-colors">
+              Effacer
+            </button>
+          </div>
+
+          {aiFeedback && (
+            <div className="bg-amber-50 dark:bg-amber-950/20 rounded-xl p-4 border border-amber-200 dark:border-amber-900">
+              <h4 className="font-bold text-sm text-amber-800 dark:text-amber-300 flex items-center gap-2 mb-3">
+                <BrainCircuit className="h-4 w-4" /> Analyse IA
+              </h4>
+              <div className="text-xs text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed">
+                {aiFeedback}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <div className="flex justify-between">
+        <button disabled={currentLesson === 0} onClick={() => { setCurrentLesson(c => c - 1); reset(); }}
+          className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-sm font-bold text-slate-700 dark:text-slate-300 disabled:opacity-40 hover:bg-slate-50 transition-colors">
+          ← Leçon précédente
+        </button>
+        {currentLesson < LESSONS.length - 1 && (
+          <button onClick={() => { setCurrentLesson(c => c + 1); reset(); }}
+            className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm transition-colors">
+            Leçon suivante →
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
