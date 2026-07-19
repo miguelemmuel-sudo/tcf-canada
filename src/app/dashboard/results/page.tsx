@@ -13,6 +13,7 @@ import {
   Mic, 
   FileText 
 } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 
 const resultsHistory = [
   { test: "Test blanc complet #3", date: "20 juillet 2026", score: "82%", level: "B2", rank: "Top 20%" },
@@ -24,18 +25,72 @@ const resultsHistory = [
 
 export default function ResultsPage() {
   const [isNewUser, setIsNewUser] = useState(false);
+  const [userStats, setUserStats] = useState({
+    testsCount: 0,
+    averageScore: 0,
+    rankText: "Non classé",
+    level: "-",
+  });
+  const [activitiesList, setActivitiesList] = useState<any[]>([]);
 
   useEffect(() => {
     const newFlag = localStorage.getItem("griffon_user_new");
     if (newFlag === "true") {
       setIsNewUser(true);
     }
+
+    const loadResultsFromSupabase = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (user) {
+          // Fetch stats
+          const { data: stats } = await supabase
+            .from("user_stats")
+            .select("*")
+            .eq("user_id", user.id)
+            .single();
+
+          if (stats && stats.tests_count > 0) {
+            setUserStats({
+              testsCount: stats.tests_count,
+              averageScore: stats.average_score,
+              rankText: stats.average_score >= 80 ? "Top 15%" : stats.average_score >= 70 ? "Top 25%" : "Top 40%",
+              level: stats.average_score >= 80 ? "B2+" : stats.average_score >= 60 ? "B2" : "B1",
+            });
+            setIsNewUser(false);
+          }
+
+          // Fetch activities
+          const { data: activities } = await supabase
+            .from("user_activities")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false });
+
+          if (activities && activities.length > 0) {
+            setActivitiesList(activities);
+            setIsNewUser(false);
+          }
+        }
+      } catch (err) {
+        console.warn("Supabase load notice:", err);
+      }
+    };
+
+    loadResultsFromSupabase();
   }, []);
 
-  const testsCount = isNewUser ? 0 : 12;
-  const averageScore = isNewUser ? "0%" : "78%";
-  const rankText = isNewUser ? "Non classé" : "Top 20%";
-  const currentLevel = isNewUser ? "-" : "B2";
+  const displayList = activitiesList.length > 0 
+    ? activitiesList 
+    : (isNewUser ? [] : resultsHistory);
+
+  const testsCount = userStats.testsCount || (isNewUser ? 0 : displayList.length || 12);
+  const averageScore = userStats.averageScore ? `${userStats.averageScore}%` : (isNewUser ? "0%" : "78%");
+  const rankText = isNewUser ? "Non classé" : userStats.rankText;
+  const currentLevel = isNewUser ? "-" : userStats.level;
+  const lastResult = displayList[0];
 
   return (
     <div className="space-y-6 pb-12">

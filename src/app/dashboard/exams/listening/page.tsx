@@ -9,6 +9,7 @@ import {
   Play, Pause, Volume2, Clock, ChevronLeft, ChevronRight,
   CheckCircle2, Circle, Headphones, AlertCircle, XCircle
 } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface Question {
@@ -194,11 +195,61 @@ export default function ListeningExamPage() {
     setAnswers(newAnswers);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     stopAudio();
     setSubmitted(true);
     setShowResult(true);
     clearInterval(intervalRef.current!);
+
+    // Calculate score
+    const finalScoreCount = answers.filter((a, i) => a === DEMO_QUESTIONS[i].correct).length;
+    const percentage = Math.round((finalScoreCount / DEMO_QUESTIONS.length) * 100);
+    const scaledScore = Math.round((finalScoreCount / DEMO_QUESTIONS.length) * 699);
+
+    // Save result to Supabase
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user) {
+        // Insert Activity
+        await supabase.from("user_activities").insert({
+          user_id: user.id,
+          activity_type: "exam_result",
+          title: "Compréhension Orale - Session d'entraînement",
+          score: percentage,
+          details: {
+            scaledScore,
+            correct: finalScoreCount,
+            total: DEMO_QUESTIONS.length,
+            level: finalScoreCount >= 4 ? "B2" : "B1",
+          },
+        });
+
+        // Fetch current stats and update
+        const { data: existingStats } = await supabase
+          .from("user_stats")
+          .select("*")
+          .eq("user_id", user.id)
+          .single();
+
+        const currentTests = (existingStats?.tests_count || 0) + 1;
+        const prevAvg = existingStats?.average_score || 0;
+        const newAvg = Math.round((prevAvg * (currentTests - 1) + percentage) / currentTests);
+
+        await supabase.from("user_stats").upsert({
+          user_id: user.id,
+          tests_count: currentTests,
+          average_score: newAvg,
+          global_progress: Math.min(100, Math.round(newAvg * 0.9)),
+          updated_at: new Date().toISOString(),
+        });
+      }
+    } catch (err) {
+      console.warn("Error saving test result to Supabase:", err);
+    }
+
+    localStorage.removeItem("griffon_user_new");
   };
 
   const score = submitted
