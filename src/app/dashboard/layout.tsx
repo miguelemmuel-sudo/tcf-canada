@@ -10,6 +10,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [userName, setUserName] = useState("Candidat");
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   useEffect(() => {
     // Read user name from localStorage (set during registration/login)
@@ -18,14 +19,14 @@ export default function DashboardLayout({
   }, []);
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-slate-900 overflow-hidden">
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-900 overflow-hidden relative">
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar isOpen={isMobileOpen} onClose={() => setIsMobileOpen(false)} />
 
       {/* Main content */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        <Topbar userName={userName} />
-        <main className="flex-1 overflow-y-auto p-6">
+        <Topbar userName={userName} onMenuClick={() => setIsMobileOpen(true)} />
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
           {children}
         </main>
       </div>
