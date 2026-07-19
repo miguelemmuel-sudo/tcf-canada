@@ -56,26 +56,16 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         )}
       >
         {/* Brand Header */}
-        <div className="flex items-center justify-between p-5 border-b border-slate-800/80">
-          <div className="flex items-center space-x-3">
-            <img src="/griffon_logo.png" alt="Griffon d'or" className="h-10 w-auto object-contain" />
-            <div className="flex flex-col">
-              <span className="text-lg font-black tracking-tight text-white uppercase leading-none">
-                GRIFFON D'OR
-              </span>
-              <span className="text-[10px] font-semibold text-amber-500 tracking-wide mt-0.5">
-                Préparation TCF Canada
-              </span>
-            </div>
+        <div className="flex items-center space-x-3 p-5 border-b border-slate-800/80">
+          <img src="/griffon_logo.png" alt="Griffon d'or" className="h-10 w-auto object-contain" />
+          <div className="flex flex-col">
+            <span className="text-lg font-black tracking-tight text-white uppercase leading-none">
+              GRIFFON D'OR
+            </span>
+            <span className="text-[10px] font-semibold text-amber-500 tracking-wide mt-0.5">
+              Préparation TCF Canada
+            </span>
           </div>
-          {onClose && (
-            <button
-              onClick={onClose}
-              className="lg:hidden p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
-            >
-              ✕
-            </button>
-          )}
         </div>
 
         {/* Main Navigation Menu */}

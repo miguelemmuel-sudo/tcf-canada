@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Wallet, 
   CreditCard as CreditCardIcon, 
@@ -29,6 +29,21 @@ const paymentHistory = [
 ];
 
 export default function PaymentsPage() {
+  const [isNewUser, setIsNewUser] = useState(false);
+
+  useEffect(() => {
+    const newFlag = localStorage.getItem("griffon_user_new");
+    if (newFlag === "true") {
+      setIsNewUser(true);
+    }
+  }, []);
+
+  const userPlan = typeof window !== "undefined" ? localStorage.getItem("griffon_user_plan") || "standard" : "standard";
+
+  const totalSpent = isNewUser ? "0,00 FCFA" : "126,00 CAD";
+  const paymentMethodsCount = isNewUser ? 0 : 2;
+  const invoicesCount = isNewUser ? 0 : 3;
+
   return (
     <div className="space-y-6 pb-12">
       {/* Title */}
@@ -46,13 +61,10 @@ export default function PaymentsPage() {
               <Wallet className="h-6 w-6" />
             </div>
             <div>
-              <div className="text-2xl font-black text-slate-900 dark:text-white">126,00 CAD</div>
+              <div className="text-2xl font-black text-slate-900 dark:text-white">{totalSpent}</div>
               <div className="text-xs text-slate-500 font-medium">Total dépensé</div>
             </div>
           </div>
-          <span className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1 cursor-pointer">
-            Voir le détail <ChevronRight className="h-3 w-3" />
-          </span>
         </div>
 
         <div className="bg-white dark:bg-slate-950 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between">
@@ -61,13 +73,10 @@ export default function PaymentsPage() {
               <CreditCardIcon className="h-6 w-6" />
             </div>
             <div>
-              <div className="text-2xl font-black text-slate-900 dark:text-white">2</div>
+              <div className="text-2xl font-black text-slate-900 dark:text-white">{paymentMethodsCount}</div>
               <div className="text-xs text-slate-500 font-medium">Moyens de paiement</div>
             </div>
           </div>
-          <span className="text-xs font-bold text-emerald-600 hover:underline flex items-center gap-1 cursor-pointer">
-            Gérer mes moyens <ChevronRight className="h-3 w-3" />
-          </span>
         </div>
 
         <div className="bg-white dark:bg-slate-950 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between">
@@ -76,13 +85,10 @@ export default function PaymentsPage() {
               <FileText className="h-6 w-6" />
             </div>
             <div>
-              <div className="text-2xl font-black text-slate-900 dark:text-white">3</div>
+              <div className="text-2xl font-black text-slate-900 dark:text-white">{invoicesCount}</div>
               <div className="text-xs text-slate-500 font-medium">Factures</div>
             </div>
           </div>
-          <span className="text-xs font-bold text-amber-600 hover:underline flex items-center gap-1 cursor-pointer">
-            Voir mes factures <ChevronRight className="h-3 w-3" />
-          </span>
         </div>
 
         <div className="bg-white dark:bg-slate-950 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between">
@@ -91,13 +97,10 @@ export default function PaymentsPage() {
               <DollarSign className="h-6 w-6" />
             </div>
             <div>
-              <div className="text-2xl font-black text-slate-900 dark:text-white">0,00 CAD</div>
+              <div className="text-2xl font-black text-slate-900 dark:text-white">0,00 FCFA</div>
               <div className="text-xs text-slate-500 font-medium">Solde à payer</div>
             </div>
           </div>
-          <span className="text-xs font-bold text-purple-600 hover:underline flex items-center gap-1 cursor-pointer">
-            Tout est à jour !
-          </span>
         </div>
 
       </div>

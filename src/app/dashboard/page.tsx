@@ -437,12 +437,15 @@ export default function DashboardPage() {
             <p className="text-xs text-slate-500">Contactez votre coach pour un accompagnement personnalisé.</p>
           </div>
         </div>
-        <Link href="/dashboard/coaching">
-          <button className="bg-[#07192f] hover:bg-[#0c284a] text-white px-5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 shadow-md transition-colors">
-            <span>Contacter mon coach</span>
-            <MessageSquare className="h-4 w-4" />
-          </button>
-        </Link>
+        <a
+          href="https://wa.me/22653360101"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-[#07192f] hover:bg-[#0c284a] text-white px-5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 shadow-md transition-colors"
+        >
+          <span>Contacter mon coach</span>
+          <MessageSquare className="h-4 w-4" />
+        </a>
       </div>
 
       {/* Footer credits */}

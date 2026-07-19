@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   UserCheck, 
   Calendar as CalendarIcon, 
@@ -14,6 +14,65 @@ import {
 
 export default function CoachingPage() {
   const [activeTab, setActiveTab] = useState("Mes coachings");
+  const [isNewUser, setIsNewUser] = useState(false);
+  const [downloadingResource, setDownloadingResource] = useState<string | null>(null);
+
+  useEffect(() => {
+    const newFlag = localStorage.getItem("griffon_user_new");
+    if (newFlag === "true") {
+      setIsNewUser(true);
+    }
+  }, []);
+
+  const handleDownload = (filename: string, content: string) => {
+    setDownloadingResource(filename);
+    setTimeout(() => {
+      const element = document.createElement("a");
+      const file = new Blob([content], { type: "text/plain;charset=utf-8" });
+      element.href = URL.createObjectURL(file);
+      element.download = filename;
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+      setDownloadingResource(null);
+    }, 800);
+  };
+
+  const sessionsCompleted = isNewUser ? 0 : 5;
+  const sessionsUpcoming = isNewUser ? 0 : 2;
+  const objectivesPercent = isNewUser ? "0%" : "80%";
+
+  const guideContent = `=== GRIFFON D'OR - GUIDE OFFICIEL TCF CANADA (GÉNÉRÉ PAR IA) ===
+\n1. COMPRÉHENSION ORALE
+- Concentrez-vous sur les mots-clés et les connecteurs logiques.
+- Notez la tonalité de l'interlocuteur.
+
+2. COMPRÉHENSION ÉCRITE
+- Lisez d'abord les questions avant de parcourir le texte.
+- Repérez la structure du texte (introduction, arguments, conclusion).
+
+3. PRODUCTION ÉCRITE
+- Tâche 1 : Rédigez un message court (au moins 60 mots).
+- Tâche 2 : Rédigez un article/compte-rendu (au moins 120 mots).
+- Tâche 3 : Rédigez un texte argumentatif (au moins 180 mots).
+
+4. PRODUCTION ORALE
+- Entraînez-vous avec notre module d'évaluation vocale IA.
+- Parlez avec confiance et utilisez un vocabulaire riche et adapté.
+
+Bonne préparation avec Griffon d'Or !`;
+
+  const grammarContent = `=== GRIFFON D'OR - EXERCICES DE GRAMMAIRE AVANCÉE TCF ===
+\nEXERCICE 1 : LE SUBJONCTIF VS L'INDICATIF
+1. Je pense qu'il (venir) ______ demain. -> vient (Indicatif)
+2. Il faut que vous (faire) ______ des efforts. -> fassiez (Subjonctif)
+
+EXERCICE 2 : LES CONNECTEURS LOGIQUE
+1. Bien que + Subjonctif
+2. En revanche + Indicatif
+3. C'est pourquoi + Indicatif
+
+Module interactif de correction IA disponible dans votre tableau de bord !`;
 
   return (
     <div className="space-y-6 pb-12">
@@ -55,13 +114,10 @@ export default function CoachingPage() {
               <FileText className="h-6 w-6" />
             </div>
             <div>
-              <div className="text-2xl font-black text-slate-900 dark:text-white">5</div>
+              <div className="text-2xl font-black text-slate-900 dark:text-white">{sessionsCompleted}</div>
               <div className="text-xs text-slate-500 font-medium">Séances réalisées</div>
             </div>
           </div>
-          <span className="text-xs font-bold text-blue-600 hover:underline cursor-pointer flex items-center gap-1">
-            Voir l'historique <ChevronRight className="h-3 w-3" />
-          </span>
         </div>
 
         <div className="bg-white dark:bg-slate-950 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between">
@@ -70,13 +126,10 @@ export default function CoachingPage() {
               <CalendarIcon className="h-6 w-6" />
             </div>
             <div>
-              <div className="text-2xl font-black text-slate-900 dark:text-white">2</div>
+              <div className="text-2xl font-black text-slate-900 dark:text-white">{sessionsUpcoming}</div>
               <div className="text-xs text-slate-500 font-medium">Séances à venir</div>
             </div>
           </div>
-          <span className="text-xs font-bold text-red-500 hover:underline cursor-pointer flex items-center gap-1">
-            Voir le calendrier <ChevronRight className="h-3 w-3" />
-          </span>
         </div>
 
         <div className="bg-white dark:bg-slate-950 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between">
@@ -85,13 +138,10 @@ export default function CoachingPage() {
               <CheckCircle2 className="h-6 w-6" />
             </div>
             <div>
-              <div className="text-2xl font-black text-slate-900 dark:text-white">80%</div>
+              <div className="text-2xl font-black text-slate-900 dark:text-white">{objectivesPercent}</div>
               <div className="text-xs text-slate-500 font-medium">Objectifs atteints</div>
             </div>
           </div>
-          <span className="text-xs font-bold text-emerald-600 hover:underline cursor-pointer flex items-center gap-1">
-            Voir mes objectifs <ChevronRight className="h-3 w-3" />
-          </span>
         </div>
 
       </div>
@@ -104,62 +154,39 @@ export default function CoachingPage() {
           <div>
             <h3 className="font-bold text-base text-slate-900 dark:text-white mb-4">Prochaines séances</h3>
 
-            <div className="space-y-3">
-              
-              <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-center min-w-[55px]">
-                    <span className="text-lg font-black text-slate-900 dark:text-white block leading-none">22</span>
-                    <span className="text-[9px] font-bold text-slate-400 block">JUIL.</span>
-                  </div>
-                  <div>
-                    <h4 className="font-extrabold text-xs text-slate-900 dark:text-white">Compréhension écrite</h4>
-                    <p className="text-[11px] text-slate-400">10:00 - 11:00 • Coach Marie L.</p>
-                  </div>
-                </div>
-                <button className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm">
-                  Rejoindre
-                </button>
+            {isNewUser ? (
+              <div className="py-6 text-center text-slate-400 space-y-3">
+                <CalendarIcon className="h-8 w-8 mx-auto text-slate-300 dark:text-slate-700" />
+                <p className="text-xs">Vous n'avez aucune séance de coaching planifiée.</p>
+                <a
+                  href="https://wa.me/22653360101"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs"
+                >
+                  Planifier un coaching WhatsApp
+                </a>
               </div>
-
-              <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-center min-w-[55px]">
-                    <span className="text-lg font-black text-slate-900 dark:text-white block leading-none">25</span>
-                    <span className="text-[9px] font-bold text-slate-400 block">JUIL.</span>
+            ) : (
+              <div className="space-y-3">
+                <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-center min-w-[55px]">
+                      <span className="text-lg font-black text-slate-900 dark:text-white block leading-none">22</span>
+                      <span className="text-[9px] font-bold text-slate-400 block">JUIL.</span>
+                    </div>
+                    <div>
+                      <h4 className="font-extrabold text-xs text-slate-900 dark:text-white">Compréhension écrite</h4>
+                      <p className="text-[11px] text-slate-400">10:00 - 11:00 • Coach Marie L.</p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-extrabold text-xs text-slate-900 dark:text-white">Production orale</h4>
-                    <p className="text-[11px] text-slate-400">14:00 - 15:00 • Coach Jean P.</p>
-                  </div>
+                  <a href="https://wa.me/22653360101" target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm">
+                    Rejoindre
+                  </a>
                 </div>
-                <button className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm">
-                  Rejoindre
-                </button>
               </div>
-
-              <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-center min-w-[55px]">
-                    <span className="text-lg font-black text-slate-900 dark:text-white block leading-none">29</span>
-                    <span className="text-[9px] font-bold text-slate-400 block">JUIL.</span>
-                  </div>
-                  <div>
-                    <h4 className="font-extrabold text-xs text-slate-900 dark:text-white">Simulation complète</h4>
-                    <p className="text-[11px] text-slate-400">09:00 - 10:30 • Coach Marie L.</p>
-                  </div>
-                </div>
-                <button className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm">
-                  Rejoindre
-                </button>
-              </div>
-
-            </div>
+            )}
           </div>
-
-          <button className="w-full py-2.5 rounded-xl border border-blue-600 text-blue-600 font-bold text-xs hover:bg-blue-50 transition-colors">
-            Voir toutes mes séances
-          </button>
         </div>
 
         {/* Right: Dernier compte rendu */}
@@ -167,39 +194,25 @@ export default function CoachingPage() {
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-base text-slate-900 dark:text-white">Dernier compte rendu</h3>
-              <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold">Excellent travail !</span>
             </div>
 
-            <div className="space-y-3 text-xs">
-              <div>
-                <span className="font-bold text-slate-900 dark:text-white block">Séance du 18 juillet 2026</span>
-                <span className="text-slate-400 text-[11px]">Coach Marie L.</span>
+            {isNewUser ? (
+              <div className="py-6 text-center text-slate-400 text-xs">
+                <p>Aucun compte rendu disponible pour le moment.</p>
+                <p className="text-[11px] text-slate-400 mt-1">Votre coach rédigera vos appréciations après chaque séance live.</p>
               </div>
-
-              <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-                Très bonne progression dans l'ensemble. Votre compréhension orale s'est nettement améliorée.
-              </p>
-
-              <div className="space-y-1.5 font-medium">
-                <div className="flex items-center gap-2 text-emerald-600">
-                  <CheckCircle2 className="h-4 w-4 shrink-0" />
-                  <span><strong>Points forts :</strong> Compréhension orale, vocabulaire</span>
+            ) : (
+              <div className="space-y-3 text-xs">
+                <div>
+                  <span className="font-bold text-slate-900 dark:text-white block">Séance du 18 juillet 2026</span>
+                  <span className="text-slate-400 text-[11px]">Coach Marie L.</span>
                 </div>
-                <div className="flex items-center gap-2 text-amber-600">
-                  <CheckCircle2 className="h-4 w-4 shrink-0" />
-                  <span><strong>À travailler :</strong> Grammaire, production écrite</span>
-                </div>
-                <div className="flex items-center gap-2 text-blue-600">
-                  <CheckCircle2 className="h-4 w-4 shrink-0" />
-                  <span><strong>Recommandation :</strong> Continuez à pratiquer régulièrement</span>
-                </div>
+                <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
+                  Très bonne progression dans l'ensemble. Votre compréhension orale s'est nettement améliorée.
+                </p>
               </div>
-            </div>
+            )}
           </div>
-
-          <button className="text-xs text-blue-600 font-bold hover:underline self-start flex items-center gap-1">
-            Voir le compte rendu complet <ChevronRight className="h-3 w-3" />
-          </button>
         </div>
 
       </div>
@@ -210,92 +223,92 @@ export default function CoachingPage() {
         {/* Mes objectifs */}
         <div className="lg:col-span-7 bg-white dark:bg-slate-950 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-4">
           <div>
-            <h3 className="font-bold text-base text-slate-900 dark:text-white mb-4">Mes objectifs</h3>
+            <h3 className="font-bold text-base text-slate-900 dark:text-white mb-4">Mes objectifs TCF</h3>
 
             <div className="space-y-4 text-xs font-bold">
               <div>
                 <div className="flex justify-between mb-1.5">
                   <span className="text-slate-700 dark:text-slate-200">Améliorer la compréhension orale</span>
-                  <span className="text-slate-500">85%</span>
+                  <span className="text-slate-500">{isNewUser ? "0%" : "85%"}</span>
                 </div>
                 <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full w-[85%]" />
+                  <div className={`h-full bg-emerald-500 rounded-full ${isNewUser ? "w-[0%]" : "w-[85%]"}`} />
                 </div>
               </div>
 
               <div>
                 <div className="flex justify-between mb-1.5">
                   <span className="text-slate-700 dark:text-slate-200">Augmenter le vocabulaire</span>
-                  <span className="text-slate-500">70%</span>
+                  <span className="text-slate-500">{isNewUser ? "0%" : "70%"}</span>
                 </div>
                 <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-600 rounded-full w-[70%]" />
+                  <div className={`h-full bg-blue-600 rounded-full ${isNewUser ? "w-[0%]" : "w-[70%]"}`} />
                 </div>
               </div>
 
               <div>
                 <div className="flex justify-between mb-1.5">
                   <span className="text-slate-700 dark:text-slate-200">Perfectionner la grammaire</span>
-                  <span className="text-slate-500">60%</span>
+                  <span className="text-slate-500">{isNewUser ? "0%" : "60%"}</span>
                 </div>
                 <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                  <div className="h-full bg-purple-600 rounded-full w-[60%]" />
+                  <div className={`h-full bg-purple-600 rounded-full ${isNewUser ? "w-[0%]" : "w-[60%]"}`} />
                 </div>
               </div>
             </div>
           </div>
-
-          <button className="text-xs text-blue-600 font-bold hover:underline self-start flex items-center gap-1 pt-2">
-            Voir tous mes objectifs <ChevronRight className="h-3 w-3" />
-          </button>
         </div>
 
-        {/* Ressources recommandées */}
+        {/* Ressources recommandées (Disponibles et Téléchargeables par l'IA) */}
         <div className="lg:col-span-5 bg-white dark:bg-slate-950 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-4">
           <div>
-            <h3 className="font-bold text-base text-slate-900 dark:text-white mb-4">Ressources recommandées</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-base text-slate-900 dark:text-white">Ressources recommandées IA</h3>
+              <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 text-[10px] font-extrabold uppercase">
+                Générées par l'IA
+              </span>
+            </div>
 
             <div className="space-y-3 text-xs">
               
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800">
                 <div className="flex items-center space-x-3">
                   <FileText className="h-5 w-5 text-red-500 shrink-0" />
                   <div>
                     <h4 className="font-bold text-slate-900 dark:text-white">Guide de préparation TCF Canada</h4>
-                    <p className="text-[10px] text-slate-400">PDF • 2.5 Mo</p>
+                    <p className="text-[10px] text-slate-400">PDF IA • Téléchargeable</p>
                   </div>
                 </div>
-                <button className="text-slate-400 hover:text-slate-600"><Download className="h-4 w-4" /></button>
+                <button
+                  onClick={() => handleDownload("Guide_Preparation_TCF_Canada.txt", guideContent)}
+                  disabled={downloadingResource === "Guide_Preparation_TCF_Canada.txt"}
+                  className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] flex items-center gap-1.5 transition-all shadow-sm"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  <span>{downloadingResource === "Guide_Preparation_TCF_Canada.txt" ? "Téléchargement..." : "Télécharger"}</span>
+                </button>
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900">
-                <div className="flex items-center space-x-3">
-                  <PlayCircle className="h-5 w-5 text-blue-500 shrink-0" />
-                  <div>
-                    <h4 className="font-bold text-slate-900 dark:text-white">Astuces pour la production orale</h4>
-                    <p className="text-[10px] text-slate-400">Vidéo • 15 min</p>
-                  </div>
-                </div>
-                <button className="text-slate-400 hover:text-slate-600"><PlayCircle className="h-4 w-4" /></button>
-              </div>
-
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800">
                 <div className="flex items-center space-x-3">
                   <FileText className="h-5 w-5 text-red-500 shrink-0" />
                   <div>
                     <h4 className="font-bold text-slate-900 dark:text-white">Exercices de grammaire avancée</h4>
-                    <p className="text-[10px] text-slate-400">PDF • 1.8 Mo</p>
+                    <p className="text-[10px] text-slate-400">Fiche d'exercices • Téléchargeable</p>
                   </div>
                 </div>
-                <button className="text-slate-400 hover:text-slate-600"><Download className="h-4 w-4" /></button>
+                <button
+                  onClick={() => handleDownload("Exercices_Grammaire_Avancee_TCF.txt", grammarContent)}
+                  disabled={downloadingResource === "Exercices_Grammaire_Avancee_TCF.txt"}
+                  className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] flex items-center gap-1.5 transition-all shadow-sm"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  <span>{downloadingResource === "Exercices_Grammaire_Avancee_TCF.txt" ? "Téléchargement..." : "Télécharger"}</span>
+                </button>
               </div>
 
             </div>
           </div>
-
-          <button className="text-xs text-blue-600 font-bold hover:underline self-start flex items-center gap-1 pt-2">
-            Voir toutes les ressources <ChevronRight className="h-3 w-3" />
-          </button>
         </div>
 
       </div>
