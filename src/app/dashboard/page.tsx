@@ -17,9 +17,18 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { createClient } from "@/utils/supabase/client";
+
 export default function DashboardPage() {
   const [userName, setUserName] = useState("Candidat");
   const [isNewUser, setIsNewUser] = useState(false);
+  const [userStats, setUserStats] = useState({
+    coursesCount: 0,
+    testsCount: 0,
+    averageScore: 0,
+    globalProgress: 0,
+  });
+  const [recentActivities, setRecentActivities] = useState<any[]>([]);
 
   useEffect(() => {
     const stored = localStorage.getItem("griffon_user_name") || "Candidat";
@@ -28,13 +37,57 @@ export default function DashboardPage() {
     if (newFlag === "true") {
       setIsNewUser(true);
     }
+
+    // Supabase Realtime Sync
+    const loadSupabaseData = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (user) {
+          // Fetch user stats
+          const { data: stats } = await supabase
+            .from("user_stats")
+            .select("*")
+            .eq("user_id", user.id)
+            .single();
+
+          if (stats) {
+            setUserStats({
+              coursesCount: stats.courses_count || 0,
+              testsCount: stats.tests_count || 0,
+              averageScore: stats.average_score || 0,
+              globalProgress: stats.global_progress || 0,
+            });
+            setIsNewUser(false);
+          }
+
+          // Fetch recent activities
+          const { data: activities } = await supabase
+            .from("user_activities")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false })
+            .limit(5);
+
+          if (activities && activities.length > 0) {
+            setRecentActivities(activities);
+            setIsNewUser(false);
+          }
+        }
+      } catch (err) {
+        console.warn("Supabase fetch notice:", err);
+      }
+    };
+
+    loadSupabaseData();
   }, []);
 
-  // Metrics (0 for new users, default demo data for existing demo account)
-  const coursesCount = isNewUser ? 0 : 8;
-  const testsCount = isNewUser ? 0 : 12;
-  const averageScore = isNewUser ? "0%" : "78%";
-  const globalProgress = isNewUser ? 0 : 66;
+  // Metrics (Synced with Supabase or default state)
+  const coursesCount = userStats.coursesCount || (isNewUser ? 0 : 8);
+  const testsCount = userStats.testsCount || (isNewUser ? 0 : 12);
+  const averageScore = userStats.averageScore ? `${userStats.averageScore}%` : (isNewUser ? "0%" : "78%");
+  const globalProgress = userStats.globalProgress || (isNewUser ? 0 : 66);
 
   return (
     <div className="space-y-6 pb-12">
