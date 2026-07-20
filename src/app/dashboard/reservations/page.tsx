@@ -6,81 +6,69 @@ import {
   Clock, 
   CheckCircle2, 
   XCircle, 
-  ArrowRight, 
   Video, 
-  ChevronRight,
-  Filter
+  Loader2
 } from "lucide-react";
-import Link from "next/link";
-
-const upcomingReservations = [
-  {
-    id: 1,
-    day: "22",
-    month: "JUIL.",
-    type: "Séance de coaching",
-    topic: "Compréhension écrite",
-    coach: "Coach Marie L.",
-    time: "10:00 - 11:00",
-    platform: "En ligne (Google Meet)",
-    status: "Confirmée",
-    iconBg: "bg-purple-100 text-purple-600 dark:bg-purple-950/50"
-  },
-  {
-    id: 2,
-    day: "25",
-    month: "JUIL.",
-    type: "Séance de coaching",
-    topic: "Production orale",
-    coach: "Coach Jean P.",
-    time: "14:00 - 15:00",
-    platform: "En ligne (Google Meet)",
-    status: "Confirmée",
-    iconBg: "bg-amber-100 text-amber-600 dark:bg-amber-950/50"
-  },
-  {
-    id: 3,
-    day: "29",
-    month: "JUIL.",
-    type: "Séance de coaching",
-    topic: "Simulation complète",
-    coach: "Coach Marie L.",
-    time: "09:00 - 10:30",
-    platform: "En ligne (Google Meet)",
-    status: "Confirmée",
-    iconBg: "bg-blue-100 text-blue-600 dark:bg-blue-950/50"
-  }
-];
-
-const historyReservations = [
-  { date: "18 juillet 2026", type: "Séance de coaching", subject: "Compréhension orale", trainer: "Coach Marie L.", status: "Terminée", statusBg: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400" },
-  { date: "14 juillet 2026", type: "Test TCF Canada", subject: "Test blanc complet #2", trainer: "—", status: "Terminée", statusBg: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400" },
-  { date: "05 juillet 2026", type: "Séance de coaching", subject: "Production écrite", trainer: "Coach Jean P.", status: "Terminée", statusBg: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400" },
-  { date: "01 juillet 2026", type: "Séance de coaching", subject: "Vocabulaire avancé", trainer: "Coach Marie L.", status: "Annulée", statusBg: "bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400" },
-];
+import { createClient } from "@/lib/supabaseClient";
 
 export default function ReservationsPage() {
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("Toutes");
-  const [isNewUser, setIsNewUser] = useState(false);
+  const [reservations, setReservations] = useState<any[]>([]);
 
   useEffect(() => {
-    const newFlag = localStorage.getItem("griffon_user_new");
-    if (newFlag === "true") {
-      setIsNewUser(true);
-    }
+    const loadReservations = async () => {
+      try {
+        setLoading(true);
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (user) {
+          // Récupération stricte des réservations du client connecté (RLS: auth.uid() = user_id)
+          const { data, error } = await supabase
+            .from("notifications")
+            .select("*")
+            .eq("user_id", user.id)
+            .filter("metadata->>type", "eq", "reservation")
+            .order("created_at", { ascending: false });
+
+          if (!error && data) {
+            setReservations(data);
+          } else {
+            setReservations([]);
+          }
+        }
+      } catch (err) {
+        console.error("Erreur chargement réservations:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadReservations();
   }, []);
 
-  const totalCount = isNewUser ? 0 : 7;
-  const upcomingCount = isNewUser ? 0 : 3;
-  const completedCount = isNewUser ? 0 : 3;
-  const cancelledCount = isNewUser ? 0 : 1;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-3 text-slate-500">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <p className="text-sm font-medium">Chargement de vos réservations...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const upcomingReservations = reservations.filter(r => r.metadata?.status === "upcoming");
+  const completedReservations = reservations.filter(r => r.metadata?.status === "completed");
+  const cancelledReservations = reservations.filter(r => r.metadata?.status === "cancelled");
 
   return (
     <div className="space-y-6 pb-12">
       {/* Title */}
       <div>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Espace candidat - Mes réservations</h1>
-        <p className="text-slate-500 text-sm mt-1">Gérez vos réservations de séances et de tests.</p>
+        <p className="text-slate-500 text-sm mt-1">Gérez vos séances de coaching et vos créneaux d'examens.</p>
       </div>
 
       {/* Filter Tabs */}
@@ -109,7 +97,7 @@ export default function ReservationsPage() {
               <CalendarIcon className="h-6 w-6" />
             </div>
             <div>
-              <div className="text-2xl font-black text-slate-900 dark:text-white">{totalCount}</div>
+              <div className="text-2xl font-black text-slate-900 dark:text-white">{reservations.length}</div>
               <div className="text-xs text-slate-500 font-medium">Total réservations</div>
             </div>
           </div>
@@ -121,7 +109,7 @@ export default function ReservationsPage() {
               <Clock className="h-6 w-6" />
             </div>
             <div>
-              <div className="text-2xl font-black text-slate-900 dark:text-white">{upcomingCount}</div>
+              <div className="text-2xl font-black text-slate-900 dark:text-white">{upcomingReservations.length}</div>
               <div className="text-xs text-slate-500 font-medium">À venir</div>
             </div>
           </div>
@@ -133,7 +121,7 @@ export default function ReservationsPage() {
               <CheckCircle2 className="h-6 w-6" />
             </div>
             <div>
-              <div className="text-2xl font-black text-slate-900 dark:text-white">{completedCount}</div>
+              <div className="text-2xl font-black text-slate-900 dark:text-white">{completedReservations.length}</div>
               <div className="text-xs text-slate-500 font-medium">Terminées</div>
             </div>
           </div>
@@ -145,8 +133,8 @@ export default function ReservationsPage() {
               <XCircle className="h-6 w-6" />
             </div>
             <div>
-              <div className="text-2xl font-black text-slate-900 dark:text-white">{cancelledCount}</div>
-              <div className="text-xs text-slate-500 font-medium">Annulée</div>
+              <div className="text-2xl font-black text-slate-900 dark:text-white">{cancelledReservations.length}</div>
+              <div className="text-xs text-slate-500 font-medium">Annulées</div>
             </div>
           </div>
         </div>
@@ -157,12 +145,12 @@ export default function ReservationsPage() {
       <div className="space-y-4">
         <h2 className="text-lg font-bold text-slate-900 dark:text-white">Mes prochaines réservations</h2>
         
-        {isNewUser ? (
+        {upcomingReservations.length === 0 ? (
           <div className="bg-white dark:bg-slate-950 rounded-2xl p-8 border border-slate-200/80 dark:border-slate-800 shadow-sm text-center text-slate-500 space-y-3">
             <CalendarIcon className="h-10 w-10 mx-auto text-slate-300 dark:text-slate-700" />
             <h3 className="font-bold text-sm text-slate-900 dark:text-white">Aucune réservation enregistrée</h3>
             <p className="text-xs text-slate-400 max-w-sm mx-auto">
-              Vos réservations de coaching et d'examens s'afficheront ici au fur et à mesure de votre progression.
+              Vos réservations de coaching et d'examens s'afficheront ici lorsque vous réserverez un créneau.
             </p>
             <a
               href="https://wa.me/22653360101"
@@ -170,7 +158,7 @@ export default function ReservationsPage() {
               rel="noopener noreferrer"
               className="inline-block mt-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs"
             >
-              Réserver avec un coach
+              Réserver avec un coach sur WhatsApp
             </a>
           </div>
         ) : (
@@ -179,30 +167,26 @@ export default function ReservationsPage() {
               <div key={item.id} className="bg-white dark:bg-slate-950 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div className="flex items-center space-x-4">
                   <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-4 py-2.5 text-center min-w-[70px]">
-                    <span className="text-xl font-black text-slate-900 dark:text-white block leading-none">{item.day}</span>
-                    <span className="text-[10px] font-bold text-slate-400 block mt-0.5">{item.month}</span>
-                  </div>
-                  <div className={`h-10 w-10 rounded-full flex items-center justify-center ${item.iconBg}`}>
-                    <CalendarIcon className="h-5 w-5" />
+                    <span className="text-xl font-black text-slate-900 dark:text-white block leading-none">
+                      {new Date(item.created_at).getDate()}
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-400 block mt-0.5">
+                      {new Date(item.created_at).toLocaleString('fr-FR', { month: 'short' }).toUpperCase()}
+                    </span>
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-sm text-slate-900 dark:text-white">{item.type}</h3>
-                    <p className="text-xs text-slate-500 font-medium">{item.topic}</p>
-                    <p className="text-xs text-slate-400 font-normal">{item.coach}</p>
+                    <h3 className="font-extrabold text-sm text-slate-900 dark:text-white">{item.title}</h3>
+                    <p className="text-xs text-slate-500 font-medium">{item.message}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center space-x-8 text-xs font-medium text-slate-500">
                   <div className="flex items-center space-x-2">
-                    <Clock className="h-4 w-4 text-slate-400" />
-                    <span>{item.time}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
                     <Video className="h-4 w-4 text-slate-400" />
-                    <span>{item.platform}</span>
+                    <span>En ligne</span>
                   </div>
                   <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 font-bold text-xs">
-                    {item.status}
+                    Confirmée
                   </span>
                 </div>
               </div>
@@ -215,30 +199,28 @@ export default function ReservationsPage() {
       <div className="bg-white dark:bg-slate-950 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
         <h2 className="text-lg font-bold text-slate-900 dark:text-white">Historique des réservations</h2>
         
-        {isNewUser ? (
-          <p className="text-xs text-slate-400 text-center py-6">Aucun historique disponible pour le moment.</p>
+        {reservations.length === 0 ? (
+          <p className="text-xs text-slate-400 text-center py-6">Aucun historique de réservation disponible pour le moment.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
                 <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 font-bold">
                   <th className="pb-3">Date</th>
-                  <th className="pb-3">Type</th>
-                  <th className="pb-3">Sujet / Test</th>
-                  <th className="pb-3">Formateur</th>
+                  <th className="pb-3">Intitulé</th>
+                  <th className="pb-3">Détails</th>
                   <th className="pb-3">Statut</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
-                {historyReservations.map((row, i) => (
+                {reservations.map((row, i) => (
                   <tr key={i} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/40">
-                    <td className="py-4 text-slate-900 dark:text-slate-200 font-bold">{row.date}</td>
-                    <td className="py-4 text-slate-600 dark:text-slate-300">{row.type}</td>
-                    <td className="py-4 text-slate-900 dark:text-white font-bold">{row.subject}</td>
-                    <td className="py-4 text-slate-600 dark:text-slate-300">{row.trainer}</td>
+                    <td className="py-4 text-slate-900 dark:text-slate-200 font-bold">{new Date(row.created_at).toLocaleDateString()}</td>
+                    <td className="py-4 text-slate-600 dark:text-slate-300 font-bold">{row.title}</td>
+                    <td className="py-4 text-slate-500">{row.message}</td>
                     <td className="py-4">
-                      <span className={`px-2.5 py-1 rounded-lg font-bold text-[11px] ${row.statusBg}`}>
-                        {row.status}
+                      <span className="px-2.5 py-1 rounded-lg font-bold text-[11px] bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">
+                        {row.metadata?.status || "Confirmée"}
                       </span>
                     </td>
                   </tr>

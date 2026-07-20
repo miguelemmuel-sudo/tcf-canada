@@ -1,33 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
   BookOpen, CheckCircle2, Clock, ChevronRight, PlayCircle, Lock,
-  Volume2, PenTool, Mic, Star
+  Volume2, PenTool, Mic, Star, Loader2
 } from "lucide-react";
+import { createClient } from "@/lib/supabaseClient";
 
 const courseCategories = ["Tous les cours", "Compréhension orale", "Compréhension écrite", "Production écrite", "Production orale"];
 
-const coursesList = [
+const defaultCoursesList = [
   {
     id: "co",
     code: "CO",
     title: "Compréhension orale",
     desc: "Apprenez à comprendre des conversations et des documents audio similaires à l'examen TCF Canada.",
-    progress: 75,
-    lessons: "6 / 8 leçons",
+    progress: 0,
+    lessons: "0 / 8 leçons",
     bgColor: "bg-blue-600",
     icon: Volume2,
     href: "/dashboard/courses/listening",
     color: "blue",
     lessons_list: [
-      { title: "Introduction à la CO TCF", duration: "12 min", done: true },
-      { title: "Conversations courtes — niveau A2", duration: "15 min", done: true },
-      { title: "Conversations longues — niveau B1", duration: "18 min", done: true },
-      { title: "Annonces et messages", duration: "14 min", done: true },
-      { title: "Débats et discussions", duration: "20 min", done: true },
-      { title: "Écoute sélective avancée", duration: "22 min", done: true },
+      { title: "Introduction à la CO TCF", duration: "12 min", done: false },
+      { title: "Conversations courtes — niveau A2", duration: "15 min", done: false },
+      { title: "Conversations longues — niveau B1", duration: "18 min", done: false },
+      { title: "Annonces et messages", duration: "14 min", done: false },
+      { title: "Débats et discussions", duration: "20 min", done: false },
+      { title: "Écoute sélective avancée", duration: "22 min", done: false },
       { title: "Simulation — Compréhension orale B2", duration: "25 min", done: false },
       { title: "Test final CO", duration: "30 min", done: false },
     ]
@@ -37,19 +38,19 @@ const coursesList = [
     code: "CE",
     title: "Compréhension écrite",
     desc: "Développez vos compétences de lecture et comprenez des textes variés en français.",
-    progress: 60,
-    lessons: "6 / 10 leçons",
+    progress: 0,
+    lessons: "0 / 10 leçons",
     bgColor: "bg-emerald-600",
     icon: BookOpen,
     href: "/dashboard/courses/reading",
     color: "emerald",
     lessons_list: [
-      { title: "Stratégies de lecture rapide", duration: "10 min", done: true },
-      { title: "Comprendre les articles de presse", duration: "15 min", done: true },
-      { title: "Textes administratifs et formulaires", duration: "12 min", done: true },
-      { title: "Textes littéraires", duration: "18 min", done: true },
-      { title: "Inférences et implicite", duration: "20 min", done: true },
-      { title: "Vocabulaire en contexte", duration: "16 min", done: true },
+      { title: "Stratégies de lecture rapide", duration: "10 min", done: false },
+      { title: "Comprendre les articles de presse", duration: "15 min", done: false },
+      { title: "Textes administratifs et formulaires", duration: "12 min", done: false },
+      { title: "Textes littéraires", duration: "18 min", done: false },
+      { title: "Inférences et implicite", duration: "20 min", done: false },
+      { title: "Vocabulaire en contexte", duration: "16 min", done: false },
       { title: "Textes scientifiques et techniques", duration: "22 min", done: false },
       { title: "Lecture et résumé", duration: "20 min", done: false },
       { title: "Simulation — CE niveau B2", duration: "35 min", done: false },
@@ -61,17 +62,17 @@ const coursesList = [
     code: "PE",
     title: "Production écrite",
     desc: "Apprenez à rédiger des textes clairs et structurés selon les critères du TCF Canada.",
-    progress: 40,
-    lessons: "4 / 10 leçons",
+    progress: 0,
+    lessons: "0 / 10 leçons",
     bgColor: "bg-amber-500",
     icon: PenTool,
     href: "/dashboard/courses/writing",
     color: "amber",
     lessons_list: [
-      { title: "Structure d'un courriel formel", duration: "12 min", done: true },
-      { title: "Rédaction d'une lettre officielle", duration: "15 min", done: true },
-      { title: "Argumentation et cohérence", duration: "18 min", done: true },
-      { title: "Connecteurs logiques", duration: "10 min", done: true },
+      { title: "Structure d'un courriel formel", duration: "12 min", done: false },
+      { title: "Rédaction d'une lettre officielle", duration: "15 min", done: false },
+      { title: "Argumentation et cohérence", duration: "18 min", done: false },
+      { title: "Connecteurs logiques", duration: "10 min", done: false },
       { title: "Essai argumentatif — B1", duration: "25 min", done: false },
       { title: "Synthèse de documents", duration: "22 min", done: false },
       { title: "Vocabulaire de l'argumentation", duration: "14 min", done: false },
@@ -85,16 +86,16 @@ const coursesList = [
     code: "PO",
     title: "Production orale",
     desc: "Entraînez-vous à parler en français sur des sujets variés et améliorez votre aisance.",
-    progress: 30,
-    lessons: "3 / 10 leçons",
+    progress: 0,
+    lessons: "0 / 10 leçons",
     bgColor: "bg-purple-600",
     icon: Mic,
     href: "/dashboard/courses/speaking",
     color: "purple",
     lessons_list: [
-      { title: "Techniques de prise de parole", duration: "12 min", done: true },
-      { title: "Monologue guidé — Présentation personnelle", duration: "15 min", done: true },
-      { title: "Interaction simulée — Niveau A2/B1", duration: "20 min", done: true },
+      { title: "Techniques de prise de parole", duration: "12 min", done: false },
+      { title: "Monologue guidé — Présentation personnelle", duration: "15 min", done: false },
+      { title: "Interaction simulée — Niveau A2/B1", duration: "20 min", done: false },
       { title: "Exprimer son opinion", duration: "18 min", done: false },
       { title: "Débat : pour et contre", duration: "22 min", done: false },
       { title: "Vocabulaire oral et hésitations", duration: "15 min", done: false },
@@ -114,19 +115,104 @@ const colorMap: Record<string, { bg: string; light: string; text: string; bar: s
 };
 
 export default function CoursesPage() {
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("Tous les cours");
   const [expandedCourse, setExpandedCourse] = useState<string | null>(null);
+  const [courses, setCourses] = useState(defaultCoursesList);
+  const [stats, setStats] = useState({
+    coursesInProgress: 0,
+    lessonsCompleted: 0,
+    totalTimeFormatted: "0h00",
+  });
+
+  useEffect(() => {
+    const loadCourseProgress = async () => {
+      try {
+        setLoading(true);
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (user) {
+          // Récupération stricte de la progression des cours pour CE client (RLS: auth.uid() = user_id)
+          const { data: userProgress, error } = await supabase
+            .from("course_progress")
+            .select("*")
+            .eq("user_id", user.id);
+
+          if (!error && userProgress && userProgress.length > 0) {
+            let totalLessons = 0;
+            let inProgressCount = 0;
+
+            const updatedCourses = defaultCoursesList.map(c => {
+              const prog = userProgress.find(p => p.course_id === c.id);
+              if (prog) {
+                const percentage = prog.completion_percentage || 0;
+                if (percentage > 0) inProgressCount++;
+                const doneCount = Math.round((percentage / 100) * c.lessons_list.length);
+                totalLessons += doneCount;
+
+                const updatedLessonsList = c.lessons_list.map((l, idx) => ({
+                  ...l,
+                  done: idx < doneCount
+                }));
+
+                return {
+                  ...c,
+                  progress: percentage,
+                  lessons: `${doneCount} / ${c.lessons_list.length} leçons`,
+                  lessons_list: updatedLessonsList
+                };
+              }
+              return c;
+            });
+
+            setCourses(updatedCourses);
+            setStats({
+              coursesInProgress: inProgressCount,
+              lessonsCompleted: totalLessons,
+              totalTimeFormatted: `${Math.round(totalLessons * 0.3)}h${(totalLessons * 15) % 60}m`,
+            });
+          } else {
+            // NOUVEAU CLIENT : tout à 0 / null
+            setCourses(defaultCoursesList);
+            setStats({
+              coursesInProgress: 0,
+              lessonsCompleted: 0,
+              totalTimeFormatted: "0h00",
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Erreur chargement des cours Supabase:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCourseProgress();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-3 text-slate-500">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <p className="text-sm font-medium">Chargement du catalogue de cours...</p>
+        </div>
+      </div>
+    );
+  }
 
   const filtered = activeTab === "Tous les cours"
-    ? coursesList
-    : coursesList.filter(c => c.title === activeTab || c.title.toLowerCase().includes(activeTab.toLowerCase().split(" ")[1]));
+    ? courses
+    : courses.filter(c => c.title === activeTab || c.title.toLowerCase().includes(activeTab.toLowerCase().split(" ")[1]));
 
   return (
     <div className="space-y-6 pb-12">
       {/* Title */}
       <div>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Mes cours</h1>
-        <p className="text-slate-500 text-sm mt-1">Accueil &gt; Mes cours</p>
+        <p className="text-slate-500 text-sm mt-1">Accédez à votre programme de préparation TCF Canada.</p>
       </div>
 
       {/* Filter Tabs */}
@@ -146,18 +232,9 @@ export default function CoursesPage() {
             </button>
           ))}
         </div>
-
-        <div className="flex items-center space-x-2 text-xs font-semibold text-slate-500">
-          <span>Trier par :</span>
-          <select className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-200 font-bold focus:outline-none">
-            <option>Les plus récents</option>
-            <option>Progression</option>
-            <option>Alphabétique</option>
-          </select>
-        </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* KPI Cards (Données réelles du client) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-slate-950 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center space-x-4">
           <div className="h-12 w-12 rounded-full bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-blue-600 shrink-0">
@@ -174,7 +251,7 @@ export default function CoursesPage() {
             <PlayCircle className="h-6 w-6" />
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-900 dark:text-white">4</div>
+            <div className="text-2xl font-black text-slate-900 dark:text-white">{stats.coursesInProgress}</div>
             <div className="text-xs text-slate-500 font-medium">Cours en cours</div>
           </div>
         </div>
@@ -184,7 +261,7 @@ export default function CoursesPage() {
             <CheckCircle2 className="h-6 w-6" />
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-900 dark:text-white">19</div>
+            <div className="text-2xl font-black text-slate-900 dark:text-white">{stats.lessonsCompleted}</div>
             <div className="text-xs text-slate-500 font-medium">Leçons complétées</div>
           </div>
         </div>
@@ -194,7 +271,7 @@ export default function CoursesPage() {
             <Clock className="h-6 w-6" />
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-900 dark:text-white">12h 45m</div>
+            <div className="text-2xl font-black text-slate-900 dark:text-white">{stats.totalTimeFormatted}</div>
             <div className="text-xs text-slate-500 font-medium">Temps d'apprentissage</div>
           </div>
         </div>
@@ -230,7 +307,7 @@ export default function CoursesPage() {
 
                 <div className="flex flex-col sm:flex-row md:flex-col items-end gap-2 w-full md:w-auto shrink-0">
                   <Link href={course.href} className={`w-full sm:w-auto px-6 py-2.5 rounded-xl ${c.bg} hover:opacity-90 text-white font-bold text-xs shadow-md transition-all text-center`}>
-                    Continuer le cours
+                    Accéder au cours
                   </Link>
                   <button
                     onClick={() => setExpandedCourse(isOpen ? null : course.id)}
@@ -247,10 +324,10 @@ export default function CoursesPage() {
                 <div className="border-t border-slate-100 dark:border-slate-800 px-6 pb-4">
                   <div className="py-4 space-y-2">
                     {course.lessons_list.map((lesson, idx) => (
-                      <div key={idx} className={`flex items-center justify-between p-3 rounded-xl transition-colors cursor-pointer ${
+                      <div key={idx} className={`flex items-center justify-between p-3 rounded-xl transition-colors ${
                         lesson.done 
                           ? "bg-slate-50 dark:bg-slate-900/80" 
-                          : "bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 hover:border-blue-300"
+                          : "bg-white dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800"
                       }`}>
                         <div className="flex items-center gap-3">
                           {lesson.done 
@@ -267,10 +344,9 @@ export default function CoursesPage() {
                           <span className="text-xs text-slate-400 flex items-center gap-1">
                             <Clock className="h-3 w-3" /> {lesson.duration}
                           </span>
-                          {lesson.done 
-                            ? <span className={`text-xs font-bold ${c.text} bg-opacity-10 px-2 py-0.5 rounded-full ${c.light}`}>Terminé</span>
-                            : <button className={`text-xs font-bold ${c.text} hover:underline`}>Commencer</button>
-                          }
+                          <Link href={course.href} className={`text-xs font-bold ${c.text} hover:underline`}>
+                            {lesson.done ? "Revoir" : "Commencer"}
+                          </Link>
                         </div>
                       </div>
                     ))}
@@ -280,22 +356,6 @@ export default function CoursesPage() {
             </div>
           );
         })}
-      </div>
-
-      {/* AI Recommendations Banner */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-            <Star className="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <h3 className="font-bold text-base">Recommandation IA personnalisée</h3>
-            <p className="text-blue-100 text-sm mt-0.5">Basée sur vos résultats, concentrez-vous sur la <strong>Production orale</strong> pour améliorer votre score global.</p>
-          </div>
-        </div>
-        <Link href="/dashboard/courses/speaking" className="shrink-0 bg-white text-blue-700 font-bold text-xs px-5 py-2.5 rounded-xl hover:bg-blue-50 transition-colors">
-          Voir le cours PO →
-        </Link>
       </div>
     </div>
   );

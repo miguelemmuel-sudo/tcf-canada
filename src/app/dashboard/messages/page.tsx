@@ -10,8 +10,8 @@ import {
   Info, 
   FileText, 
   Link as LinkIcon, 
-  Download,
-  Filter
+  Filter,
+  ArrowLeft
 } from "lucide-react";
 
 const conversations = [
@@ -34,6 +34,9 @@ interface Message {
 export default function MessagesPage() {
   const [selectedConv, setSelectedConv] = useState(conversations[0]);
   const [msgInput, setMsgInput] = useState("");
+  const [showMobileChat, setShowMobileChat] = useState(false);
+  const [showMobileInfo, setShowMobileInfo] = useState(false);
+
   const [messages, setMessages] = useState<Message[]>([
     { id: 1, sender: "other", text: "Bonjour Joel,\nExcellent travail sur votre dernier test de compréhension écrite ! Votre score de 80% montre une très bonne maîtrise. N'hésitez pas si vous avez des questions.", time: "10:15" },
     { id: 2, sender: "user", text: "Bonjour Coach,\nMerci beaucoup pour votre retour ! J'ai une question sur l'exercice 4, pouvez-vous m'expliquer comment améliorer mes réponses ?", time: "10:22" },
@@ -42,21 +45,56 @@ export default function MessagesPage() {
   ]);
   const [isAiTyping, setIsAiTyping] = useState(false);
 
+  // Moteur de réponse IA pédagogique précis TCF Canada & Grille NCLC/Échelles de points
   const generateAiReply = (userMsg: string): string => {
     const lower = userMsg.toLowerCase();
+    
+    // 1. Calcul précis de points / Barème TCF & NCLC
+    if (lower.includes("point") || lower.includes("calcul") || lower.includes("nclc") || lower.includes("score") || lower.includes("barème")) {
+      return `📊 **Barème Officiel & Calcul de Score TCF Canada :**
+
+Le TCF Canada attribue un score de **100 à 699 points** par épreuve, converti directement en Niveau de Compétence Linguistique Canadien (**NCLC**) :
+
+• **600 – 699 pts** ➔ **NCLC 10 à 12** (C1/C2 - Élevé / Excellent)
+• **523 – 599 pts** ➔ **NCLC 9** (C1 - Avancé)
+• **500 – 522 pts** ➔ **NCLC 8** (B2 - Intermédiaire Supérieur)
+• **453 – 499 pts** ➔ **NCLC 7** (B2 - Seuil requis pour la résidence permanente)
+• **398 – 452 pts** ➔ **NCLC 6** (B1 - Intermédiaire)
+• **342 – 397 pts** ➔ **NCLC 5** (B1 - Intermédiaire Initial)
+
+*Conseil Coach : Pour obtenir le maximum de points CRS (Entrée Express), vous devez viser au moins le **NCLC 7** (453+ pts en CO/CE).*`;
+    }
+
+    // 2. Compréhension Orale & Écrite
+    if (lower.includes("orale") || lower.includes("ecoute") || lower.includes("ecrite") || lower.includes("lecture")) {
+      return `🎯 **Conseils Pédagogiques pour les Épreuves QCM :**
+
+1. **Compréhension Orale (39 q, 35 min)** : L'enregistrement n'est diffusé qu'une seule fois. Repérez les mots-clés de la question avant le début de l'audio.
+2. **Compréhension Écrite (39 q, 60 min)** : Gérez bien le temps (env. 1 min 30 s par document). Les textes 1 à 20 sont plus simples, gardez du temps pour les textes argumentatifs 21 à 39.
+
+Souhaitez-vous faire une simulation pratique ciblée ?`;
+    }
+
+    // 3. Expressions (Écrite & Orale)
+    if (lower.includes("rédaction") || lower.includes("texte") || lower.includes("tâche") || lower.includes("expression")) {
+      return `✍️ **Évaluation de l'Expression Écrite / Orale :**
+
+• **Tâche 1** : Message court/courriel informel (60–120 mots)
+• **Tâche 2** : Article/Lettre formelle décrivant une expérience (120–150 mots)
+• **Tâche 3** : Prise de position argumentée (120–180 mots)
+
+Les évaluateurs TCF vérifient 4 critères : le respect de la consigne, la cohérence/connecteurs logiques, la richesse du vocabulaire et la précision grammaticale.`;
+    }
+
     if (lower.includes("bonjour") || lower.includes("salut") || lower.includes("coucou")) {
-      return `Bonjour ! Ravi de vous lire. Comment puis-je vous aider dans votre préparation TCF aujourd'hui ?`;
+      return `Bonjour ! Je suis votre assistant pédagogique TCF Canada. Posez-moi vos questions sur le barème, les épreuves ou vos résultats d'entraînement !`;
     }
-    if (lower.includes("test") || lower.includes("examen") || lower.includes("score")) {
-      return `Pour améliorer vos scores aux tests TCF, je vous conseille de réviser régulièrement la gestion du temps et de consulter vos corrections détaillées dans la rubrique "Résultats".`;
-    }
-    if (lower.includes("oral") || lower.includes("parler") || lower.includes("ecouter")) {
-      return `En expression orale et compréhension orale, entraînez-vous chaque jour avec le module dédié. N'hésitez pas à réécouter vos enregistrements !`;
-    }
+
     if (lower.includes("merci") || lower.includes("super") || lower.includes("d'accord")) {
-      return `Avec grand plaisir ! Je reste à votre entière disposition pour toute autre question. Bon travail !`;
+      return `Avec grand plaisir ! Continuez ainsi votre préparation. Je reste disponible si vous avez d'autres questions.`;
     }
-    return `Bonjour ! J'ai bien reçu votre message : "${userMsg}". Notre assistant IA et vos coachs pédagogiques examinent votre demande pour vous apporter la meilleure réponse possible. N'hésitez pas si vous avez d'autres questions sur votre préparation !`;
+
+    return `J'ai bien analysé votre question concernant "${userMsg}". Pour cette situation, référez-vous à la grille officielle TCF Canada : chaque bonne réponse en QCM vous crédite de points ajustés selon la difficulté de la question (A1 à C2). Avez-vous besoin d'un calcul spécifique sur un résultat d'examen ?`;
   };
 
   const handleSendMessage = () => {
@@ -76,7 +114,6 @@ export default function MessagesPage() {
     setMsgInput("");
     setIsAiTyping(true);
 
-    // Simulate AI / Admin Auto-response after 1.2s
     setTimeout(() => {
       const aiReplyText = generateAiReply(newMsgText);
       const aiMessage: Message = {
@@ -87,29 +124,27 @@ export default function MessagesPage() {
       };
       setMessages((prev) => [...prev, aiMessage]);
       setIsAiTyping(false);
-    }, 1200);
+    }, 1000);
   };
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-4 pb-6">
       {/* Title Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Espace candidat - Messages</h1>
-          <p className="text-slate-500 text-sm mt-1">Communiquez avec vos coachs et l'équipe Griffon d'Or.</p>
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white">Espace candidat - Messages</h1>
+          <p className="text-slate-500 text-xs md:text-sm mt-0.5">Communiquez avec vos coachs IA et l'équipe pédagogique.</p>
         </div>
-        <button className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-2 shadow-md transition-colors">
-          <Plus className="h-4 w-4" />
-          <span>Nouveau message</span>
-        </button>
       </div>
 
-      {/* 3 Panels Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[700px]">
+      {/* 3 Panels Layout (Responsive Mobile Optimized) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-[550px] lg:h-[680px]">
         
-        {/* Left Panel: Conversation List */}
-        <div className="lg:col-span-3 bg-white dark:bg-slate-950 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between overflow-hidden">
-          <div className="space-y-3 overflow-y-auto pr-1">
+        {/* Left Panel: Conversation List (Visible on mobile if chat not active) */}
+        <div className={`lg:col-span-4 bg-white dark:bg-slate-950 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between overflow-hidden ${
+          showMobileChat ? "hidden lg:flex" : "flex"
+        }`}>
+          <div className="space-y-3 overflow-y-auto pr-1 flex-1">
             
             {/* Search Input */}
             <div className="relative">
@@ -127,7 +162,10 @@ export default function MessagesPage() {
               {conversations.map((conv) => (
                 <div
                   key={conv.id}
-                  onClick={() => setSelectedConv(conv)}
+                  onClick={() => {
+                    setSelectedConv(conv);
+                    setShowMobileChat(true);
+                  }}
                   className={`p-3 rounded-xl cursor-pointer transition-all flex items-center space-x-3 ${
                     selectedConv.id === conv.id
                       ? "bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800"
@@ -161,55 +199,72 @@ export default function MessagesPage() {
             </div>
 
           </div>
-
-          <button className="w-full py-2.5 rounded-xl border border-blue-600 text-blue-600 font-bold text-xs hover:bg-blue-50 transition-colors mt-2">
-            Voir toutes les conversations
-          </button>
         </div>
 
-        {/* Center Panel: Active Chat Room */}
-        <div className="lg:col-span-6 bg-white dark:bg-slate-950 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between overflow-hidden">
+        {/* Center Panel: Active Chat Room (Optimisé Mobile avec espace de chat étendu) */}
+        <div className={`lg:col-span-8 bg-white dark:bg-slate-950 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between overflow-hidden min-h-[500px] ${
+          showMobileChat ? "flex" : "hidden lg:flex"
+        }`}>
           
-          {/* Header */}
-          <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          {/* Header Chat */}
+          <div className="p-3 md:p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
             <div className="flex items-center space-x-3">
-              <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&auto=format&fit=crop&q=80" alt="Coach Marie L." className="h-10 w-10 rounded-full object-cover" />
+              <button 
+                onClick={() => setShowMobileChat(false)}
+                className="lg:hidden p-1.5 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-300"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </button>
+              {selectedConv.avatar ? (
+                <img src={selectedConv.avatar} alt={selectedConv.name} className="h-9 w-9 rounded-full object-cover" />
+              ) : (
+                <div className={`h-9 w-9 rounded-full ${selectedConv.fontBg} font-bold text-xs flex items-center justify-center shrink-0`}>
+                  {selectedConv.initial}
+                </div>
+              )}
               <div>
-                <h3 className="font-bold text-sm text-slate-900 dark:text-white">Coach Marie L.</h3>
-                <p className="text-[11px] text-slate-400 font-medium">Coach de compréhension écrite</p>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white">{selectedConv.name}</h3>
+                <p className="text-[10px] md:text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> Assistant IA TCF & Coach en ligne
+                </p>
               </div>
             </div>
-            <button className="p-2 text-slate-400 hover:text-slate-600 rounded-full border border-slate-200 dark:border-slate-800">
+            <button 
+              onClick={() => setShowMobileInfo(!showMobileInfo)}
+              className="p-2 text-slate-400 hover:text-slate-600 rounded-full border border-slate-200 dark:border-slate-800"
+            >
               <Info className="h-4 w-4" />
             </button>
           </div>
 
-          {/* Chat Body Messages */}
-          <div className="flex-1 p-6 overflow-y-auto space-y-4 bg-slate-50/50 dark:bg-slate-900/30 text-xs font-medium">
-            <div className="text-center my-2">
+          {/* Chat Body Messages (Grand espace de lecture et de défilement) */}
+          <div className="flex-1 p-3 md:p-6 overflow-y-auto space-y-4 bg-slate-50/50 dark:bg-slate-900/20 text-xs font-medium min-h-[320px]">
+            <div className="text-center my-1">
               <span className="text-[10px] text-slate-400 font-semibold px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800">Aujourd'hui</span>
             </div>
 
             {messages.map((m) =>
               m.sender === "other" ? (
-                <div key={m.id} className="flex items-start space-x-3 max-w-[80%]">
-                  <img
-                    src={selectedConv.avatar || "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&auto=format&fit=crop&q=80"}
-                    alt={selectedConv.name}
-                    className="h-8 w-8 rounded-full object-cover mt-1 shrink-0"
-                  />
-                  <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-200 space-y-1">
-                    <p className="whitespace-pre-line">{m.text}</p>
+                <div key={m.id} className="flex items-start space-x-2 md:space-x-3 max-w-[90%] md:max-w-[80%]">
+                  {selectedConv.avatar ? (
+                    <img src={selectedConv.avatar} alt={selectedConv.name} className="h-7 w-7 rounded-full object-cover mt-1 shrink-0" />
+                  ) : (
+                    <div className={`h-7 w-7 rounded-full ${selectedConv.fontBg} font-bold text-[10px] flex items-center justify-center shrink-0 mt-1`}>
+                      {selectedConv.initial}
+                    </div>
+                  )}
+                  <div className="bg-white dark:bg-slate-900 p-3.5 md:p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-200 space-y-1.5 leading-relaxed">
+                    <p className="whitespace-pre-line text-xs">{m.text}</p>
                     <span className="text-[9px] text-slate-400 block text-right mt-1">{m.time}</span>
                   </div>
                 </div>
               ) : (
-                <div key={m.id} className="flex flex-col items-end max-w-[80%] ml-auto">
-                  <div className="bg-blue-50 dark:bg-blue-950/60 p-4 rounded-2xl border border-blue-100 dark:border-blue-900/40 text-slate-900 dark:text-slate-100 space-y-1">
-                    <p className="whitespace-pre-line">{m.text}</p>
+                <div key={m.id} className="flex flex-col items-end max-w-[90%] md:max-w-[80%] ml-auto">
+                  <div className="bg-blue-600 text-white p-3.5 md:p-4 rounded-2xl shadow-sm space-y-1 leading-relaxed">
+                    <p className="whitespace-pre-line text-xs">{m.text}</p>
                     <div className="flex items-center justify-end space-x-1 mt-1">
-                      <span className="text-[9px] text-slate-400">{m.time}</span>
-                      <CheckCheck className="h-3.5 w-3.5 text-blue-600" />
+                      <span className="text-[9px] text-blue-100">{m.time}</span>
+                      <CheckCheck className="h-3.5 w-3.5 text-blue-200" />
                     </div>
                   </div>
                 </div>
@@ -218,18 +273,20 @@ export default function MessagesPage() {
 
             {/* AI Typing Indicator */}
             {isAiTyping && (
-              <div className="flex items-center space-x-2 text-slate-400 text-xs italic pl-11">
+              <div className="flex items-center space-x-2 text-slate-400 text-xs italic pl-9">
                 <span className="h-2 w-2 rounded-full bg-blue-500 animate-bounce" />
                 <span className="h-2 w-2 rounded-full bg-blue-500 animate-bounce [animation-delay:0.2s]" />
                 <span className="h-2 w-2 rounded-full bg-blue-500 animate-bounce [animation-delay:0.4s]" />
-                <span className="ml-1 text-[11px]">Assistant IA & Admin écrit un message...</span>
+                <span className="ml-1 text-[11px]">Assistant IA analyse votre demande...</span>
               </div>
             )}
           </div>
 
-          {/* Chat Footer Input */}
-          <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex items-center space-x-3">
-            <button className="p-2 text-slate-400 hover:text-slate-600"><Paperclip className="h-5 w-5" /></button>
+          {/* Chat Footer Input (Zone de saisie optimisée mobile) */}
+          <div className="p-3 md:p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex items-center space-x-2 md:space-x-3">
+            <button className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0">
+              <Paperclip className="h-5 w-5" />
+            </button>
             <input
               type="text"
               value={msgInput}
@@ -241,87 +298,16 @@ export default function MessagesPage() {
                 }
               }}
               placeholder="Écrire un message..."
-              className="flex-1 py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-900 text-xs focus:outline-none border-none"
+              className="flex-1 py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-900 text-xs font-medium focus:outline-none border border-slate-200/50 dark:border-slate-800"
             />
             <button
               onClick={handleSendMessage}
-              className="p-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-xl shadow-md transition-all cursor-pointer"
+              className="p-2.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-xl shadow-md transition-all cursor-pointer shrink-0"
             >
               <Send className="h-4 w-4" />
             </button>
           </div>
 
-        </div>
-
-        {/* Right Panel: Coach Info & Shared Media */}
-        <div className="lg:col-span-3 bg-white dark:bg-slate-950 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-6 overflow-y-auto">
-          <div className="space-y-6">
-            
-            {/* Coach Profile Card */}
-            <div className="text-center space-y-2">
-              <div className="relative inline-block">
-                <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&auto=format&fit=crop&q=80" alt="Coach Marie" className="h-16 w-16 rounded-full object-cover mx-auto" />
-                <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-950" />
-              </div>
-              <div>
-                <h3 className="font-bold text-sm text-slate-900 dark:text-white">Coach Marie L.</h3>
-                <p className="text-[11px] text-slate-400">Coach de compréhension écrite</p>
-              </div>
-              <button className="px-4 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-bold text-blue-600 hover:bg-slate-50">
-                Voir le profil
-              </button>
-            </div>
-
-            {/* À propos */}
-            <div className="space-y-1">
-              <h4 className="font-bold text-xs text-slate-900 dark:text-white">À propos</h4>
-              <p className="text-[11px] text-slate-500 leading-relaxed">
-                Coach spécialisée en compréhension écrite et en stratégies d'examen TCF Canada. Plus de 8 ans d'expérience dans l'enseignement du français.
-              </p>
-            </div>
-
-            {/* Médias partagés */}
-            <div className="space-y-3">
-              <h4 className="font-bold text-xs text-slate-900 dark:text-white">Médias partagés</h4>
-
-              <div className="space-y-2 text-xs">
-                <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-900">
-                  <div className="flex items-center space-x-2.5">
-                    <FileText className="h-5 w-5 text-red-500" />
-                    <div>
-                      <h5 className="font-bold text-[11px] text-slate-900 dark:text-white">Conseils_Reading.pdf</h5>
-                      <span className="text-[9px] text-slate-400">1.2 Mo • 10:28</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-900">
-                  <div className="flex items-center space-x-2.5">
-                    <LinkIcon className="h-5 w-5 text-blue-500" />
-                    <div>
-                      <h5 className="font-bold text-[11px] text-slate-900 dark:text-white">Stratégies de lecture</h5>
-                      <span className="text-[9px] text-slate-400">Lien • 10:28</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-900">
-                  <div className="flex items-center space-x-2.5">
-                    <FileText className="h-5 w-5 text-blue-600" />
-                    <div>
-                      <h5 className="font-bold text-[11px] text-slate-900 dark:text-white">Exercice 4 - Correction.docx</h5>
-                      <span className="text-[9px] text-slate-400">245 Ko • 10:29</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          <button className="w-full py-2 rounded-xl border border-blue-600 text-blue-600 font-bold text-xs hover:bg-blue-50 transition-colors">
-            Voir tous les médias
-          </button>
         </div>
 
       </div>
