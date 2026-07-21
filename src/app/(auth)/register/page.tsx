@@ -9,6 +9,7 @@ import {
   ArrowRight, Check, Sparkles, Headphones, BarChart2, Target, Shield, Loader2, X
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import { AuthRightPanel } from "@/components/auth/AuthRightPanel";
 
 const subscriptionPlans = [
   {
@@ -95,7 +96,7 @@ export default function RegisterPage() {
       return;
     }
 
-    setStep(2); // Passage au choix de formule
+    setStep(2);
   };
 
   const handleFinalSubmit = async () => {
@@ -148,7 +149,7 @@ export default function RegisterPage() {
     <div className="min-h-screen w-full flex flex-col lg:flex-row bg-slate-50 dark:bg-slate-950 overflow-hidden">
       
       {/* Côté Gauche: Formulaire & Informations */}
-      <div className="flex-1 flex flex-col justify-between p-6 sm:p-10 lg:p-14 max-w-2xl mx-auto w-full z-10">
+      <div className="flex-1 flex flex-col justify-between p-6 sm:p-10 lg:p-14 max-w-xl mx-auto w-full z-10">
         
         {/* Header Logo TCF Canada */}
         <div className="flex items-center gap-3 mb-6">
@@ -160,7 +161,7 @@ export default function RegisterPage() {
               TCF Canada
             </h1>
             <p className="text-xs font-semibold text-slate-500 flex items-center gap-1">
-              Réussissez votre avenir au Canada <span>🇨🇦</span>
+              Réussissez votre avenir au Canada <span className="text-base">🇨🇦</span>
             </p>
           </div>
         </div>
@@ -304,7 +305,7 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Checkbox Conditions & Voir Plus */}
+              {/* Checkbox Conditions */}
               <div className="flex items-start space-x-2.5 pt-2">
                 <input
                   type="checkbox"
@@ -462,44 +463,10 @@ export default function RegisterPage() {
 
       </div>
 
-      {/* Côté Droit: Visuel Canadien & Citation inspirante (Desktop Only) */}
-      <div className="hidden lg:flex flex-1 relative bg-slate-900 rounded-l-[80px] overflow-hidden min-h-screen">
-        {/* Background Image */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center opacity-90 scale-105 transition-transform duration-1000"
-          style={{ 
-            backgroundImage: `url('https://images.unsplash.com/photo-1517935703635-27c5696e850b?auto=format&fit=crop&q=80&w=1400')` 
-          }}
-        />
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/40 to-transparent" />
+      {/* Côté Droit: Visuel Canadien & Citation inspirante (Reliable Component) */}
+      <AuthRightPanel quote="Chaque étape vous rapproche de votre avenir au Canada." />
 
-        {/* Translucent Quote Card Overlay */}
-        <div className="absolute bottom-16 right-16 z-20 max-w-sm">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="bg-slate-950/50 backdrop-blur-md border border-white/20 rounded-3xl p-7 text-white shadow-2xl space-y-3"
-          >
-            <div className="text-red-500 font-serif text-5xl font-black leading-none select-none">
-              “
-            </div>
-            <p className="text-sm font-medium leading-relaxed tracking-wide opacity-95">
-              Chaque étape vous rapproche de votre avenir au Canada.
-            </p>
-            <div className="h-1 w-12 bg-red-600 rounded-full mt-2" />
-          </motion.div>
-        </div>
-
-        {/* Canadian Flag Floating Badge */}
-        <div className="absolute top-12 right-12 z-20 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 text-white font-bold text-xs flex items-center gap-2">
-          <span>🇨🇦</span>
-          <span>TCF Canada Officiel</span>
-        </div>
-      </div>
-
-      {/* Modal Conditions d'utilisation & Confidentialité */}
+      {/* Modal Conditions */}
       {showPrivacyModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in duration-200">

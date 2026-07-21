@@ -9,6 +9,7 @@ import {
   ArrowRight, BookOpen, TrendingUp, Target, Globe, Loader2 
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import { AuthRightPanel } from "@/components/auth/AuthRightPanel";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -64,10 +65,10 @@ export default function LoginPage() {
     <div className="min-h-screen w-full flex flex-col lg:flex-row bg-slate-50 dark:bg-slate-950 overflow-hidden">
       
       {/* Côté Gauche: Formulaire & Informations */}
-      <div className="flex-1 flex flex-col justify-between p-6 sm:p-10 lg:p-14 max-w-2xl mx-auto w-full z-10">
+      <div className="flex-1 flex flex-col justify-between p-6 sm:p-10 lg:p-14 max-w-xl mx-auto w-full z-10">
         
         {/* Header Logo TCF Canada */}
-        <div className="flex items-center gap-3 mb-8">
+        <div className="flex items-center gap-3 mb-6">
           <div className="h-12 w-12 rounded-2xl bg-red-50 dark:bg-red-950/60 border border-red-100 dark:border-red-900/50 flex items-center justify-center text-red-600 shadow-sm shrink-0">
             <GraduationCap className="h-7 w-7" />
           </div>
@@ -118,14 +119,14 @@ export default function LoginPage() {
                 Adresse email
               </label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-red-500" />
                 <input
                   id="email"
                   name="email"
                   type="email"
                   required
                   placeholder="exemple@email.com"
-                  className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all"
+                  className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:bg-white transition-all"
                 />
               </div>
             </div>
@@ -136,14 +137,14 @@ export default function LoginPage() {
                 Mot de passe
               </label>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-red-500" />
                 <input
                   id="password"
                   name="password"
                   type={showPassword ? "text" : "password"}
                   required
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-10 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all"
+                  className="w-full pl-10 pr-10 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:bg-white transition-all"
                 />
                 <button
                   type="button"
@@ -179,7 +180,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-black text-sm shadow-lg shadow-red-600/30 hover:shadow-red-600/40 transition-all flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
+              className="w-full py-3.5 rounded-2xl bg-[#D91B24] hover:bg-[#B8141C] text-white font-black text-sm shadow-lg shadow-red-600/30 hover:shadow-red-600/40 transition-all flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
             >
               {loading ? (
                 <>
@@ -264,42 +265,8 @@ export default function LoginPage() {
 
       </div>
 
-      {/* Côté Droit: Visuel Canadien & Citation inspirante (Desktop Only) */}
-      <div className="hidden lg:flex flex-1 relative bg-slate-900 rounded-l-[80px] overflow-hidden min-h-screen">
-        {/* Background Image */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center opacity-90 scale-105 transition-transform duration-1000"
-          style={{ 
-            backgroundImage: `url('https://images.unsplash.com/photo-1517935703635-27c5696e850b?auto=format&fit=crop&q=80&w=1400')` 
-          }}
-        />
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/40 to-transparent" />
-
-        {/* Translucent Quote Card Overlay */}
-        <div className="absolute bottom-16 right-16 z-20 max-w-sm">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="bg-slate-950/50 backdrop-blur-md border border-white/20 rounded-3xl p-7 text-white shadow-2xl space-y-3"
-          >
-            <div className="text-red-500 font-serif text-5xl font-black leading-none select-none">
-              “
-            </div>
-            <p className="text-sm font-medium leading-relaxed tracking-wide opacity-95">
-              Chaque effort aujourd'hui, est un pas de plus vers votre avenir au Canada.
-            </p>
-            <div className="h-1 w-12 bg-red-600 rounded-full mt-2" />
-          </motion.div>
-        </div>
-
-        {/* Canadian Flag Floating Badge */}
-        <div className="absolute top-12 right-12 z-20 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 text-white font-bold text-xs flex items-center gap-2">
-          <span>🇨🇦</span>
-          <span>TCF Canada Officiel</span>
-        </div>
-      </div>
+      {/* Côté Droit: Visuel Canadien Exact */}
+      <AuthRightPanel quote="Chaque effort aujourd'hui, est un pas de plus vers votre avenir au Canada." />
 
     </div>
   );
