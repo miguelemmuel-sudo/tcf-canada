@@ -16,7 +16,13 @@ import {
 import Link from "next/link";
 import { createClient } from "@/lib/supabaseClient";
 
-const testsCategories = ["Tous les tests", "Compréhension orale", "Compréhension écrite", "Production écrite", "Production orale"];
+const testsCategories = [
+  { name: "Tous les tests", href: "/dashboard/exams" },
+  { name: "Compréhension orale", href: "/dashboard/exams/listening" },
+  { name: "Compréhension écrite", href: "/dashboard/exams/reading" },
+  { name: "Production écrite", href: "/dashboard/exams/writing" },
+  { name: "Production orale", href: "/dashboard/exams/speaking" }
+];
 
 export default function TestsPage() {
   const [loading, setLoading] = useState(true);
@@ -35,7 +41,6 @@ export default function TestsPage() {
         const { data: { user } } = await supabase.auth.getUser();
 
         if (user) {
-          // Récupération des sessions d'examens uniquement pour ce client (RLS: auth.uid() = user_id)
           const { data: sessions, error } = await supabase
             .from("exam_sessions")
             .select("*")
@@ -53,7 +58,6 @@ export default function TestsPage() {
               });
             }
           } else {
-            // NOUVEAU CLIENT : 0 test réalisé
             setStats({
               testsCount: 0,
               averageScore: 0,
@@ -103,24 +107,24 @@ export default function TestsPage() {
         <p className="text-slate-500 text-sm mt-1">Entraînez-vous avec des tests blancs et des exercices similaires à l'examen TCF Canada.</p>
       </div>
 
-      {/* Filter Tabs */}
+      {/* Direct Navigation Filter Tabs */}
       <div className="flex flex-wrap gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
         {testsCategories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setActiveTab(cat)}
+          <Link
+            key={cat.name}
+            href={cat.href}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === cat
+              activeTab === cat.name
                 ? "bg-blue-600 text-white shadow-sm"
                 : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 border border-slate-200/80 dark:border-slate-800"
             }`}
           >
-            {cat}
-          </button>
+            {cat.name}
+          </Link>
         ))}
       </div>
 
-      {/* 4 KPI Metric Cards (Données réelles du client) */}
+      {/* KPI Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
         <div className="bg-white dark:bg-slate-950 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center space-x-4">
@@ -148,9 +152,7 @@ export default function TestsPage() {
             <Target className="h-6 w-6" />
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-900 dark:text-white">
-              {stats.testsCount > 0 ? `${stats.averageScore}%` : "0%"}
-            </div>
+            <div className="text-2xl font-black text-slate-900 dark:text-white">{stats.averageScore}%</div>
             <div className="text-xs text-slate-500 font-medium">Score moyen</div>
           </div>
         </div>
@@ -160,159 +162,109 @@ export default function TestsPage() {
             <Trophy className="h-6 w-6" />
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-900 dark:text-white">{stats.rankText}</div>
-            <div className="text-xs text-slate-500 font-medium">Classement</div>
+            <div className="text-xl font-extrabold text-slate-900 dark:text-white">{stats.rankText}</div>
+            <div className="text-xs text-slate-500 font-medium">Classement général</div>
           </div>
         </div>
 
       </div>
 
-      {/* Main Grid: Liste des tests & Test Blanc Complet Box */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* Tests Modules Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
-        {/* Liste des tests */}
-        <div className="lg:col-span-7 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Catalogue des examens</h2>
-          </div>
-
+        {/* Module CO */}
+        <div className="bg-white dark:bg-slate-950 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-4">
           <div className="space-y-3">
-            
-            {/* Active Highlight Test Blanc #3 */}
-            <div className="bg-blue-50/90 dark:bg-blue-950/40 border-2 border-blue-600 rounded-2xl p-5 shadow-sm flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="h-12 w-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shrink-0">
-                  <Headphones className="h-6 w-6" />
-                </div>
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <h3 className="font-extrabold text-sm text-slate-900 dark:text-white">Compréhension orale</h3>
-                    <span className="px-2 py-0.5 rounded bg-blue-600 text-white text-[10px] font-bold">Nouveau</span>
-                  </div>
-                  <p className="text-xs text-slate-500">Simulation réelle – 40 questions</p>
-                  <div className="flex items-center space-x-4 text-xs text-slate-400 mt-1">
-                    <span>⏱ 0h35</span>
-                    <span>📊 Niveau TCF Canada</span>
-                  </div>
-                </div>
-              </div>
-              <Link href="/dashboard/exams/listening" className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition-colors flex items-center gap-1">
-                <span>Commencer</span>
-                <ChevronRight className="h-4 w-4" />
-              </Link>
-            </div>
-
-            {/* Test 2 */}
-            <div className="bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="h-12 w-12 rounded-2xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 flex items-center justify-center shrink-0">
-                  <BookOpen className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="font-extrabold text-sm text-slate-900 dark:text-white">Compréhension écrite</h3>
-                  <p className="text-xs text-slate-500">39 questions de lecture et d'analyse</p>
-                  <div className="flex items-center space-x-4 text-xs text-slate-400 mt-1">
-                    <span>⏱ 1h00</span>
-                    <span>📊 Niveau TCF Canada</span>
-                  </div>
-                </div>
-              </div>
-              <Link href="/dashboard/exams/reading" className="px-5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 font-bold text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-50 flex items-center gap-1">
-                <span>Commencer</span>
-                <ChevronRight className="h-4 w-4" />
-              </Link>
-            </div>
-
-            {/* Test 3 */}
-            <div className="bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="h-12 w-12 rounded-2xl bg-purple-100 dark:bg-purple-950 text-purple-600 flex items-center justify-center shrink-0">
-                  <PenTool className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="font-extrabold text-sm text-slate-900 dark:text-white">Production écrite</h3>
-                  <p className="text-xs text-slate-500">Rédaction assistée Tâches 1, 2 & 3</p>
-                  <div className="flex items-center space-x-4 text-xs text-slate-400 mt-1">
-                    <span>⏱ 1h00</span>
-                    <span>📊 Niveau TCF Canada</span>
-                  </div>
-                </div>
-              </div>
-              <Link href="/dashboard/exams/writing" className="px-5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 font-bold text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-50 flex items-center gap-1">
-                <span>Commencer</span>
-                <ChevronRight className="h-4 w-4" />
-              </Link>
-            </div>
-
-            {/* Test 4 */}
-            <div className="bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="h-12 w-12 rounded-2xl bg-amber-100 dark:bg-amber-950 text-amber-600 flex items-center justify-center shrink-0">
-                  <Mic className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="font-extrabold text-sm text-slate-900 dark:text-white">Production orale</h3>
-                  <p className="text-xs text-slate-500">Mises en situation d'entretien oral</p>
-                  <div className="flex items-center space-x-4 text-xs text-slate-400 mt-1">
-                    <span>⏱ 0h12</span>
-                    <span>📊 Niveau TCF Canada</span>
-                  </div>
-                </div>
-              </div>
-              <Link href="/dashboard/exams/speaking" className="px-5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 font-bold text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-50 flex items-center gap-1">
-                <span>Commencer</span>
-                <ChevronRight className="h-4 w-4" />
-              </Link>
-            </div>
-
-          </div>
-        </div>
-
-        {/* Right Detail Card for Test Blanc Complet */}
-        <div className="lg:col-span-5 bg-white dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-6 flex flex-col justify-between">
-          <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-black text-lg text-slate-900 dark:text-white">Test blanc complet</h3>
-              <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold flex items-center gap-1">
-                <Star className="h-3.5 w-3.5 fill-current" /> Recommandé
+              <div className="h-12 w-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black text-lg shadow-md">
+                CO
+              </div>
+              <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400">
+                35 minutes • 39 questions
               </span>
             </div>
-            <p className="text-xs text-slate-500">Simulation intégrale des 4 épreuves du TCF Canada</p>
-
-            <div className="p-3.5 rounded-xl bg-blue-50/80 dark:bg-blue-950/30 border border-blue-100 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              ℹ Ce test reprend le format officiel du TCF Canada. Réalisez-le dans les mêmes conditions que l'examen pour enregistrer vos résultats dans votre profil.
-            </div>
-
-            <div className="space-y-2 text-xs font-medium">
-              <h4 className="font-bold text-slate-900 dark:text-white text-sm">Détails de la session</h4>
-              <div className="grid grid-cols-2 gap-2 text-slate-600 dark:text-slate-300">
-                <div>⏱ Durée : <strong>2h10</strong></div>
-                <div>📊 Niveau : <strong>TCF Canada</strong></div>
-                <div>📑 4 épreuves : <strong>CO, CE, PE, PO</strong></div>
-                <div>✓ Calcul automatique des scores</div>
-              </div>
-            </div>
-
-            <div className="space-y-2 text-xs font-medium pt-2">
-              <h4 className="font-bold text-slate-900 dark:text-white text-sm">Épreuves incluses</h4>
-              <div className="grid grid-cols-2 gap-2">
-                <Link href="/dashboard/exams/listening" className="p-2 rounded-xl bg-blue-50 text-blue-700 font-bold text-center hover:bg-blue-100 transition-colors">Compréhension orale</Link>
-                <Link href="/dashboard/exams/reading" className="p-2 rounded-xl bg-emerald-50 text-emerald-700 font-bold text-center hover:bg-emerald-100 transition-colors">Compréhension écrite</Link>
-                <Link href="/dashboard/exams/writing" className="p-2 rounded-xl bg-amber-50 text-amber-700 font-bold text-center hover:bg-amber-100 transition-colors">Production écrite</Link>
-                <Link href="/dashboard/exams/speaking" className="p-2 rounded-xl bg-purple-50 text-purple-700 font-bold text-center hover:bg-purple-100 transition-colors">Production orale</Link>
-              </div>
-            </div>
+            <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">Compréhension orale</h3>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Évaluez votre capacité à comprendre le français parlé à travers des enregistrements audio réels.
+            </p>
           </div>
 
-          <div className="space-y-2">
-            <Link href="/dashboard/exams/listening" className="w-full py-3 rounded-xl bg-[#07192f] hover:bg-[#0c284a] text-white font-bold text-xs shadow-md transition-colors flex items-center justify-center gap-2">
-              <span>▶ Commencer le test blanc maintenant</span>
-            </Link>
+          <Link href="/dashboard/exams/listening" className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-2">
+            <span>Démarrer le test de Compréhension Orale</span>
+            <ChevronRight className="h-4 w-4" />
+          </Link>
+        </div>
+
+        {/* Module CE */}
+        <div className="bg-white dark:bg-slate-950 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-4">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="h-12 w-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-black text-lg shadow-md">
+                CE
+              </div>
+              <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400">
+                60 minutes • 39 questions
+              </span>
+            </div>
+            <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">Compréhension écrite</h3>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Testez votre compréhension de textes rédigés en français (articles, documents administratifs, extraits).
+            </p>
           </div>
+
+          <Link href="/dashboard/exams/reading" className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-2">
+            <span>Démarrer le test de Compréhension Écrite</span>
+            <ChevronRight className="h-4 w-4" />
+          </Link>
+        </div>
+
+        {/* Module PE */}
+        <div className="bg-white dark:bg-slate-950 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-4">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="h-12 w-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center font-black text-lg shadow-md">
+                PE
+              </div>
+              <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400">
+                60 minutes • 3 tâches
+              </span>
+            </div>
+            <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">Production écrite</h3>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Rédigez des messages, lettres et essais évalués automatiquement avec correction détaillée par IA.
+            </p>
+          </div>
+
+          <Link href="/dashboard/exams/writing" className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs transition-colors flex items-center justify-center gap-2">
+            <span>Démarrer la Production Écrite</span>
+            <ChevronRight className="h-4 w-4" />
+          </Link>
+        </div>
+
+        {/* Module PO */}
+        <div className="bg-white dark:bg-slate-950 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-4">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="h-12 w-12 rounded-2xl bg-purple-600 text-white flex items-center justify-center font-black text-lg shadow-md">
+                PO
+              </div>
+              <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400">
+                12 minutes • 3 épreuves
+              </span>
+            </div>
+            <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">Production orale</h3>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Exprimez-vous à l'oral avec enregistrement audio en direct et évaluation automatique du score TCF.
+            </p>
+          </div>
+
+          <Link href="/dashboard/exams/speaking" className="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-2">
+            <span>Démarrer la Production Orale</span>
+            <ChevronRight className="h-4 w-4" />
+          </Link>
         </div>
 
       </div>
-
     </div>
   );
 }

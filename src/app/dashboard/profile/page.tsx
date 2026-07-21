@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   User, 
   Edit3, 
@@ -8,23 +8,133 @@ import {
   CheckCircle2, 
   Award, 
   Eye, 
-  Trash2, 
   BookOpen, 
   FileCheck2, 
   Calendar as CalendarIcon, 
-  Clock
+  Clock,
+  Loader2,
+  Check
 } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("Informations personnelles");
-  const [avatarUrl, setAvatarUrl] = useState("https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80");
+  const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
-  useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("griffon_avatar_url");
-      if (saved) setAvatarUrl(saved);
+  // User Profile fields
+  const [avatarUrl, setAvatarUrl] = useState("https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80");
+  const [fullName, setFullName] = useState("Candidat TCF");
+  const [email, setEmail] = useState("candidat@email.com");
+  const [phone, setPhone] = useState("+226 53 36 01 01");
+  const [country, setCountry] = useState("Burkina Faso");
+  const [level, setLevel] = useState("B2 (NCLC 7)");
+  const [savedFeedback, setSavedFeedback] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadUserProfile() {
+      setLoading(true);
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (user) {
+          setCurrentUser(user);
+          setEmail(user.email || "candidat@email.com");
+
+          const userAvatarKey = `griffon_avatar_url_${user.id}`;
+          const localAvatar = localStorage.getItem(userAvatarKey);
+
+          // Fetch from Supabase profiles
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", user.id)
+            .single();
+
+          if (profile) {
+            setFullName(profile.full_name || profile.first_name || user.user_metadata?.full_name || "Candidat TCF");
+            setPhone(profile.phone || "+226 53 36 01 01");
+            setCountry(profile.country || "Burkina Faso");
+            if (profile.avatar_url) {
+              setAvatarUrl(profile.avatar_url);
+            } else if (localAvatar) {
+              setAvatarUrl(localAvatar);
+            }
+          } else {
+            setFullName(user.user_metadata?.full_name || localStorage.getItem("griffon_user_name") || "Candidat TCF");
+            if (localAvatar) setAvatarUrl(localAvatar);
+          }
+        } else {
+          // Local guest fallbacks
+          const localAvatar = localStorage.getItem("griffon_avatar_url_guest");
+          if (localAvatar) setAvatarUrl(localAvatar);
+          setFullName(localStorage.getItem("griffon_user_name") || "Candidat TCF");
+          setEmail(localStorage.getItem("griffon_user_email") || "candidat@email.com");
+          setPhone(localStorage.getItem("griffon_user_phone") || "+237 695 903 205");
+          setCountry(localStorage.getItem("griffon_user_country") || "Cameroun 🇨🇲");
+        }
+      } catch (err) {
+        console.error("Erreur chargement profil:", err);
+      } finally {
+        setLoading(false);
+      }
     }
-  });
+
+    loadUserProfile();
+  }, []);
+
+  // Isolated Avatar Update Handler for active user
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      const res = evt.target?.result as string;
+      setAvatarUrl(res);
+
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (user) {
+          // Save in user-specific localStorage key to avoid overwriting other users
+          const userAvatarKey = `griffon_avatar_url_${user.id}`;
+          localStorage.setItem(userAvatarKey, res);
+
+          // Persist in Supabase profiles table
+          await supabase
+            .from("profiles")
+            .upsert({
+              id: user.id,
+              avatar_url: res,
+              updated_at: new Date().toISOString(),
+            });
+        } else {
+          localStorage.setItem("griffon_avatar_url_guest", res);
+        }
+
+        // Notify Topbar component to update avatar for active user
+        window.dispatchEvent(new Event("avatar_updated"));
+
+        setSavedFeedback("Photo de profil mise à jour uniquement sur votre compte !");
+        setTimeout(() => setSavedFeedback(null), 3000);
+      } catch (err) {
+        console.error("Erreur mise à jour photo:", err);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
+        <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Chargement de votre profil...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 pb-12">
@@ -32,17 +142,20 @@ export default function ProfilePage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Espace candidat - Mon profil</h1>
-          <p className="text-slate-500 text-sm mt-1">Gérez vos informations personnelles et vos préférences.</p>
+          <p className="text-slate-500 text-sm mt-1">Gérez vos informations personnelles et vos préférences de compte.</p>
         </div>
-        <button className="px-5 py-2.5 rounded-xl border border-blue-600 text-blue-600 font-bold text-xs hover:bg-blue-50 transition-colors flex items-center gap-2">
-          <Edit3 className="h-4 w-4" />
-          <span>Modifier le profil</span>
-        </button>
       </div>
 
+      {savedFeedback && (
+        <div className="p-3.5 rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 text-xs font-bold flex items-center gap-2 border border-emerald-200 dark:border-emerald-800">
+          <CheckCircle2 className="h-4 w-4 shrink-0" />
+          <span>{savedFeedback}</span>
+        </div>
+      )}
+
       {/* Tabs Bar */}
-      <div className="flex space-x-2 border-b border-slate-200 dark:border-slate-800 pb-3">
-        {["Informations personnelles", "Préférences", "Sécurité", "Notifications"].map((tab) => (
+      <div className="flex space-x-2 border-b border-slate-200 dark:border-slate-800 pb-3 overflow-x-auto">
+        {["Informations personnelles", "Préférences", "Sécurité"].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -60,7 +173,7 @@ export default function ProfilePage() {
       {/* Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* Left Column: Info & Bio & Certifications */}
+        {/* Left Column: Info & Bio */}
         <div className="lg:col-span-8 space-y-6">
           
           {/* Informations personnelles Card */}
@@ -71,8 +184,8 @@ export default function ProfilePage() {
               <div className="relative group">
                 <img 
                   src={avatarUrl} 
-                  alt="Avatar" 
-                  className="h-28 w-28 rounded-full object-cover border-4 border-slate-100 dark:border-slate-800 shadow-md"
+                  alt={fullName} 
+                  className="h-28 w-28 rounded-full object-cover border-4 border-blue-100 dark:border-blue-950 shadow-md"
                 />
                 <label className="absolute bottom-0 right-0 p-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg cursor-pointer transition-all hover:scale-105">
                   <Camera className="h-4 w-4" />
@@ -80,63 +193,33 @@ export default function ProfilePage() {
                     type="file" 
                     accept="image/*" 
                     className="hidden" 
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (evt) => {
-                          const res = evt.target?.result as string;
-                          setAvatarUrl(res);
-                          localStorage.setItem("griffon_avatar_url", res);
-                          window.dispatchEvent(new Event("storage"));
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }} 
+                    onChange={handleAvatarChange} 
                   />
                 </label>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1 text-xs">
                 <div>
-                  <span className="text-slate-400 block text-[11px]">Nom complet</span>
-                  <span className="font-bold text-slate-900 dark:text-white text-sm">Joel K.</span>
+                  <span className="text-slate-400 block text-[11px] uppercase tracking-wider font-bold">Nom complet</span>
+                  <span className="font-bold text-slate-900 dark:text-white text-sm">{fullName}</span>
                 </div>
 
                 <div>
-                  <span className="text-slate-400 block text-[11px]">Email</span>
+                  <span className="text-slate-400 block text-[11px] uppercase tracking-wider font-bold">Adresse Email</span>
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-900 dark:text-white">joel.kandidat@email.com</span>
-                    <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-bold">Vérifié</span>
+                    <span className="font-bold text-slate-900 dark:text-white">{email}</span>
+                    <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 text-[10px] font-bold">Propriétaire</span>
                   </div>
                 </div>
 
                 <div>
-                  <span className="text-slate-400 block text-[11px]">Date de naissance</span>
-                  <span className="font-bold text-slate-900 dark:text-white">12 mars 1996</span>
+                  <span className="text-slate-400 block text-[11px] uppercase tracking-wider font-bold">Téléphone</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{phone}</span>
                 </div>
 
                 <div>
-                  <span className="text-slate-400 block text-[11px]">Téléphone</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-900 dark:text-white">+33 6 12 34 56 78</span>
-                    <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-bold">Vérifié</span>
-                  </div>
-                </div>
-
-                <div>
-                  <span className="text-slate-400 block text-[11px]">Genre</span>
-                  <span className="font-bold text-slate-900 dark:text-white">Masculin</span>
-                </div>
-
-                <div>
-                  <span className="text-slate-400 block text-[11px]">Adresse</span>
-                  <span className="font-bold text-slate-900 dark:text-white">123 Rue Sainte-Catherine Ouest, Montréal</span>
-                </div>
-
-                <div>
-                  <span className="text-slate-400 block text-[11px]">Nationalité</span>
-                  <span className="font-bold text-slate-900 dark:text-white">Camerounaise</span>
+                  <span className="text-slate-400 block text-[11px] uppercase tracking-wider font-bold">Pays de résidence</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{country}</span>
                 </div>
               </div>
             </div>
@@ -144,67 +227,29 @@ export default function ProfilePage() {
 
           {/* À propos de moi Card */}
           <div className="bg-white dark:bg-slate-950 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4 text-xs">
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">À propos de moi</h2>
+            <h2 className="text-base font-bold text-slate-900 dark:text-white">Objectif & Niveau TCF</h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <span className="text-slate-400 block text-[11px]">Niveau actuel</span>
-                <span className="px-3 py-1 rounded-lg bg-blue-100 text-blue-800 font-extrabold inline-block mt-1">B2</span>
-                <span className="text-slate-500 text-[11px] ml-2">Niveau TCF Canada</span>
+                <span className="text-slate-400 block text-[11px]">Niveau estimé</span>
+                <span className="px-3 py-1 rounded-lg bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 font-extrabold inline-block mt-1">
+                  {level}
+                </span>
               </div>
               <div>
-                <span className="text-slate-400 block text-[11px]">Objectif</span>
-                <span className="font-bold text-slate-900 dark:text-white block mt-1">Étudier au Canada</span>
+                <span className="text-slate-400 block text-[11px]">Objectif d'immigration</span>
+                <span className="font-bold text-slate-900 dark:text-white block mt-1">Immigration Canada (EE / PNP)</span>
               </div>
-            </div>
-
-            <div>
-              <span className="text-slate-400 block text-[11px] mb-1">Présentation</span>
-              <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-                Je me prépare au TCF Canada pour réaliser mon projet d'études au Canada.<br />
-                Motivé et assidu, je travaille chaque jour pour atteindre mon objectif.
-              </p>
-            </div>
-
-            <div>
-              <span className="text-slate-400 block text-[11px] mb-2">Langues</span>
-              <div className="flex flex-wrap gap-2">
-                <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 font-bold">Français (Courant)</span>
-                <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-700 font-bold">Anglais (Intermédiaire)</span>
-                <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-700 font-bold">Espagnol (Débutant)</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Mes certifications Card */}
-          <div className="bg-white dark:bg-slate-950 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">Mes certifications</h2>
-
-            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
-              <div className="flex items-center space-x-3.5">
-                <div className="h-10 w-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center">
-                  <Award className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-xs text-slate-900 dark:text-white">Attestation de réussite - Test blanc complet #2</h3>
-                  <p className="text-[10px] text-slate-400">Obtenue le 14 juillet 2026</p>
-                </div>
-              </div>
-              <button className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 font-bold text-xs text-blue-600 hover:bg-slate-50 flex items-center gap-1.5">
-                <span>Voir le certificat</span>
-                <Eye className="h-3.5 w-3.5" />
-              </button>
             </div>
           </div>
 
         </div>
 
-        {/* Right Column: Activity Summary & Preferences */}
+        {/* Right Column: Activity Summary */}
         <div className="lg:col-span-4 space-y-6">
           
-          {/* Résumé de mon activité */}
           <div className="bg-white dark:bg-slate-950 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4 text-xs">
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">Résumé de mon activité</h2>
+            <h2 className="text-base font-bold text-slate-900 dark:text-white">Résumé de l'activité</h2>
 
             <div className="space-y-3 font-medium text-slate-600 dark:text-slate-300">
               <div className="flex items-center justify-between">
@@ -212,7 +257,7 @@ export default function ProfilePage() {
                   <BookOpen className="h-4 w-4 text-blue-600" />
                   <span>Cours suivis</span>
                 </div>
-                <span className="font-black text-slate-900 dark:text-white">8</span>
+                <span className="font-black text-slate-900 dark:text-white">4</span>
               </div>
 
               <div className="flex items-center justify-between">
@@ -220,93 +265,22 @@ export default function ProfilePage() {
                   <FileCheck2 className="h-4 w-4 text-blue-600" />
                   <span>Tests réalisés</span>
                 </div>
-                <span className="font-black text-slate-900 dark:text-white">12</span>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2.5">
-                  <User className="h-4 w-4 text-blue-600" />
-                  <span>Séances de coaching</span>
-                </div>
-                <span className="font-black text-slate-900 dark:text-white">5</span>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2.5">
-                  <CalendarIcon className="h-4 w-4 text-blue-600" />
-                  <span>Réservations</span>
-                </div>
-                <span className="font-black text-slate-900 dark:text-white">7</span>
+                <span className="font-black text-slate-900 dark:text-white">6</span>
               </div>
 
               <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
                 <div className="flex items-center space-x-2.5">
                   <Clock className="h-4 w-4 text-blue-600" />
-                  <span>Membre depuis</span>
+                  <span>Statut du compte</span>
                 </div>
-                <span className="font-bold text-slate-900 dark:text-white">15 avril 2026</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">Actif</span>
               </div>
             </div>
-          </div>
-
-          {/* Préférences d'apprentissage */}
-          <div className="bg-white dark:bg-slate-950 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4 text-xs">
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">Préférences d'apprentissage</h2>
-
-            <div className="space-y-3 font-medium text-slate-600 dark:text-slate-300">
-              <div className="flex justify-between">
-                <span className="text-slate-400">Objectif principal</span>
-                <span className="font-bold text-slate-900 dark:text-white">Compréhension écrite</span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-slate-400">Disponibilités</span>
-                <span className="font-bold text-slate-900 dark:text-white">Soirs et week-ends</span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-slate-400">Méthode préférée</span>
-                <span className="font-bold text-slate-900 dark:text-white">Cours en ligne</span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-slate-400">Rappels</span>
-                <span className="font-bold text-emerald-600">Activés</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Compte */}
-          <div className="bg-white dark:bg-slate-950 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4 text-xs">
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">Compte</h2>
-
-            <div className="space-y-3 font-medium text-slate-600 dark:text-slate-300">
-              <div className="flex justify-between">
-                <span className="text-slate-400">Type de compte</span>
-                <span className="font-bold text-slate-900 dark:text-white">Candidat</span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-slate-400">Statut du compte</span>
-                <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold text-[10px]">Actif</span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-slate-400">Membre depuis</span>
-                <span className="font-bold text-slate-900 dark:text-white">15 avril 2026</span>
-              </div>
-            </div>
-
-            <button className="w-full py-2.5 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 font-bold text-xs transition-colors flex items-center justify-center gap-2 mt-4">
-              <Trash2 className="h-4 w-4" />
-              <span>Supprimer mon compte</span>
-            </button>
           </div>
 
         </div>
 
       </div>
-
     </div>
   );
 }

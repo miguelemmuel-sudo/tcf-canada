@@ -1,46 +1,72 @@
 import Link from "next/link";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, Mail, Phone, MessageCircle } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="border-t border-border bg-background py-12">
+    <footer className="border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 py-12">
       <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
         <div className="space-y-4">
           <Link href="/" className="flex items-center space-x-2">
-            <GraduationCap className="h-6 w-6 text-primary" />
-            <span className="text-lg font-bold tracking-tight">TCF Canada <span className="text-primary">Pro</span></span>
+            <GraduationCap className="h-6 w-6 text-amber-600" />
+            <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
+              TCF Canada <span className="text-amber-600">Pro</span>
+            </span>
           </Link>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-slate-500 leading-relaxed">
             La plateforme n°1 pour préparer et réussir votre test de connaissance du français pour l'immigration canadienne.
           </p>
         </div>
+
         <div>
-          <h4 className="font-semibold mb-4">Produit</h4>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li><Link href="#features" className="hover:text-primary transition-colors">Fonctionnalités</Link></li>
-            <li><Link href="#pricing" className="hover:text-primary transition-colors">Tarifs</Link></li>
-            <li><Link href="/courses" className="hover:text-primary transition-colors">Cours</Link></li>
-            <li><Link href="/exams" className="hover:text-primary transition-colors">Examens blancs</Link></li>
+          <h4 className="font-bold text-sm text-slate-900 dark:text-white mb-4">Formations TCF</h4>
+          <ul className="space-y-2 text-xs text-slate-500">
+            <li><Link href="#features" className="hover:text-amber-600 transition-colors">Fonctionnalités</Link></li>
+            <li><Link href="#packs" className="hover:text-amber-600 transition-colors">Tarifs & Packs</Link></li>
+            <li><Link href="/dashboard/courses" className="hover:text-amber-600 transition-colors">Catalogue de cours</Link></li>
+            <li><Link href="/dashboard/exams" className="hover:text-amber-600 transition-colors">Examens blancs</Link></li>
           </ul>
         </div>
+
         <div>
-          <h4 className="font-semibold mb-4">Support</h4>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li><Link href="#faq" className="hover:text-primary transition-colors">FAQ</Link></li>
-            <li><Link href="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
-            <li><Link href="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
+          <h4 className="font-bold text-sm text-slate-900 dark:text-white mb-4">Contact Direct</h4>
+          <ul className="space-y-2.5 text-xs text-slate-500">
+            <li>
+              <a href="mailto:griffondortcf@gmail.com" className="flex items-center gap-2 hover:text-amber-600 transition-colors font-medium">
+                <Mail className="h-4 w-4 text-amber-600 shrink-0" />
+                <span>griffondortcf@gmail.com</span>
+              </a>
+            </li>
+            <li>
+              <a href="tel:+237695903205" className="flex items-center gap-2 hover:text-amber-600 transition-colors font-medium">
+                <Phone className="h-4 w-4 text-amber-600 shrink-0" />
+                <span>+237 695 903 205</span>
+              </a>
+            </li>
+            <li>
+              <a 
+                href="https://wa.me/237695903205" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="flex items-center gap-2 text-emerald-600 hover:text-emerald-700 font-bold transition-colors"
+              >
+                <MessageCircle className="h-4 w-4 shrink-0" />
+                <span>Assistance WhatsApp 24/7</span>
+              </a>
+            </li>
           </ul>
         </div>
+
         <div>
-          <h4 className="font-semibold mb-4">Légal</h4>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li><Link href="/terms" className="hover:text-primary transition-colors">Conditions d'utilisation</Link></li>
-            <li><Link href="/privacy" className="hover:text-primary transition-colors">Politique de confidentialité</Link></li>
+          <h4 className="font-bold text-sm text-slate-900 dark:text-white mb-4">Légal</h4>
+          <ul className="space-y-2 text-xs text-slate-500">
+            <li><Link href="/terms" className="hover:text-amber-600 transition-colors">Conditions d'utilisation</Link></li>
+            <li><Link href="/privacy" className="hover:text-amber-600 transition-colors">Politique de confidentialité</Link></li>
           </ul>
         </div>
       </div>
-      <div className="container mx-auto px-4 mt-12 pt-8 border-t border-border/50 text-center text-sm text-muted-foreground">
-        &copy; {new Date().getFullYear()} TCF Canada Pro. Tous droits réservés.
+
+      <div className="container mx-auto px-4 mt-12 pt-8 border-t border-slate-200/60 dark:border-slate-800/60 text-center text-xs text-slate-400">
+        &copy; {new Date().getFullYear()} TCF Canada Pro — Griffon d'Or. Tous droits réservés.
       </div>
     </footer>
   );

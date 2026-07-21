@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { 
+  GraduationCap, User, Mail, Lock, Eye, EyeOff, ShieldCheck, 
+  ArrowRight, Check, Sparkles, Headphones, BarChart2, Target, Shield, Loader2, X
+} from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
-import { Check, Sparkles, Zap, ShieldCheck } from "lucide-react";
 
 const subscriptionPlans = [
   {
@@ -61,14 +61,18 @@ export default function RegisterPage() {
   const [step, setStep] = useState<1 | 2>(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(true);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Form Data State
   const [formDataState, setFormDataState] = useState({
     name: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
   const [selectedPlan, setSelectedPlan] = useState<string>("griffon");
 
@@ -81,19 +85,17 @@ export default function RegisterPage() {
       return;
     }
 
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
-    const confirmPassword = formData.get("confirmPassword") as string;
-    const name = formData.get("name") as string;
+    if (formDataState.password.length < 8) {
+      setError("Le mot de passe doit contenir au moins 8 caractères.");
+      return;
+    }
 
-    if (password !== confirmPassword) {
+    if (formDataState.password !== formDataState.confirmPassword) {
       setError("Les mots de passe ne correspondent pas.");
       return;
     }
 
-    setFormDataState({ name, email, password });
-    setStep(2); // Passage au choix d'abonnement
+    setStep(2); // Passage au choix de formule
   };
 
   const handleFinalSubmit = async () => {
@@ -119,12 +121,15 @@ export default function RegisterPage() {
         return;
       }
 
-      // Enregistrer la mise à jour du profil si l'utilisateur est immédiatement disponible
       if (data.user) {
         await supabase
           .from("profiles")
-          .update({ subscription_type: selectedPlan, full_name: formDataState.name, email: formDataState.email })
-          .eq("id", data.user.id);
+          .upsert({ 
+            id: data.user.id, 
+            subscription_type: selectedPlan, 
+            full_name: formDataState.name,
+            updated_at: new Date().toISOString()
+          });
       }
 
       localStorage.setItem("griffon_user_name", formDataState.name || formDataState.email);
@@ -140,235 +145,387 @@ export default function RegisterPage() {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="relative"
-    >
-      {/* Étape 1 : Formulaire d'information */}
-      {step === 1 && (
-        <>
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-semibold tracking-tight">Créez votre compte</h2>
-            <p className="text-sm text-muted-foreground mt-2">
-              Étape 1 sur 2 : Vos informations personnelles
+    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-slate-50 dark:bg-slate-950 overflow-hidden">
+      
+      {/* Côté Gauche: Formulaire & Informations */}
+      <div className="flex-1 flex flex-col justify-between p-6 sm:p-10 lg:p-14 max-w-2xl mx-auto w-full z-10">
+        
+        {/* Header Logo TCF Canada */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="h-12 w-12 rounded-2xl bg-red-50 dark:bg-red-950/60 border border-red-100 dark:border-red-900/50 flex items-center justify-center text-red-600 shadow-sm shrink-0">
+            <GraduationCap className="h-7 w-7" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+              TCF Canada
+            </h1>
+            <p className="text-xs font-semibold text-slate-500 flex items-center gap-1">
+              Réussissez votre avenir au Canada <span>🇨🇦</span>
             </p>
           </div>
+        </div>
 
-          {error && (
-            <div className="mb-4 p-3 text-sm text-red-500 bg-red-50 dark:bg-red-950/50 rounded-md">
-              {error}
+        {/* Form Main Card */}
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-200/80 dark:border-slate-800 space-y-6"
+        >
+          {/* Card Header Icon & Title */}
+          <div className="flex items-start gap-4">
+            <div className="h-12 w-12 rounded-2xl bg-red-50 dark:bg-red-950/60 border border-red-100 dark:border-red-900/40 flex items-center justify-center text-red-600 shrink-0">
+              <User className="h-6 w-6" />
             </div>
-          )}
-
-          <form className="space-y-4" onSubmit={handleStep1Submit}>
-            <div className="space-y-2">
-              <Label htmlFor="name">Nom complet</Label>
-              <Input id="name" name="name" type="text" placeholder="Jean Dupont" defaultValue={formDataState.name} required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" name="email" type="email" placeholder="nom@exemple.com" defaultValue={formDataState.email} required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe</Label>
-              <Input id="password" name="password" type="password" required />
-              <p className="text-xs text-muted-foreground">Doit contenir au moins 8 caractères.</p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
-              <Input id="confirmPassword" name="confirmPassword" type="password" required />
-            </div>
-
-            {/* Checkbox Conditions & Voir Plus */}
-            <div className="flex items-start space-x-2.5 pt-1">
-              <input
-                type="checkbox"
-                id="terms"
-                checked={termsAccepted}
-                onChange={(e) => setTermsAccepted(e.target.checked)}
-                className="mt-1 h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
-                required
-              />
-              <label htmlFor="terms" className="text-xs text-slate-600 dark:text-slate-400 leading-tight">
-                J'accepte les{" "}
-                <span className="font-semibold text-slate-900 dark:text-white">conditions d'utilisation</span> et la politique de confidentialité.{" "}
-                <button
-                  type="button"
-                  onClick={() => setShowPrivacyModal(true)}
-                  className="text-primary font-bold hover:underline inline-block ml-0.5"
-                >
-                  Voir plus
-                </button>
-              </label>
-            </div>
-            
-            <Button className="w-full pt-2" type="submit">
-              Continuer vers le choix de la formule →
-            </Button>
-          </form>
-        </>
-      )}
-
-      {/* Étape 2 : Choix du pack d'abonnement */}
-      {step === 2 && (
-        <>
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Choisissez votre pack d'abonnement
-            </h2>
-            <p className="text-sm text-slate-500 mt-1">
-              Sélectionnez la formule adaptée à vos objectifs TCF Canada.
-            </p>
-          </div>
-
-          {error && (
-            <div className="mb-4 p-3 text-sm text-red-500 bg-red-50 dark:bg-red-950/50 rounded-md">
-              {error}
-            </div>
-          )}
-
-          <div className="space-y-3.5 max-h-[50vh] overflow-y-auto pr-1">
-            {subscriptionPlans.map((plan) => {
-              const isSelected = selectedPlan === plan.id;
-              return (
-                <div
-                  key={plan.id}
-                  onClick={() => setSelectedPlan(plan.id)}
-                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all relative ${
-                    isSelected
-                      ? "border-blue-600 bg-blue-50/40 dark:bg-blue-950/30 shadow-md"
-                      : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
-                  }`}
-                >
-                  <div className="flex items-start space-x-3">
-                    <div className={`mt-1 h-5 w-5 rounded-full border flex items-center justify-center shrink-0 ${
-                      isSelected ? "border-blue-600 bg-blue-600 text-white" : "border-slate-300"
-                    }`}>
-                      {isSelected && <Check className="h-3 w-3 stroke-[3]" />}
-                    </div>
-
-                    <div className="flex-1 space-y-1">
-                      {plan.badge && (
-                        <span className="inline-block mb-1 px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-md bg-blue-600 text-white">
-                          {plan.badge}
-                        </span>
-                      )}
-
-                      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
-                        <h4 className="font-bold text-slate-900 dark:text-white text-base">
-                          {plan.name}
-                        </h4>
-                        <div className="text-left sm:text-right">
-                          <span className="font-extrabold text-blue-600 dark:text-blue-400 text-base">{plan.price}</span>
-                          <span className="text-[11px] text-slate-400"> {plan.period}</span>
-                        </div>
-                      </div>
-
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {plan.description}
-                      </p>
-
-                      <ul className="mt-2 space-y-1 pt-1">
-                        {plan.features.map((feat, idx) => (
-                          <li key={idx} className="text-[11px] text-slate-700 dark:text-slate-300 flex items-center space-x-1.5">
-                            <span className="text-blue-500 font-bold">✓</span>
-                            <span>{feat}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="mt-6 space-y-2">
-            <Button
-              className="w-full h-11 text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white"
-              onClick={handleFinalSubmit}
-              disabled={loading}
-            >
-              {loading ? "Finalisation de votre compte..." : "Valider et créer mon compte"}
-            </Button>
-
-            <button
-              type="button"
-              onClick={() => setStep(1)}
-              className="w-full text-xs text-slate-500 hover:underline text-center pt-1"
-            >
-              ← Revenir aux informations personnelles
-            </button>
-          </div>
-        </>
-      )}
-
-      {/* Modal Protection des données & Conditions d'utilisation */}
-      {showPrivacyModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto"
-          >
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <h3 className="font-bold text-base text-slate-900 dark:text-white">
-                🔒 Protection des données & Conditions
-              </h3>
-              <button
-                onClick={() => setShowPrivacyModal(false)}
-                className="text-slate-400 hover:text-slate-600 text-lg font-bold"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              <p className="font-semibold text-slate-900 dark:text-white">
-                Comment vos données personnelles sont-elles protégées ?
+            <div>
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                Créez votre compte <span className="text-xl">👋</span>
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                {step === 1 ? "Étape 1 sur 2 : Vos informations personnelles" : "Étape 2 sur 2 : Choix de votre formule"}
               </p>
-              
-              <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl space-y-2 border border-slate-200/80 dark:border-slate-800">
-                <p>
-                  <strong>1. Chiffrement avancé :</strong> Vos informations de compte (nom, email, mot de passe) et vos enregistrements vocaux sont chiffrés avec les normes TLS/SSL de haut niveau.
-                </p>
-                <p>
-                  <strong>2. Usage strictement pédagogique :</strong> Vos simulations de tests et enregistrements vocaux d'expression orale sont exclusivement utilisés pour vous fournir des évaluations et corrections IA. Aucune donnée n'est cédée à des tiers.
-                </p>
-                <p>
-                  <strong>3. Confidentialité & RGPD :</strong> Vous disposez d'un droit d'accès, de modification et de suppression totale de vos données depuis l'onglet profil ou paramètres de votre dashboard.
-                </p>
+            </div>
+          </div>
+
+          {/* Stepper Indicator */}
+          <div className="flex items-center gap-3 pt-1 pb-2">
+            <div className="flex items-center gap-2">
+              <span className={`h-7 w-7 rounded-full text-xs font-extrabold flex items-center justify-center ${step === 1 ? "bg-red-600 text-white" : "bg-emerald-600 text-white"}`}>
+                1
+              </span>
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Informations personnelles</span>
+            </div>
+
+            <div className={`h-0.5 flex-1 rounded-full ${step === 2 ? "bg-red-600" : "bg-slate-200 dark:bg-slate-800"}`} />
+
+            <div className="flex items-center gap-2">
+              <span className={`h-7 w-7 rounded-full text-xs font-extrabold flex items-center justify-center ${step === 2 ? "bg-red-600 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-500"}`}>
+                2
+              </span>
+              <span className="text-xs font-bold text-slate-500">Choix de la formule</span>
+            </div>
+          </div>
+
+          {error && (
+            <div className="p-3.5 rounded-2xl bg-red-50 text-red-700 dark:bg-red-950/60 dark:text-red-300 text-xs font-bold border border-red-200 dark:border-red-800">
+              {error}
+            </div>
+          )}
+
+          {/* ÉTAPE 1: Informations Personnelles */}
+          {step === 1 && (
+            <form className="space-y-4" onSubmit={handleStep1Submit}>
+              {/* Nom complet */}
+              <div>
+                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 block mb-1.5">
+                  Nom complet
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    type="text"
+                    required
+                    value={formDataState.name}
+                    onChange={(e) => setFormDataState({ ...formDataState, name: e.target.value })}
+                    placeholder="Jean Dupont"
+                    className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all"
+                  />
+                </div>
               </div>
 
-              <p className="text-[11px] text-slate-500">
-                En cochant la case d'inscription, vous certifiez avoir pris connaissance de ces engagements de confidentialité.
-              </p>
-            </div>
+              {/* Email */}
+              <div>
+                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 block mb-1.5">
+                  Adresse email
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    type="email"
+                    required
+                    value={formDataState.email}
+                    onChange={(e) => setFormDataState({ ...formDataState, email: e.target.value })}
+                    placeholder="nom@exemple.com"
+                    className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all"
+                  />
+                </div>
+              </div>
 
-            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-              <Button
-                onClick={() => {
-                  setTermsAccepted(true);
-                  setShowPrivacyModal(false);
-                }}
-                className="text-xs"
+              {/* Mot de passe */}
+              <div>
+                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 block mb-1.5">
+                  Mot de passe
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    minLength={8}
+                    value={formDataState.password}
+                    onChange={(e) => setFormDataState({ ...formDataState, password: e.target.value })}
+                    placeholder="••••••••"
+                    className="w-full pl-10 pr-10 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1">Doit contenir au moins 8 caractères.</p>
+              </div>
+
+              {/* Confirmer le mot de passe */}
+              <div>
+                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 block mb-1.5">
+                  Confirmer le mot de passe
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    required
+                    minLength={8}
+                    value={formDataState.confirmPassword}
+                    onChange={(e) => setFormDataState({ ...formDataState, confirmPassword: e.target.value })}
+                    placeholder="••••••••"
+                    className="w-full pl-10 pr-10 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Checkbox Conditions & Voir Plus */}
+              <div className="flex items-start space-x-2.5 pt-2">
+                <input
+                  type="checkbox"
+                  id="terms"
+                  checked={termsAccepted}
+                  onChange={(e) => setTermsAccepted(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-red-600 focus:ring-red-500 accent-red-600"
+                  required
+                />
+                <label htmlFor="terms" className="text-xs text-slate-600 dark:text-slate-400 leading-tight">
+                  J'accepte les{" "}
+                  <span className="font-bold text-slate-900 dark:text-white">conditions d'utilisation</span> et la politique de confidentialité.{" "}
+                  <button
+                    type="button"
+                    onClick={() => setShowPrivacyModal(true)}
+                    className="text-red-600 font-bold hover:underline inline-block ml-0.5"
+                  >
+                    Voir plus
+                  </button>
+                </label>
+              </div>
+
+              {/* Primary CTA Button */}
+              <button
+                type="submit"
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-black text-sm shadow-lg shadow-red-600/30 hover:shadow-red-600/40 transition-all flex items-center justify-center gap-2 mt-2"
               >
-                J'ai compris et j'accepte
-              </Button>
+                <span>Continuer vers le choix de la formule</span>
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </form>
+          )}
+
+          {/* ÉTAPE 2: Choix de la formule */}
+          {step === 2 && (
+            <div className="space-y-4">
+              <div className="space-y-3">
+                {subscriptionPlans.map((plan) => (
+                  <div
+                    key={plan.id}
+                    onClick={() => setSelectedPlan(plan.id)}
+                    className={`p-4 rounded-2xl border-2 transition-all cursor-pointer relative ${
+                      selectedPlan === plan.id
+                        ? "border-red-600 bg-red-50/40 dark:bg-red-950/30 shadow-sm"
+                        : "border-slate-200 dark:border-slate-800 hover:border-slate-300"
+                    }`}
+                  >
+                    {plan.popular && (
+                      <span className="absolute -top-3 right-4 bg-red-600 text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-sm">
+                        Le plus populaire 🌟
+                      </span>
+                    )}
+
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-black text-sm text-slate-900 dark:text-white">{plan.name}</h4>
+                        <p className="text-xs text-slate-500 mt-0.5">{plan.description}</p>
+                      </div>
+                      <span className="font-black text-base text-red-600 dark:text-red-400 shrink-0 ml-2">
+                        {plan.price}
+                      </span>
+                    </div>
+
+                    <ul className="mt-3 space-y-1 border-t border-slate-200/60 dark:border-slate-800 pt-2">
+                      {plan.features.map((feat, fi) => (
+                        <li key={fi} className="text-xs text-slate-600 dark:text-slate-300 flex items-center gap-1.5 font-medium">
+                          <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                          <span>{feat}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="py-3 px-4 rounded-2xl border border-slate-200 dark:border-slate-800 font-bold text-xs text-slate-600"
+                >
+                  ← Retour
+                </button>
+                <button
+                  type="button"
+                  onClick={handleFinalSubmit}
+                  disabled={loading}
+                  className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 text-white font-black text-sm shadow-lg shadow-red-600/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Création du compte...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>S'inscrire et commencer la préparation</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
+          )}
+
+          {/* Toggle Login Link */}
+          <div className="text-center pt-2 border-t border-slate-100 dark:border-slate-800">
+            <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+              Déjà un compte ?{" "}
+              <Link href="/login" className="font-bold text-red-600 dark:text-red-400 hover:underline">
+                Se connecter
+              </Link>
+            </p>
+          </div>
+        </motion.div>
+
+        {/* Footer 4 Feature Columns */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-8 border-t border-slate-200/60 dark:border-slate-800/60 mt-8 text-center">
+          <div className="space-y-1">
+            <div className="h-9 w-9 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 flex items-center justify-center mx-auto">
+              <Shield className="h-4.5 w-4.5" />
+            </div>
+            <p className="font-bold text-xs text-slate-900 dark:text-white">Sécurisé</p>
+            <p className="text-[10px] text-slate-400 leading-tight">Vos données sont protégées avec les meilleures normes</p>
+          </div>
+
+          <div className="space-y-1">
+            <div className="h-9 w-9 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 flex items-center justify-center mx-auto">
+              <Target className="h-4.5 w-4.5" />
+            </div>
+            <p className="font-bold text-xs text-slate-900 dark:text-white">Personnalisé</p>
+            <p className="text-[10px] text-slate-400 leading-tight">Un parcours adapté à vos objectifs et à votre niveau</p>
+          </div>
+
+          <div className="space-y-1">
+            <div className="h-9 w-9 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 flex items-center justify-center mx-auto">
+              <BarChart2 className="h-4.5 w-4.5" />
+            </div>
+            <p className="font-bold text-xs text-slate-900 dark:text-white">Efficace</p>
+            <p className="text-[10px] text-slate-400 leading-tight">Progressez à votre rythme avec des outils performants</p>
+          </div>
+
+          <div className="space-y-1">
+            <div className="h-9 w-9 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 flex items-center justify-center mx-auto">
+              <Headphones className="h-4.5 w-4.5" />
+            </div>
+            <p className="font-bold text-xs text-slate-900 dark:text-white">Accompagné</p>
+            <p className="text-[10px] text-slate-400 leading-tight">Notre équipe est là pour vous aider à chaque étape</p>
+          </div>
+        </div>
+
+        <p className="text-[11px] text-center text-slate-400 pt-4">
+          🔒 TCF Canada respecte votre vie privée.
+        </p>
+
+      </div>
+
+      {/* Côté Droit: Visuel Canadien & Citation inspirante (Desktop Only) */}
+      <div className="hidden lg:flex flex-1 relative bg-slate-900 rounded-l-[80px] overflow-hidden min-h-screen">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center opacity-90 scale-105 transition-transform duration-1000"
+          style={{ 
+            backgroundImage: `url('https://images.unsplash.com/photo-1517935703635-27c5696e850b?auto=format&fit=crop&q=80&w=1400')` 
+          }}
+        />
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/40 to-transparent" />
+
+        {/* Translucent Quote Card Overlay */}
+        <div className="absolute bottom-16 right-16 z-20 max-w-sm">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="bg-slate-950/50 backdrop-blur-md border border-white/20 rounded-3xl p-7 text-white shadow-2xl space-y-3"
+          >
+            <div className="text-red-500 font-serif text-5xl font-black leading-none select-none">
+              “
+            </div>
+            <p className="text-sm font-medium leading-relaxed tracking-wide opacity-95">
+              Chaque étape vous rapproche de votre avenir au Canada.
+            </p>
+            <div className="h-1 w-12 bg-red-600 rounded-full mt-2" />
           </motion.div>
+        </div>
+
+        {/* Canadian Flag Floating Badge */}
+        <div className="absolute top-12 right-12 z-20 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 text-white font-bold text-xs flex items-center gap-2">
+          <span>🇨🇦</span>
+          <span>TCF Canada Officiel</span>
+        </div>
+      </div>
+
+      {/* Modal Conditions d'utilisation & Confidentialité */}
+      {showPrivacyModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-red-600" />
+                Politique de confidentialité
+              </h3>
+              <button onClick={() => setShowPrivacyModal(false)} className="p-1 text-slate-400 hover:text-slate-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="text-xs text-slate-600 dark:text-slate-300 space-y-2 max-h-60 overflow-y-auto leading-relaxed">
+              <p>Vos données sont protégées selon les normes de confidentialité en vigueur.</p>
+              <p>Nous ne partageons vos données avec aucun tiers non autorisé. Vos résultats d'examens et informations personnelles sont strictement confidentiels.</p>
+            </div>
+            <button
+              onClick={() => setShowPrivacyModal(false)}
+              className="w-full py-2.5 rounded-xl bg-red-600 text-white font-bold text-xs"
+            >
+              Compris et accepter
+            </button>
+          </div>
         </div>
       )}
 
-      <div className="mt-6 text-center text-sm">
-        <span className="text-muted-foreground">Déjà un compte ?</span>{" "}
-        <Link href="/login" className="font-medium text-primary hover:underline">
-          Se connecter
-        </Link>
-      </div>
-    </motion.div>
+    </div>
   );
 }
-

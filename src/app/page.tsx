@@ -99,7 +99,7 @@ export default function Home() {
                   />
                   {/* Floating Whatsapp Button */}
                   <a 
-                    href="https://wa.me/22653360101" 
+                    href="https://wa.me/237695903205" 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className="absolute bottom-4 right-4 bg-emerald-500 hover:bg-emerald-600 text-white p-3.5 rounded-full shadow-lg transition-transform hover:scale-110 flex items-center justify-center"

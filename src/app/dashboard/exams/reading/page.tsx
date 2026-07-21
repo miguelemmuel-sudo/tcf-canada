@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Clock, ChevronLeft, ChevronRight, CheckCircle2, BookOpen, XCircle } from "lucide-react";
+import { ResumeSessionModal } from "@/components/ui/ResumeSessionModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Question {
@@ -101,18 +102,78 @@ export default function ReadingExamPage() {
   const [allAnswers, setAllAnswers] = useState<Record<number, number | null>>({});
   const [timeLeft, setTimeLeft] = useState(TOTAL_TIME);
   const [showResult, setShowResult] = useState(false);
+
+  // Resume Session Modal State
+  const [showResumeModal, setShowResumeModal] = useState(false);
+  const [savedSessionData, setSavedSessionData] = useState<any>(null);
+
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Detect Saved Session on Mount
   useEffect(() => {
-    if (showResult) return;
+    const rawSaved = localStorage.getItem("tcf_session_reading_exam");
+    if (rawSaved) {
+      try {
+        const parsed = JSON.parse(rawSaved);
+        if (parsed && !parsed.showResult && (Object.keys(parsed.allAnswers || {}).length > 0 || parsed.currentPassage > 0)) {
+          setSavedSessionData(parsed);
+          setShowResumeModal(true);
+        }
+      } catch (e) {
+        console.error("Erreur de parsing de session de lecture:", e);
+      }
+    }
+  }, []);
+
+  // Auto-Save Progress
+  useEffect(() => {
+    if (!showResult && !showResumeModal && (Object.keys(allAnswers).length > 0 || currentPassage > 0)) {
+      localStorage.setItem("tcf_session_reading_exam", JSON.stringify({
+        allAnswers,
+        currentPassage,
+        currentQ,
+        timeLeft,
+        timestamp: Date.now()
+      }));
+    }
+  }, [allAnswers, currentPassage, currentQ, timeLeft, showResult, showResumeModal]);
+
+  // Resume Session Handler
+  const handleResumeSession = () => {
+    if (savedSessionData) {
+      if (savedSessionData.allAnswers) setAllAnswers(savedSessionData.allAnswers);
+      if (typeof savedSessionData.currentPassage === "number") setCurrentPassage(savedSessionData.currentPassage);
+      if (typeof savedSessionData.currentQ === "number") setCurrentQ(savedSessionData.currentQ);
+      if (typeof savedSessionData.timeLeft === "number") setTimeLeft(savedSessionData.timeLeft);
+    }
+    setShowResumeModal(false);
+  };
+
+  // Restart Session Handler
+  const handleRestartSession = () => {
+    localStorage.removeItem("tcf_session_reading_exam");
+    setAllAnswers({});
+    setCurrentPassage(0);
+    setCurrentQ(0);
+    setTimeLeft(TOTAL_TIME);
+    setShowResumeModal(false);
+  };
+
+  useEffect(() => {
+    if (showResult || showResumeModal) return;
     timerRef.current = setInterval(() => {
       setTimeLeft((t) => {
-        if (t <= 1) { clearInterval(timerRef.current!); setShowResult(true); return 0; }
+        if (t <= 1) { 
+          clearInterval(timerRef.current!); 
+          localStorage.removeItem("tcf_session_reading_exam");
+          setShowResult(true); 
+          return 0; 
+        }
         return t - 1;
       });
     }, 1000);
     return () => clearInterval(timerRef.current!);
-  }, [showResult]);
+  }, [showResult, showResumeModal]);
 
   const allQuestions = PASSAGES.flatMap((p) => p.questions);
   const totalQuestions = allQuestions.length;
@@ -124,51 +185,61 @@ export default function ReadingExamPage() {
     setAllAnswers((prev) => ({ ...prev, [qId]: optionIndex }));
   };
 
+  const handleFinishTest = () => {
+    localStorage.removeItem("tcf_session_reading_exam");
+    setShowResult(true);
+  };
+
   const score = showResult
     ? allQuestions.filter((q) => allAnswers[q.id] === q.correct).length
     : 0;
 
   if (showResult) {
     return (
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-2xl mx-auto space-y-6 pb-12">
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-          <Card className="border-border/50 bg-white dark:bg-slate-950 text-center overflow-hidden">
-            <div className="h-2 bg-gradient-to-r from-violet-500 to-primary" />
-            <CardContent className="p-10 space-y-6">
-              <div className="h-20 w-20 rounded-full bg-violet-50 dark:bg-violet-950/30 flex items-center justify-center mx-auto">
-                <BookOpen className="h-10 w-10 text-violet-500" />
+          <Card className="border-border/50 bg-white dark:bg-slate-950 text-center overflow-hidden rounded-3xl shadow-xl">
+            <div className="h-3 bg-gradient-to-r from-emerald-600 to-teal-500" />
+            <CardContent className="p-8 space-y-6">
+              <div className="h-20 w-20 rounded-full bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center mx-auto text-emerald-600">
+                <BookOpen className="h-10 w-10" />
               </div>
-              <h2 className="text-2xl font-bold">Résultats — Compréhension Écrite</h2>
-              <div className="text-6xl font-black text-violet-500">{score}/{totalQuestions}</div>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-3">
-                  <p className="text-2xl font-bold text-emerald-500">{score}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Correctes</p>
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white">Résultats — Compréhension Écrite</h2>
+              
+              <div className="text-5xl font-black text-emerald-600">{score}/{totalQuestions}</div>
+              
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-3 border border-slate-200 dark:border-slate-800">
+                  <p className="text-xl font-bold text-emerald-600">{score}</p>
+                  <p className="text-xs text-slate-500 font-medium">Correctes</p>
                 </div>
-                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-3">
-                  <p className="text-2xl font-bold text-red-500">{totalQuestions - score}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Incorrectes</p>
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-3 border border-slate-200 dark:border-slate-800">
+                  <p className="text-xl font-bold text-red-500">{totalQuestions - score}</p>
+                  <p className="text-xs text-slate-500 font-medium">Incorrectes</p>
                 </div>
-                <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-3">
-                  <p className="text-2xl font-bold">{Math.round((score / totalQuestions) * 100)}%</p>
-                  <p className="text-xs text-muted-foreground mt-1">Score</p>
+                <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-3 border border-slate-200 dark:border-slate-800">
+                  <p className="text-xl font-bold text-slate-900 dark:text-white">{Math.round((score / totalQuestions) * 100)}%</p>
+                  <p className="text-xs text-slate-500 font-medium">Score</p>
                 </div>
               </div>
+
               {/* Corrections */}
-              <div className="text-left space-y-3">
-                <h3 className="font-semibold">Corrections détaillées</h3>
+              <div className="text-left space-y-3 pt-2">
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white">Corrections détaillées</h3>
                 {allQuestions.map((q) => {
                   const isCorrect = allAnswers[q.id] === q.correct;
                   return (
-                    <div key={q.id} className={`p-3 rounded-xl text-sm border ${isCorrect ? "border-emerald-200 bg-emerald-50 dark:bg-emerald-950/20" : "border-red-200 bg-red-50 dark:bg-red-950/20"}`}>
+                    <div key={q.id} className={`p-3.5 rounded-xl text-xs border ${isCorrect ? "border-emerald-200 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-900 dark:text-emerald-300" : "border-red-200 bg-red-50 dark:bg-red-950/20 text-red-900 dark:text-red-300"}`}>
                       <div className="flex items-start gap-2">
                         {isCorrect
-                          ? <CheckCircle2 className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5" />
-                          : <XCircle className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" />}
+                          ? <CheckCircle2 className="h-4 w-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                          : <XCircle className="h-4 w-4 text-red-600 flex-shrink-0 mt-0.5" />}
                         <div>
-                          <p className="font-medium">{q.text}</p>
+                          <p className="font-bold">{q.text}</p>
                           {!isCorrect && (
-                            <p className="text-emerald-700 dark:text-emerald-400 mt-1">✓ {q.options[q.correct]}</p>
+                            <p className="mt-1 opacity-90">
+                              Bonne réponse : <span className="font-bold">{q.options[q.correct]}</span>
+                            </p>
                           )}
                         </div>
                       </div>
@@ -176,9 +247,22 @@ export default function ReadingExamPage() {
                   );
                 })}
               </div>
-              <Button className="w-full" onClick={() => { setShowResult(false); setAllAnswers({}); setCurrentPassage(0); setCurrentQ(0); setTimeLeft(TOTAL_TIME); }}>
-                Recommencer
-              </Button>
+
+              <div className="pt-4 flex gap-3">
+                <Button 
+                  onClick={handleRestartSession} 
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl"
+                >
+                  Refaire le test
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => window.location.href = "/dashboard/exams"} 
+                  className="flex-1 rounded-xl font-bold"
+                >
+                  Retour aux examens
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </motion.div>
@@ -187,106 +271,131 @@ export default function ReadingExamPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <BookOpen className="h-5 w-5 text-violet-500" /> Compréhension Écrite
-          </h1>
-          <p className="text-sm text-muted-foreground">{answeredCount}/{totalQuestions} répondues</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Timer seconds={timeLeft} />
-          <Button variant="outline" size="sm" onClick={() => setShowResult(true)} disabled={answeredCount === 0}>
-            Terminer
+    <div className="max-w-4xl mx-auto space-y-6 pb-12 px-2 sm:px-4">
+      {/* Reusable Resume Session Modal */}
+      <ResumeSessionModal
+        isOpen={showResumeModal}
+        title="Test en cours détecté"
+        message="Vous avez déjà commencé ce test. Souhaitez-vous reprendre là où vous en étiez ?"
+        onResume={handleResumeSession}
+        onRestart={handleRestartSession}
+      />
+
+      {/* Top Controls */}
+      <div className="flex items-center justify-between bg-white dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="flex items-center space-x-3">
+          <Button variant="ghost" size="icon" onClick={() => window.location.href = "/dashboard/exams"}>
+            <ChevronLeft className="h-5 w-5" />
           </Button>
+          <div>
+            <h1 className="font-extrabold text-base text-slate-900 dark:text-white flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-emerald-600" />
+              Compréhension Écrite (CE)
+            </h1>
+            <p className="text-xs text-slate-500">Passage {currentPassage + 1} / {PASSAGES.length}</p>
+          </div>
         </div>
+
+        <Timer seconds={timeLeft} />
       </div>
 
-      {/* Progress bar */}
-      <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-        <motion.div className="h-full bg-violet-500 rounded-full" animate={{ width: `${(answeredCount / totalQuestions) * 100}%` }} transition={{ duration: 0.3 }} />
-      </div>
-
-      {/* Layout : texte à gauche, question à droite */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Texte */}
-        <Card className="border-border/50 bg-white dark:bg-slate-950">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <Badge variant="outline" className="text-violet-600 border-violet-200">
-                Texte {currentPassage + 1}/{PASSAGES.length}
-              </Badge>
-            </div>
-            <CardTitle className="text-base mt-2">{passage.title}</CardTitle>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left Column: Passage Text */}
+        <Card className="border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm rounded-2xl">
+          <CardHeader>
+            <Badge className="w-fit bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 font-bold border-none">
+              Texte #{passage.id}
+            </Badge>
+            <CardTitle className="text-lg font-black text-slate-900 dark:text-white mt-1">
+              {passage.title}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-sm leading-relaxed text-slate-700 dark:text-slate-300 whitespace-pre-line max-h-80 overflow-y-auto pr-2 space-y-3">
-              {passage.content.split("\n\n").map((para, i) => (
-                <p key={i}>{para}</p>
-              ))}
-            </div>
+            <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line bg-slate-50 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200/60 dark:border-slate-800">
+              {passage.content}
+            </p>
           </CardContent>
         </Card>
 
-        {/* Question */}
-        <AnimatePresence mode="wait">
-          <motion.div key={`${currentPassage}-${currentQ}`} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.2 }}>
-            <Card className="border-border/50 bg-white dark:bg-slate-950 h-full">
-              <CardHeader className="pb-3">
-                <Badge variant="outline">Question {question.id} / {totalQuestions}</Badge>
-                <CardTitle className="text-base font-medium leading-relaxed mt-2">{question.text}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {question.options.map((opt, i) => (
-                  <button key={i} onClick={() => handleAnswer(question.id, i)}
-                    className={`w-full text-left p-3.5 rounded-xl border-2 text-sm font-medium transition-all duration-200 ${
-                      allAnswers[question.id] === i
-                        ? "border-violet-500 bg-violet-50 dark:bg-violet-950/30 text-violet-700 dark:text-violet-300"
-                        : "border-slate-200 dark:border-slate-800 hover:border-violet-300 hover:bg-slate-50 dark:hover:bg-slate-900"
+        {/* Right Column: Question */}
+        <Card className="border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm rounded-2xl flex flex-col justify-between">
+          <div>
+            <CardHeader className="pb-3">
+              <div className="flex justify-between items-center text-xs text-slate-400 font-semibold mb-1">
+                <span>Question {currentQ + 1} sur {passage.questions.length}</span>
+                <span>Total répondu : {answeredCount}/{totalQuestions}</span>
+              </div>
+              <CardTitle className="text-sm font-extrabold text-slate-900 dark:text-white leading-relaxed">
+                {question.text}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {question.options.map((opt, oi) => {
+                const isSelected = allAnswers[question.id] === oi;
+                return (
+                  <button
+                    key={oi}
+                    type="button"
+                    onClick={() => handleAnswer(question.id, oi)}
+                    className={`w-full p-3.5 rounded-xl border text-left text-xs font-semibold transition-all flex items-center justify-between ${
+                      isSelected
+                        ? "border-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-100 ring-2 ring-emerald-500/20"
+                        : "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
                     }`}
                   >
-                    <span className="flex items-center gap-3">
-                      <span className={`h-5 w-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${allAnswers[question.id] === i ? "border-violet-500 bg-violet-500" : "border-slate-300"}`}>
-                        {allAnswers[question.id] === i && <span className="h-2 w-2 rounded-full bg-white" />}
-                      </span>
-                      {String.fromCharCode(65 + i)}. {opt}
-                    </span>
+                    <span>{opt}</span>
+                    {isSelected && <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />}
                   </button>
-                ))}
-              </CardContent>
-            </Card>
-          </motion.div>
-        </AnimatePresence>
-      </div>
+                );
+              })}
+            </CardContent>
+          </div>
 
-      {/* Navigation */}
-      <div className="flex items-center justify-between">
-        <Button variant="outline"
-          onClick={() => {
-            if (currentQ > 0) setCurrentQ(currentQ - 1);
-            else if (currentPassage > 0) { setCurrentPassage(currentPassage - 1); setCurrentQ(PASSAGES[currentPassage - 1].questions.length - 1); }
-          }}
-          disabled={currentPassage === 0 && currentQ === 0}
-        >
-          <ChevronLeft className="h-4 w-4 mr-1" /> Précédente
-        </Button>
-        <div className="text-sm text-muted-foreground">
-          Passage {currentPassage + 1} — Q{currentQ + 1}
-        </div>
-        {currentPassage < PASSAGES.length - 1 || currentQ < passage.questions.length - 1 ? (
-          <Button onClick={() => {
-            if (currentQ < passage.questions.length - 1) setCurrentQ(currentQ + 1);
-            else { setCurrentPassage(currentPassage + 1); setCurrentQ(0); }
-          }}>
-            Suivante <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
-        ) : (
-          <Button onClick={() => setShowResult(true)} className="bg-emerald-600 hover:bg-emerald-700">
-            <CheckCircle2 className="h-4 w-4 mr-1" /> Terminer
-          </Button>
-        )}
+          {/* Navigation Controls */}
+          <div className="p-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+            <Button
+              variant="outline"
+              disabled={currentPassage === 0 && currentQ === 0}
+              onClick={() => {
+                if (currentQ > 0) {
+                  setCurrentQ(q => q - 1);
+                } else if (currentPassage > 0) {
+                  setCurrentPassage(p => p - 1);
+                  setCurrentQ(PASSAGES[currentPassage - 1].questions.length - 1);
+                }
+              }}
+              className="rounded-xl font-bold text-xs"
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" /> Précédent
+            </Button>
+
+            {currentQ < passage.questions.length - 1 ? (
+              <Button
+                onClick={() => setCurrentQ(q => q + 1)}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs"
+              >
+                Suivant <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            ) : currentPassage < PASSAGES.length - 1 ? (
+              <Button
+                onClick={() => {
+                  setCurrentPassage(p => p + 1);
+                  setCurrentQ(0);
+                }}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs"
+              >
+                Passage suivant <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            ) : (
+              <Button
+                onClick={handleFinishTest}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl text-xs"
+              >
+                Terminer & Soumettre
+              </Button>
+            )}
+          </div>
+        </Card>
       </div>
     </div>
   );

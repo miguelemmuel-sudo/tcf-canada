@@ -2,13 +2,20 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { 
   BookOpen, CheckCircle2, Clock, ChevronRight, PlayCircle, Lock,
   Volume2, PenTool, Mic, Star, Loader2
 } from "lucide-react";
 import { createClient } from "@/lib/supabaseClient";
 
-const courseCategories = ["Tous les cours", "Compréhension orale", "Compréhension écrite", "Production écrite", "Production orale"];
+const courseCategories = [
+  { name: "Tous les cours", href: "/dashboard/courses" },
+  { name: "Compréhension orale", href: "/dashboard/courses/listening" },
+  { name: "Compréhension écrite", href: "/dashboard/courses/reading" },
+  { name: "Production écrite", href: "/dashboard/courses/writing" },
+  { name: "Production orale", href: "/dashboard/courses/speaking" }
+];
 
 const defaultCoursesList = [
   {
@@ -115,6 +122,7 @@ const colorMap: Record<string, { bg: string; light: string; text: string; bar: s
 };
 
 export default function CoursesPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("Tous les cours");
   const [expandedCourse, setExpandedCourse] = useState<string | null>(null);
@@ -133,7 +141,6 @@ export default function CoursesPage() {
         const { data: { user } } = await supabase.auth.getUser();
 
         if (user) {
-          // Récupération stricte de la progression des cours pour CE client (RLS: auth.uid() = user_id)
           const { data: userProgress, error } = await supabase
             .from("course_progress")
             .select("*")
@@ -173,7 +180,6 @@ export default function CoursesPage() {
               totalTimeFormatted: `${Math.round(totalLessons * 0.3)}h${(totalLessons * 15) % 60}m`,
             });
           } else {
-            // NOUVEAU CLIENT : tout à 0 / null
             setCourses(defaultCoursesList);
             setStats({
               coursesInProgress: 0,
@@ -203,10 +209,6 @@ export default function CoursesPage() {
     );
   }
 
-  const filtered = activeTab === "Tous les cours"
-    ? courses
-    : courses.filter(c => c.title === activeTab || c.title.toLowerCase().includes(activeTab.toLowerCase().split(" ")[1]));
-
   return (
     <div className="space-y-6 pb-12">
       {/* Title */}
@@ -215,26 +217,26 @@ export default function CoursesPage() {
         <p className="text-slate-500 text-sm mt-1">Accédez à votre programme de préparation TCF Canada.</p>
       </div>
 
-      {/* Filter Tabs */}
+      {/* Direct Navigation Filter Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-3">
         <div className="flex flex-wrap gap-2">
           {courseCategories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveTab(cat)}
+            <Link
+              key={cat.name}
+              href={cat.href}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                activeTab === cat
+                activeTab === cat.name
                   ? "bg-blue-600 text-white shadow-sm"
                   : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 border border-slate-200/80 dark:border-slate-800"
               }`}
             >
-              {cat}
-            </button>
+              {cat.name}
+            </Link>
           ))}
         </div>
       </div>
 
-      {/* KPI Cards (Données réelles du client) */}
+      {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-slate-950 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center space-x-4">
           <div className="h-12 w-12 rounded-full bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-blue-600 shrink-0">
@@ -277,9 +279,9 @@ export default function CoursesPage() {
         </div>
       </div>
 
-      {/* Courses Cards */}
+      {/* Courses Cards List */}
       <div className="space-y-4">
-        {filtered.map((course) => {
+        {courses.map((course) => {
           const c = colorMap[course.color];
           const isOpen = expandedCourse === course.id;
           return (

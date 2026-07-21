@@ -159,7 +159,7 @@ Module interactif de correction IA disponible dans votre tableau de bord !`;
                 <CalendarIcon className="h-8 w-8 mx-auto text-slate-300 dark:text-slate-700" />
                 <p className="text-xs">Vous n'avez aucune séance de coaching planifiée.</p>
                 <a
-                  href="https://wa.me/22653360101"
+                  href="https://wa.me/237695903205?text=Bonjour,%20je%20souhaite%20réserver%20une%20séance%20de%20coaching%20TCF%20Canada"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-block px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs"
@@ -180,7 +180,7 @@ Module interactif de correction IA disponible dans votre tableau de bord !`;
                       <p className="text-[11px] text-slate-400">10:00 - 11:00 • Coach Marie L.</p>
                     </div>
                   </div>
-                  <a href="https://wa.me/22653360101" target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm">
+                  <a href="https://wa.me/237695903205?text=Bonjour,%20je%20souhaite%20rejoindre%20ma%20séance%20de%20coaching" target="_blank" rel="noopener noreferrer" className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm">
                     Rejoindre
                   </a>
                 </div>
