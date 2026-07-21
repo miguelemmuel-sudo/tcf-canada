@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabaseClient";
 import { getSummaryCourseStats, getStoredCoursesData } from "@/utils/courseTracker";
+import { getCurrentUserPack, PACK_CONFIGS } from "@/utils/subscriptionEngine";
+import { generateLessonsForPack } from "@/utils/courseGenerator";
 
 const courseCategories = [
   { name: "Tous les cours", href: "/dashboard/courses" },
@@ -126,8 +128,10 @@ export default function CoursesPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("Tous les cours");
+  const userPack = getCurrentUserPack();
+  const maxCourses = PACK_CONFIGS[userPack].coursesCount;
   const [expandedCourse, setExpandedCourse] = useState<string | null>(null);
-  const [courses, setCourses] = useState(defaultCoursesList);
+  const [courses, setCourses] = useState<any[]>(defaultCoursesList);
   const [stats, setStats] = useState({
     coursesInProgress: 0,
     lessonsCompleted: 0,
@@ -138,15 +142,23 @@ export default function CoursesPage() {
     const trackerStats = getSummaryCourseStats();
     const storedCourses = getStoredCoursesData();
 
-    const updatedCourses = defaultCoursesList.map((c) => {
+    const updatedCourses = defaultCoursesList.map((c: any) => {
       const courseData = storedCourses[c.id];
+      // On génère la vraie liste dynamique selon le pack
+      let courseType: "listening" | "reading" | "writing" | "speaking" = "listening";
+      if (c.id === "ce") courseType = "reading";
+      if (c.id === "pe") courseType = "writing";
+      if (c.id === "po") courseType = "speaking";
+      
+      const dynamicLessons = generateLessonsForPack([], userPack, PACK_CONFIGS[userPack], courseType);
+
       if (courseData) {
         const completedIds = new Set(courseData.completedLessons || []);
         const doneCount = completedIds.size;
-        const totalCount = c.lessons_list.length;
+        const totalCount = dynamicLessons.length;
         const percentage = Math.min(100, Math.round((doneCount / totalCount) * 100));
 
-        const updatedLessonsList = c.lessons_list.map((l) => ({
+        const updatedLessonsList = dynamicLessons.map((l: any) => ({
           ...l,
           done: completedIds.has(l.id) || completedIds.has(l.id.toString()),
         }));
@@ -158,10 +170,15 @@ export default function CoursesPage() {
           lessons_list: updatedLessonsList,
         };
       }
-      return c;
+      return {
+        ...c,
+        lessons: `0 / ${dynamicLessons.length} leçons`,
+        lessons_list: dynamicLessons.map((l: any) => ({ ...l, done: false })),
+      };
     });
 
     setCourses(updatedCourses);
+
     setStats({
       coursesInProgress: trackerStats.coursesInProgress,
       lessonsCompleted: trackerStats.lessonsCompleted,
@@ -229,7 +246,7 @@ export default function CoursesPage() {
             <BookOpen className="h-6 w-6" />
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-900 dark:text-white">4</div>
+            <div className="text-2xl font-black text-slate-900 dark:text-white">{maxCourses}</div>
             <div className="text-xs text-slate-500 font-medium">Cours au total</div>
           </div>
         </div>
@@ -311,7 +328,7 @@ export default function CoursesPage() {
               {isOpen && (
                 <div className="border-t border-slate-100 dark:border-slate-800 px-6 pb-4">
                   <div className="py-4 space-y-2">
-                    {course.lessons_list.map((lesson, idx) => (
+                    {course.lessons_list.map((lesson: any, idx: number) => (
                       <div key={idx} className={`flex items-center justify-between p-3 rounded-xl transition-colors ${
                         lesson.done 
                           ? "bg-slate-50 dark:bg-slate-900/80" 

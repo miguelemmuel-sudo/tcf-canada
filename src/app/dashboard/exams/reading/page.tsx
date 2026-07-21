@@ -144,12 +144,17 @@ export default function ReadingExamPage() {
     }
   }, [allAnswers, currentPassage, currentQ, timeLeft, showResult, showResumeModal]);
 
-  // Resume Session Handler
   const handleResumeSession = () => {
     if (savedSessionData) {
       if (savedSessionData.allAnswers) setAllAnswers(savedSessionData.allAnswers);
-      if (typeof savedSessionData.currentPassage === "number") setCurrentPassage(savedSessionData.currentPassage);
-      if (typeof savedSessionData.currentQ === "number") setCurrentQ(savedSessionData.currentQ);
+      if (typeof savedSessionData.currentPassage === "number") {
+        const safePassage = Math.min(savedSessionData.currentPassage, Math.max(0, PASSAGES.length - 1));
+        setCurrentPassage(safePassage);
+        if (typeof savedSessionData.currentQ === "number") {
+          const passageQCount = PASSAGES[safePassage]?.questions?.length || 1;
+          setCurrentQ(Math.min(savedSessionData.currentQ, Math.max(0, passageQCount - 1)));
+        }
+      }
       if (typeof savedSessionData.timeLeft === "number") setTimeLeft(savedSessionData.timeLeft);
     }
     setShowResumeModal(false);

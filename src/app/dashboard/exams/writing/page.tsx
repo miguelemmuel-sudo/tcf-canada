@@ -57,11 +57,33 @@ Votre synthèse doit rendre compte des informations essentielles sans prendre po
 ];
 
 const AI_FEEDBACK = [
-  "🎯 Score officiel TCF Canada : 520 / 699 points — Niveau B2 (Avancé)",
-  "🏆 Équivalence NCLC (Immigration Canada) : Niveau 7",
-  "✅ Votre texte est bien structuré avec une introduction et une conclusion claires.",
-  "💡 Conseil : Enrichissez votre vocabulaire — remplacez \"faire\" par des verbes plus précis comme \"réaliser\", \"accomplir\", \"effectuer\".",
-  "⚠️ Attention à l'accord des participes passés dans les phrases composées.",
+  "🎯 **Score estimé TCF Canada :** 520 / 699 points — Niveau B2 (Avancé)",
+  "🏆 **Équivalence NCLC (Immigration Canada) :** Niveau 7",
+  "",
+  "✅ **Ce qui est réussi :**",
+  "- Votre texte est bien structuré avec une introduction et une conclusion claires.",
+  "- L'utilisation des connecteurs logiques (Cependant, En effet) est maîtrisée.",
+  "",
+  "⚠️ **Correction et Explication des erreurs :**",
+  "- *Erreur :* 'Je vous écris pour vous demandez...'",
+  "  *Correction :* 'Je vous écris pour vous demander...'",
+  "  *Explication :* Après une préposition (pour, de, à, sans), le verbe doit toujours être à l'infinitif.",
+  "- *Erreur :* 'Beaucoup des personnes pensent que...'",
+  "  *Correction :* 'Beaucoup de personnes pensent que...'",
+  "  *Explication :* On utilise 'beaucoup de' (quantité indéterminée) et non 'beaucoup des' sauf si l'article défini est obligatoire (ex: beaucoup des amis que j'ai...).",
+  "",
+  "💡 **Propositions d'améliorations (Niveau C1) :**",
+  "- Enrichissez votre vocabulaire : remplacez le verbe très commun 'faire' par des verbes plus précis comme 'réaliser', 'accomplir', ou 'effectuer'.",
+  "- Utilisez le subjonctif pour exprimer une opinion subjective : 'Il est indispensable que nous prenions des mesures...'",
+  "",
+  "📉 **Diagnostic de vos points faibles :**",
+  "- Conjugaison : Confusion occasionnelle entre le participe passé (-é) et l'infinitif (-er).",
+  "- Lexique : Répétition de mots de base (très, faire, dire).",
+  "",
+  "🚀 **Votre Parcours de Progression Personnalisé :**",
+  "1. **Exercice suggéré immédiat :** Révisez la règle de l'infinitif après préposition. [Générer un mini-quiz sur les verbes à l'infinitif]",
+  "2. **Prochain cours recommandé :** 'L'art de la nuance : Remplacer les verbes passe-partout'.",
+  "3. **Prochaine tâche TCF :** Rédigez un court essai sur la pollution urbaine en utilisant au moins 5 verbes d'opinion différents."
 ];
 
 const TOTAL_TIME = 60 * 60;
@@ -127,8 +149,16 @@ export default function WritingExamPage() {
 
   const handleResumeSession = () => {
     if (savedSessionData) {
-      if (savedSessionData.texts) setTexts(savedSessionData.texts);
-      if (typeof savedSessionData.currentTask === "number") setCurrentTask(savedSessionData.currentTask);
+      if (savedSessionData.texts) {
+        const merged = Array(TASKS.length).fill("");
+        savedSessionData.texts.forEach((t: string, i: number) => {
+          if (i < TASKS.length) merged[i] = t;
+        });
+        setTexts(merged);
+      }
+      if (typeof savedSessionData.currentTask === "number") {
+        setCurrentTask(Math.min(savedSessionData.currentTask, Math.max(0, TASKS.length - 1)));
+      }
       if (typeof savedSessionData.timeLeft === "number") setTimeLeft(savedSessionData.timeLeft);
     }
     setShowResumeModal(false);

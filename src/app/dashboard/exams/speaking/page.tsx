@@ -43,12 +43,34 @@ const BASE_ORAL_TASKS = [
 ];
 
 const AI_ORAL_FEEDBACK = [
-  "🎯 Score officiel TCF Canada : 545 / 699 points — Niveau B2 (Avancé)",
-  "🏆 Niveau NCLC (Niveaux de compétence linguistique canadiens) : Niveau 8",
-  "🎙️ Prononciation : Bonne clarté générale. Articulation précise avec intonation naturelle.",
-  "📊 Fluidité : Rythme fluide avec très peu d'hésitations.",
-  "📚 Vocabulaire : Registre formel et varié adapté au contexte d'immigration canadienne.",
-  "🏗️ Structure : Discours bien structuré avec introduction claire, arguments étayés et conclusion pertinente.",
+  "🎯 **Score estimé TCF Canada :** 545 / 699 points — Niveau B2 (Avancé)",
+  "🏆 **Niveau NCLC (Immigration Canada) :** Niveau 8",
+  "",
+  "🎙️ **Analyse de la Prononciation et Fluidité :**",
+  "- *Clarté :* Bonne articulation générale. Les voyelles nasales (on, an, in) sont bien différenciées.",
+  "- *Rythme :* Rythme fluide avec très peu d'hésitations. Quelques pauses avant les mots complexes, mais qui restent naturelles.",
+  "- *Intonation :* Excellente maîtrise de l'intonation interrogative lors de la tâche 2.",
+  "",
+  "📚 **Analyse du Vocabulaire et de la Structure :**",
+  "- *Registre :* Vous avez su adapter votre registre (vouvoiement formel dans la tâche 2, ton argumentatif dans la tâche 3).",
+  "- *Structure :* Discours bien structuré avec introduction claire, arguments étayés et conclusion pertinente.",
+  "",
+  "⚠️ **Correction des erreurs identifiées :**",
+  "- *Erreur entendue :* 'Je suis venu au Canada pour trouver des bonnes opportunités...'",
+  "  *Correction :* 'Je suis venu au Canada pour trouver **de** bonnes opportunités...'",
+  "  *Explication :* Devant un adjectif pluriel (bonnes) qui précède un nom (opportunités), l'article indéfini 'des' devient 'de'.",
+  "",
+  "💡 **Propositions d'améliorations (Vers le niveau C1) :**",
+  "- Évitez les répétitions du verbe 'penser' (je pense que, je pense aussi). Utilisez : *J'estime que*, *Il me semble que*, *Je suis convaincu(e) que*.",
+  "- Intégrez des connecteurs logiques oraux plus avancés : *Néanmoins*, *Ceci dit*, *En d'autres termes*.",
+  "",
+  "📉 **Diagnostic de vos points faibles :**",
+  "- Hésitation lors de l'utilisation des pronoms relatifs complexes (auquel, dont).",
+  "",
+  "🚀 **Votre Parcours de Progression Personnalisé :**",
+  "1. **Exercice ciblé :** Pratiquez la formation des phrases avec 'dont' et 'lequel'.",
+  "2. **Prochain cours recommandé :** 'L'art de l'argumentation spontanée'.",
+  "3. **Défi pour le prochain test :** Utilisez au moins 3 expressions idiomatiques françaises pour enrichir votre discours."
 ];
 
 type RecordState = "idle" | "prep" | "recording" | "done" | "playing";
@@ -116,8 +138,16 @@ export default function SpeakingExamPage() {
 
   const handleResumeSession = () => {
     if (savedSessionData) {
-      if (savedSessionData.hasRecording) setHasRecording(savedSessionData.hasRecording);
-      if (typeof savedSessionData.currentTask === "number") setCurrentTask(savedSessionData.currentTask);
+      if (savedSessionData.hasRecording) {
+        const merged = Array(ORAL_TASKS.length).fill(false);
+        savedSessionData.hasRecording.forEach((rec: boolean, i: number) => {
+          if (i < ORAL_TASKS.length) merged[i] = rec;
+        });
+        setHasRecording(merged);
+      }
+      if (typeof savedSessionData.currentTask === "number") {
+        setCurrentTask(Math.min(savedSessionData.currentTask, Math.max(0, ORAL_TASKS.length - 1)));
+      }
       if (typeof savedSessionData.globalTimeLeft === "number") setGlobalTimeLeft(savedSessionData.globalTimeLeft);
     }
     setShowResumeModal(false);

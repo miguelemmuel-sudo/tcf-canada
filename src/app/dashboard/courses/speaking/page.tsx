@@ -93,7 +93,9 @@ export default function SpeakingCoursePage() {
 
   const handleResumeSession = () => {
     if (savedSessionData) {
-      if (typeof savedSessionData.currentLesson === "number") setCurrentLesson(savedSessionData.currentLesson);
+      if (typeof savedSessionData.currentLesson === "number") {
+        setCurrentLesson(Math.min(savedSessionData.currentLesson, Math.max(0, LESSONS.length - 1)));
+      }
       if (savedSessionData.recordState) setRecordState(savedSessionData.recordState);
     }
     setShowResumeModal(false);

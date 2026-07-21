@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabaseClient";
+import { getCurrentUserPack, PACK_CONFIGS } from "@/utils/subscriptionEngine";
 
 const testsCategories = [
   { name: "Tous les tests", href: "/dashboard/exams" },
@@ -27,6 +28,8 @@ const testsCategories = [
 export default function TestsPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("Tous les tests");
+  const userPack = getCurrentUserPack();
+  const maxExams = PACK_CONFIGS[userPack].testsCount;
   const [stats, setStats] = useState({
     testsCount: 0,
     averageScore: 0,
@@ -132,7 +135,7 @@ export default function TestsPage() {
             <Headphones className="h-6 w-6" />
           </div>
           <div>
-            <div className="text-2xl font-black text-slate-900 dark:text-white">12</div>
+            <div className="text-2xl font-black text-slate-900 dark:text-white">{maxExams}</div>
             <div className="text-xs text-slate-500 font-medium">Tests disponibles</div>
           </div>
         </div>

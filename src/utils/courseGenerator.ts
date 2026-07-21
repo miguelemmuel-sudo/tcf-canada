@@ -1,157 +1,81 @@
 import { PackType, PackPermissions } from "./subscriptionEngine";
+import { listeningCourses, readingCourses, writingCourses, speakingCourses } from "../data/realCourses";
+import { listeningQuestions, readingPassages, writingTasks, speakingTasks } from "../data/realExams";
 
-export function generateLessonsForPack(baseLessons: any[], currentPack: PackType, packConfig: PackPermissions) {
-  const targetCount = packConfig.coursesCount;
-  
-  if (baseLessons.length >= targetCount) {
-    return baseLessons.slice(0, targetCount);
-  }
+function filterByPack(items: any[], pack: PackType) {
+  if (items.length === 0) return items;
+  if (pack === "standard") return items.slice(0, Math.min(2, items.length));
+  if (pack === "griffon") return items.slice(0, Math.min(4, items.length));
+  return items; // VIP
+}
 
-  const generated = [...baseLessons];
-  let idCounter = baseLessons.length > 0 ? baseLessons[baseLessons.length - 1].id + 1 : 1;
-
-  for (let i = baseLessons.length; i < targetCount; i++) {
-    let title = `Leçon ${idCounter} - Pratique avancée`;
-    if (i < 20) {
-      title = `Leçon ${idCounter} - Consolidation des bases`;
-    } else if (i < 50) {
-      title = `Leçon ${idCounter} - Exercices type TCF`;
-    } else if (i < 100) {
-      title = `Leçon ${idCounter} - Approfondissement intensif`;
-    } else if (i < 200) {
-      title = `Leçon ${idCounter} - Maîtrise des pièges TCF`;
-    } else {
-      title = `Leçon ${idCounter} - Entraînement niveau C1/C2`;
+function fillToTarget(items: any[], targetCount: number) {
+  if (items.length === 0 || targetCount === 0) return items;
+  const result = [];
+  let idCounter = 1;
+  for (let i = 0; i < targetCount; i++) {
+    const originalItem = items[i % items.length];
+    const clone = { ...originalItem, id: idCounter };
+    if (i >= items.length) {
+      if (clone.title) {
+        clone.title = `${originalItem.title} (Entraînement #${Math.floor(i / items.length) + 1})`;
+      }
+      if (clone.question) {
+        clone.question = `${originalItem.question} (Variante #${Math.floor(i / items.length) + 1})`;
+      }
     }
-
-    generated.push({
-      id: idCounter,
-      title,
-      duration: `${15 + (i % 15)} min`,
-      instruction: "Cette leçon est débloquée via votre abonnement. Elle simule un environnement TCF réel.",
-      text: "Le contenu détaillé de ce cours est réservé à votre plan d'apprentissage personnalisé. L'IA générera le texte complet adapté à votre niveau.",
-      audioText: "Ceci est un exercice d'écoute généré automatiquement. Préparez-vous à prendre des notes.",
-      intro: "Introduction générée automatiquement.",
-      promptText: "Sujet généré en fonction de vos performances récentes.",
-      modelAnswer: "Un corrigé complet sera généré par l'IA une fois votre essai terminé.",
-      minWords: 80,
-      maxWords: 150,
-      tips: ["Lisez attentivement la consigne.", "Gérez votre temps de réponse.", "Restez concentré sur le sujet."],
-      questions: [
-        {
-          q: `Question de validation #${idCounter} :`,
-          options: ["Option A (Correcte)", "Option B", "Option C", "Option D"],
-          answer: 0,
-          explanation: "L'explication détaillée s'affichera après votre réponse."
-        }
-      ],
-      done: false,
-      isGenerated: true
-    });
+    result.push(clone);
     idCounter++;
   }
-  
-  return generated;
+  return result;
+}
+
+export function generateLessonsForPack(baseLessons: any[], currentPack: PackType, packConfig: PackPermissions, type: "listening"|"reading"|"writing"|"speaking" = "listening") {
+  let realData = [];
+  switch (type) {
+    case "listening": realData = listeningCourses; break;
+    case "reading": realData = readingCourses; break;
+    case "writing": realData = writingCourses; break;
+    case "speaking": realData = speakingCourses; break;
+  }
+  const filtered = filterByPack(realData, currentPack);
+  return fillToTarget(filtered, packConfig.coursesCount);
 }
 
 export function generateExamQuestionsForPack(baseQuestions: any[], currentPack: PackType, packConfig: PackPermissions, type: "reading"|"listening"|"writing"|"speaking") {
-  const targetCount = packConfig.questionsPerExam;
-  
-  if (baseQuestions.length >= targetCount) {
-    return baseQuestions.slice(0, targetCount);
+  if (type === "listening") {
+    const filtered = filterByPack(listeningQuestions, currentPack);
+    return fillToTarget(filtered, packConfig.questionsPerExam);
   }
-
-  const generated = [...baseQuestions];
-  let idCounter = baseQuestions.length > 0 ? baseQuestions[baseQuestions.length - 1].id + 1 : 1;
-
-  for (let i = baseQuestions.length; i < targetCount; i++) {
-    generated.push({
-      id: idCounter,
-      audio: `/audio/tcf_mock_${(i % 5) + 1}.mp3`,
-      text: "Document d'examen TCF authentique simulé. Veuillez lire attentivement pour répondre à la question ci-dessous.",
-      question: `Question d'évaluation TCF #${idCounter} - Niveau estimé : ${i < 30 ? 'A2' : i < 60 ? 'B1/B2' : 'C1/C2'}`,
-      options: ["Choix A", "Choix B", "Choix C", "Choix D"],
-      answer: Math.floor(Math.random() * 4) // random fallback for UI simulation
-    });
-    idCounter++;
-  }
-
-  return generated;
+  return [];
 }
 
 export function generateExamPassagesForPack(basePassages: any[], currentPack: PackType, packConfig: PackPermissions) {
-  const targetQuestionsCount = packConfig.questionsPerExam;
+  const filtered = filterByPack(readingPassages, currentPack);
+  // Pour la CE, packConfig.questionsPerExam est le nombre total de *questions* attendues, pas de *textes*.
+  // Dans notre fichier réel, chaque texte a 2 questions.
+  const targetPassages = Math.ceil(packConfig.questionsPerExam / 2);
+  const result = fillToTarget(filtered, targetPassages);
   
-  let currentQuestionsCount = 0;
-  basePassages.forEach(p => currentQuestionsCount += p.questions.length);
-
-  if (currentQuestionsCount >= targetQuestionsCount) {
-    return basePassages;
-  }
-
-  const generated = [...basePassages];
-  let pIdCounter = basePassages.length > 0 ? basePassages[basePassages.length - 1].id + 1 : 1;
-  let qIdCounter = 100;
-
-  let questionsAdded = currentQuestionsCount;
-  while (questionsAdded < targetQuestionsCount) {
-    const qCount = Math.min(3, targetQuestionsCount - questionsAdded);
-    const questions = [];
-    for (let i = 0; i < qCount; i++) {
-      questions.push({
-        id: qIdCounter++,
-        text: `Question de lecture TCF #${qIdCounter}`,
-        options: ["Option A", "Option B", "Option C", "Option D"],
-        correct: Math.floor(Math.random() * 4)
-      });
-    }
-
-    generated.push({
-      id: pIdCounter++,
-      title: `Texte d'évaluation TCF #${pIdCounter}`,
-      content: "Document généré dynamiquement pour évaluer votre compréhension écrite au niveau requis par votre abonnement.",
-      questions
-    });
-
-    questionsAdded += qCount;
-  }
-
-  return generated;
+  // Refaire les IDs des questions pour éviter les conflits React key
+  let qIdCounter = 1;
+  result.forEach(passage => {
+    passage.questions = passage.questions.map((q: any) => ({ ...q, id: qIdCounter++ }));
+  });
+  
+  return result;
 }
 
 export function generateExamWritingTasksForPack(baseTasks: any[], currentPack: PackType, packConfig: PackPermissions, type: "writing"|"speaking") {
-  // Le TCF comporte habituellement 3 tâches pour ces épreuves, 
-  // mais on peut générer plus de tâches selon le pack si besoin, ou on simule juste 3 tâches max pour rester fidèle.
-  // Selon le prompt VIP a 100 "questions". Pour Writing/Speaking, c'est spécial. On va générer le nombre de "tâches".
-  const targetCount = packConfig.questionsPerExam > 10 ? 10 : packConfig.questionsPerExam; // On limite à 10 max pour l'expression pour ne pas casser l'UI.
-  
-  if (baseTasks.length >= targetCount) {
-    return baseTasks.slice(0, targetCount);
+  // Pour PE et PO, il y a généralement 3 tâches. Pour atteindre le quota, on fixe une limite visuelle acceptable
+  const targetCount = packConfig.questionsPerExam > 10 ? 10 : packConfig.questionsPerExam;
+  if (type === "writing") {
+    const filtered = filterByPack(writingTasks, currentPack);
+    return fillToTarget(filtered, targetCount);
+  } else {
+    const filtered = filterByPack(speakingTasks, currentPack);
+    return fillToTarget(filtered, targetCount);
   }
-
-  const generated = [...baseTasks];
-  let idCounter = baseTasks.length > 0 ? baseTasks[baseTasks.length - 1].id + 1 : 1;
-
-  for (let i = baseTasks.length; i < targetCount; i++) {
-    if (type === "writing") {
-      generated.push({
-        id: idCounter++,
-        type: "synthese",
-        title: `Tâche ${idCounter - 1} — Sujet d'expression généré`,
-        instructions: `Ceci est une tâche d'expression écrite générée pour votre entraînement TCF (Sujet d'actualité). Rédigez un texte structuré. L'IA corrigera votre production.`,
-        minWords: 150,
-        maxWords: 200,
-        timeMinutes: 20
-      });
-    } else {
-      generated.push({
-        id: idCounter++,
-        title: `Tâche Orale ${idCounter - 1} — Sujet généré`,
-        promptText: `Sujet généré par l'IA en fonction de votre niveau. Exprimez-vous spontanément et clairement sur ce thème.`,
-        duration: "2 min"
-      });
-    }
-  }
-
-  return generated;
 }
+
+

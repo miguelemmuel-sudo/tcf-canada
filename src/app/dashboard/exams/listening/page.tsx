@@ -191,11 +191,18 @@ export default function ListeningExamPage() {
     }
   }, [answers, currentQ, timeLeft, submitted, showResumeModal]);
 
-  // Resume Handler
   const handleResumeSession = () => {
     if (savedSessionData) {
-      if (savedSessionData.answers) setAnswers(savedSessionData.answers);
-      if (typeof savedSessionData.currentQ === "number") setCurrentQ(savedSessionData.currentQ);
+      if (savedSessionData.answers) {
+        const merged = Array(QUESTIONS.length).fill(null);
+        savedSessionData.answers.forEach((ans: any, i: number) => {
+          if (i < QUESTIONS.length) merged[i] = ans;
+        });
+        setAnswers(merged);
+      }
+      if (typeof savedSessionData.currentQ === "number") {
+        setCurrentQ(Math.min(savedSessionData.currentQ, Math.max(0, QUESTIONS.length - 1)));
+      }
       if (typeof savedSessionData.timeLeft === "number") setTimeLeft(savedSessionData.timeLeft);
     }
     setShowResumeModal(false);
