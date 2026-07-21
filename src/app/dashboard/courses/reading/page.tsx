@@ -1,13 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
   BookOpen, CheckCircle2, ChevronLeft, BrainCircuit, Clock, Award, Sparkles, Check, X 
 } from "lucide-react";
 import { ResumeSessionModal } from "@/components/ui/ResumeSessionModal";
+import { saveSessionState } from "@/utils/sessionManager";
 
-const LESSONS = [
+import { markCourseStarted, markLessonCompleted, addLearningTimeSeconds } from "@/utils/courseTracker";
+import { getCurrentUserPack, PACK_CONFIGS } from "@/utils/subscriptionEngine";
+import { generateLessonsForPack } from "@/utils/courseGenerator";
+
+const BASE_LESSONS = [
   {
     id: 1, title: "Stratégies de lecture rapide", duration: "10 min",
     text: `La lecture rapide est une compétence essentielle pour réussir l'épreuve de compréhension écrite du TCF Canada. Elle consiste à identifier rapidement les informations-clés d'un texte sans lire chaque mot.
@@ -57,6 +62,14 @@ const AI_TIPS = [
 ];
 
 export default function ReadingCoursePage() {
+  const [pack, setPack] = useState(getCurrentUserPack());
+  
+  useEffect(() => {
+    setPack(getCurrentUserPack());
+  }, []);
+
+  const LESSONS = React.useMemo<typeof BASE_LESSONS>(() => generateLessonsForPack(BASE_LESSONS, pack, PACK_CONFIGS[pack]), [pack]);
+
   const [currentLesson, setCurrentLesson] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [showResults, setShowResults] = useState(false);
@@ -65,6 +78,15 @@ export default function ReadingCoursePage() {
   // Resume Session Modal State
   const [showResumeModal, setShowResumeModal] = useState(false);
   const [savedSessionData, setSavedSessionData] = useState<any>(null);
+
+  // Mark course as started and track learning time day by day
+  useEffect(() => {
+    markCourseStarted("ce", LESSONS.length);
+    const timer = setInterval(() => {
+      addLearningTimeSeconds(1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Detect Saved Session on Mount
   useEffect(() => {
@@ -85,11 +107,10 @@ export default function ReadingCoursePage() {
   // Auto-Save Session Progress
   useEffect(() => {
     if (!showResults && !showResumeModal && (Object.keys(answers).length > 0 || currentLesson > 0)) {
-      localStorage.setItem("tcf_session_reading_course", JSON.stringify({
+      saveSessionState("tcf_session_reading_course", {
         currentLesson,
-        answers,
-        timestamp: Date.now()
-      }));
+        answers
+      });
     }
   }, [currentLesson, answers, showResults, showResumeModal]);
 
@@ -307,6 +328,7 @@ export default function ReadingCoursePage() {
           <button 
             onClick={() => {
               setShowResults(true);
+              markLessonCompleted("ce", currentLesson + 1, LESSONS.length);
               localStorage.removeItem("tcf_session_reading_course");
             }} 
             disabled={Object.keys(answers).length < lesson.questions.length || showResults}

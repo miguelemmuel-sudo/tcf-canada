@@ -1,12 +1,17 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { 
   PenTool, CheckCircle2, ChevronLeft, BrainCircuit, Clock, AlertCircle 
 } from "lucide-react";
+import { ResumeSessionModal } from "@/components/ui/ResumeSessionModal";
+import { saveSessionState } from "@/utils/sessionManager";
+import { markCourseStarted, markLessonCompleted, addLearningTimeSeconds } from "@/utils/courseTracker";
+import { getCurrentUserPack, PACK_CONFIGS } from "@/utils/subscriptionEngine";
+import { generateLessonsForPack } from "@/utils/courseGenerator";
 
-const LESSONS = [
+const BASE_LESSONS = [
   {
     id: 1, title: "Structure d'un courriel formel", duration: "12 min",
     instruction: `Vous avez reçu un courriel d'invitation à un entretien d'emploi dans une entreprise canadienne. Rédigez une réponse formelle (80–120 mots) dans laquelle vous :
@@ -57,11 +62,72 @@ function countWords(text: string) {
 }
 
 export default function WritingCoursePage() {
+  const [pack, setPack] = useState(getCurrentUserPack());
+  
+  useEffect(() => {
+    setPack(getCurrentUserPack());
+  }, []);
+
+  const LESSONS = React.useMemo<typeof BASE_LESSONS>(() => generateLessonsForPack(BASE_LESSONS, pack, PACK_CONFIGS[pack]), [pack]);
+
   const [currentLesson, setCurrentLesson] = useState(0);
   const [text, setText] = useState("");
   const [showModel, setShowModel] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiFeedback, setAiFeedback] = useState<string | null>(null);
+
+  const [showResumeModal, setShowResumeModal] = useState(false);
+  const [savedSessionData, setSavedSessionData] = useState<any>(null);
+
+  // Load Session Progress
+  useEffect(() => {
+    const rawSaved = localStorage.getItem("tcf_session_writing_course");
+    if (rawSaved) {
+      try {
+        const parsed = JSON.parse(rawSaved);
+        if (parsed && (parsed.currentLesson > 0 || (parsed.text && parsed.text.trim().length > 0))) {
+          setSavedSessionData(parsed);
+          setShowResumeModal(true);
+        }
+      } catch (e) {
+        console.error("Erreur de parsing session:", e);
+      }
+    }
+  }, []);
+
+  // Auto-Save Session Progress
+  useEffect(() => {
+    if (!showResumeModal && (currentLesson > 0 || text.trim().length > 0)) {
+      saveSessionState("tcf_session_writing_course", {
+        currentLesson,
+        text
+      });
+    }
+  }, [currentLesson, text, showResumeModal]);
+
+  const handleResumeSession = () => {
+    if (savedSessionData) {
+      if (typeof savedSessionData.currentLesson === "number") setCurrentLesson(savedSessionData.currentLesson);
+      if (typeof savedSessionData.text === "string") setText(savedSessionData.text);
+    }
+    setShowResumeModal(false);
+  };
+
+  const handleRestartSession = () => {
+    localStorage.removeItem("tcf_session_writing_course");
+    setCurrentLesson(0);
+    setText("");
+    setShowResumeModal(false);
+  };
+
+  // Mark course as started and track learning time day by day
+  useEffect(() => {
+    markCourseStarted("pe", LESSONS.length);
+    const timer = setInterval(() => {
+      addLearningTimeSeconds(1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const lesson = LESSONS[currentLesson];
   const wordCount = countWords(text);
@@ -73,13 +139,22 @@ export default function WritingCoursePage() {
     setAiFeedback(null);
     await new Promise(r => setTimeout(r, 2000));
     setAiFeedback(AI_WRITING_FEEDBACK.join("\n\n"));
+    markLessonCompleted("pe", currentLesson + 1, LESSONS.length);
     setAiLoading(false);
-  }, [text]);
+  }, [text, currentLesson]);
 
   const reset = () => { setText(""); setAiFeedback(null); setShowModel(false); };
 
   return (
     <div className="space-y-6 pb-12 max-w-4xl mx-auto">
+      <ResumeSessionModal 
+        isOpen={showResumeModal}
+        title="Leçon en cours détectée"
+        message="Vous avez déjà commencé cette leçon. Souhaitez-vous reprendre là où vous en étiez ?"
+        onResume={handleResumeSession}
+        onRestart={handleRestartSession}
+      />
+
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs text-slate-500">
         <Link href="/dashboard/courses" className="hover:text-amber-600 flex items-center gap-1">

@@ -10,11 +10,22 @@ import {
   Loader2
 } from "lucide-react";
 import { createClient } from "@/lib/supabaseClient";
+import { isFeatureAccessible, getCurrentUserPack } from "@/utils/subscriptionEngine";
+import { LockedFeatureBanner } from "@/components/ui/LockedFeatureBanner";
 
 export default function ReservationsPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("Toutes");
   const [reservations, setReservations] = useState<any[]>([]);
+  const [pack, setPack] = useState(getCurrentUserPack());
+
+  useEffect(() => {
+    setPack(getCurrentUserPack());
+  }, []);
+
+  if (!isFeatureAccessible("reservations", pack)) {
+    return <LockedFeatureBanner featureName="Réservation de créneaux avec un Coach" />;
+  }
 
   useEffect(() => {
     const loadReservations = async () => {

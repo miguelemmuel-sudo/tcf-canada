@@ -1,12 +1,15 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Clock, ChevronLeft, ChevronRight, CheckCircle2, BookOpen, XCircle } from "lucide-react";
 import { ResumeSessionModal } from "@/components/ui/ResumeSessionModal";
+import { saveSessionState } from "@/utils/sessionManager";
+import { getCurrentUserPack, PACK_CONFIGS } from "@/utils/subscriptionEngine";
+import { generateExamPassagesForPack } from "@/utils/courseGenerator";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Question {
@@ -24,7 +27,7 @@ interface TextPassage {
 }
 
 // ─── Passages de démonstration ────────────────────────────────────────────────
-const PASSAGES: TextPassage[] = [
+const BASE_PASSAGES: TextPassage[] = [
   {
     id: 1,
     title: "L'immigration francophone au Canada",
@@ -97,6 +100,10 @@ function Timer({ seconds }: { seconds: number }) {
 }
 
 export default function ReadingExamPage() {
+  const [pack, setPack] = useState(getCurrentUserPack());
+  useEffect(() => setPack(getCurrentUserPack()), []);
+  const PASSAGES = React.useMemo<typeof BASE_PASSAGES>(() => generateExamPassagesForPack(BASE_PASSAGES, pack, PACK_CONFIGS[pack]), [pack]);
+
   const [currentPassage, setCurrentPassage] = useState(0);
   const [currentQ, setCurrentQ] = useState(0);
   const [allAnswers, setAllAnswers] = useState<Record<number, number | null>>({});
@@ -128,13 +135,12 @@ export default function ReadingExamPage() {
   // Auto-Save Progress
   useEffect(() => {
     if (!showResult && !showResumeModal && (Object.keys(allAnswers).length > 0 || currentPassage > 0)) {
-      localStorage.setItem("tcf_session_reading_exam", JSON.stringify({
+      saveSessionState("tcf_session_reading_exam", {
         allAnswers,
         currentPassage,
         currentQ,
-        timeLeft,
-        timestamp: Date.now()
-      }));
+        timeLeft
+      });
     }
   }, [allAnswers, currentPassage, currentQ, timeLeft, showResult, showResumeModal]);
 

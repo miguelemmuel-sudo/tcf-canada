@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,9 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabaseClient";
 import { ResumeSessionModal } from "@/components/ui/ResumeSessionModal";
+import { saveSessionState } from "@/utils/sessionManager";
+import { getCurrentUserPack, PACK_CONFIGS } from "@/utils/subscriptionEngine";
+import { generateExamQuestionsForPack } from "@/utils/courseGenerator";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface Question {
@@ -141,8 +144,12 @@ function Timer({ seconds }: { seconds: number }) {
 
 // ─── Page principale ──────────────────────────────────────────────────────────
 export default function ListeningExamPage() {
+  const [pack, setPack] = useState(getCurrentUserPack());
+  useEffect(() => setPack(getCurrentUserPack()), []);
+  const QUESTIONS = React.useMemo<typeof DEMO_QUESTIONS>(() => generateExamQuestionsForPack(DEMO_QUESTIONS, pack, PACK_CONFIGS[pack], "listening"), [pack]);
+
   const [currentQ, setCurrentQ] = useState(0);
-  const [answers, setAnswers] = useState<(number | null)[]>(Array(DEMO_QUESTIONS.length).fill(null));
+  const [answers, setAnswers] = useState<(number | null)[]>(Array(QUESTIONS.length).fill(null));
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioProgress, setAudioProgress] = useState(0);
   const [timeLeft, setTimeLeft] = useState(TOTAL_TIME);
@@ -175,13 +182,12 @@ export default function ListeningExamPage() {
   // Auto-Save Session Progress on Change
   useEffect(() => {
     if (!submitted && !showResumeModal && (answers.some(a => a !== null) || currentQ > 0)) {
-      localStorage.setItem("tcf_session_listening_exam", JSON.stringify({
+      saveSessionState("tcf_session_listening_exam", {
         answers,
         currentQ,
         timeLeft,
-        timestamp: Date.now(),
         submitted: false
-      }));
+      });
     }
   }, [answers, currentQ, timeLeft, submitted, showResumeModal]);
 
@@ -198,7 +204,7 @@ export default function ListeningExamPage() {
   // Restart Handler
   const handleRestartSession = () => {
     localStorage.removeItem("tcf_session_listening_exam");
-    setAnswers(Array(DEMO_QUESTIONS.length).fill(null));
+    setAnswers(Array(QUESTIONS.length).fill(null));
     setCurrentQ(0);
     setTimeLeft(TOTAL_TIME);
     setShowResumeModal(false);
@@ -222,7 +228,7 @@ export default function ListeningExamPage() {
     window.speechSynthesis.cancel();
     if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
 
-    const question = DEMO_QUESTIONS[qIndex];
+    const question = QUESTIONS[qIndex];
     const utterance = new SpeechSynthesisUtterance(question.audioText);
     utterance.lang = "fr-FR";
     utterance.rate = 0.92;
@@ -292,8 +298,8 @@ export default function ListeningExamPage() {
     localStorage.removeItem("tcf_session_listening_exam");
     if (intervalRef.current) clearInterval(intervalRef.current);
 
-    const correctCount = answers.filter((a, i) => a === DEMO_QUESTIONS[i].correct).length;
-    const tcfEvaluation = calculateTcfScore(correctCount, DEMO_QUESTIONS.length);
+    const correctCount = answers.filter((a, i) => a === QUESTIONS[i].correct).length;
+    const tcfEvaluation = calculateTcfScore(correctCount, QUESTIONS.length);
 
     try {
       const supabase = createClient();
@@ -310,7 +316,7 @@ export default function ListeningExamPage() {
             nclcLevel: tcfEvaluation.nclcLevel,
             cecrlLevel: tcfEvaluation.cecrlLevel,
             correctCount,
-            totalQuestions: DEMO_QUESTIONS.length,
+            totalQuestions: QUESTIONS.length,
           }
         });
       }
@@ -319,8 +325,8 @@ export default function ListeningExamPage() {
     }
   };
 
-  const correctCount = answers.filter((a, i) => a === DEMO_QUESTIONS[i].correct).length;
-  const tcfRes = calculateTcfScore(correctCount, DEMO_QUESTIONS.length);
+  const correctCount = answers.filter((a, i) => a === QUESTIONS[i].correct).length;
+  const tcfRes = calculateTcfScore(correctCount, QUESTIONS.length);
   const answeredCount = answers.filter((a) => a !== null).length;
 
   // ── Vue résultats (Attestation Officielle TCF Style) ──
@@ -353,7 +359,7 @@ export default function ListeningExamPage() {
                 </div>
 
                 <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                  <div className="text-2xl font-black text-slate-900 dark:text-white">{correctCount}/{DEMO_QUESTIONS.length}</div>
+                  <div className="text-2xl font-black text-slate-900 dark:text-white">{correctCount}/{QUESTIONS.length}</div>
                   <div className="text-xs text-slate-500 font-bold mt-1">Bonnes réponses ({tcfRes.percentage}%)</div>
                 </div>
 
@@ -389,7 +395,7 @@ export default function ListeningExamPage() {
     );
   }
 
-  const currentQuestionData = DEMO_QUESTIONS[currentQ];
+  const currentQuestionData = QUESTIONS[currentQ];
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-12 px-2 sm:px-4">
@@ -413,7 +419,7 @@ export default function ListeningExamPage() {
               <Headphones className="h-5 w-5 text-blue-600" />
               Compréhension Orale (CO)
             </h1>
-            <p className="text-xs text-slate-500">Question {currentQ + 1} sur {DEMO_QUESTIONS.length}</p>
+            <p className="text-xs text-slate-500">Question {currentQ + 1} sur {QUESTIONS.length}</p>
           </div>
         </div>
 
@@ -428,7 +434,7 @@ export default function ListeningExamPage() {
               Écoute Audio #{currentQuestionData.id}
             </Badge>
             <span className="text-xs font-semibold text-slate-400">
-              Répondu : {answeredCount}/{DEMO_QUESTIONS.length}
+              Répondu : {answeredCount}/{QUESTIONS.length}
             </span>
           </div>
 
@@ -499,9 +505,9 @@ export default function ListeningExamPage() {
               <ChevronLeft className="h-4 w-4 mr-1" /> Précédent
             </Button>
 
-            {currentQ < DEMO_QUESTIONS.length - 1 ? (
+            {currentQ < QUESTIONS.length - 1 ? (
               <Button
-                onClick={() => setCurrentQ(q => Math.min(DEMO_QUESTIONS.length - 1, q + 1))}
+                onClick={() => setCurrentQ(q => Math.min(QUESTIONS.length - 1, q + 1))}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl"
               >
                 Suivant <ChevronRight className="h-4 w-4 ml-1" />

@@ -1,13 +1,18 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import Link from "next/link";
 import { 
   Mic, Play, Square, RotateCcw, CheckCircle2, ChevronLeft, 
   BrainCircuit, Clock, Volume2, Pause 
 } from "lucide-react";
+import { ResumeSessionModal } from "@/components/ui/ResumeSessionModal";
+import { saveSessionState } from "@/utils/sessionManager";
+import { markCourseStarted, markLessonCompleted, addLearningTimeSeconds } from "@/utils/courseTracker";
+import { getCurrentUserPack, PACK_CONFIGS } from "@/utils/subscriptionEngine";
+import { generateLessonsForPack } from "@/utils/courseGenerator";
 
-const LESSONS = [
+const BASE_LESSONS = [
   {
     id: 1, title: "Techniques de prise de parole", duration: "12 min",
     intro: `Dans cette leçon, vous allez apprendre les fondamentaux de la prise de parole en français pour l'examen TCF Canada. L'épreuve d'expression orale évalue votre capacité à communiquer spontanément et de manière cohérente.`,
@@ -42,12 +47,73 @@ const AI_ORAL_FEEDBACK = [
 type RecordState = "idle" | "recording" | "done";
 
 export default function SpeakingCoursePage() {
+  const [pack, setPack] = useState(getCurrentUserPack());
+  
+  useEffect(() => {
+    setPack(getCurrentUserPack());
+  }, []);
+
+  const LESSONS = React.useMemo<typeof BASE_LESSONS>(() => generateLessonsForPack(BASE_LESSONS, pack, PACK_CONFIGS[pack]), [pack]);
+
   const [currentLesson, setCurrentLesson] = useState(0);
   const [recordState, setRecordState] = useState<RecordState>("idle");
   const [isPlayingPrompt, setIsPlayingPrompt] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiFeedback, setAiFeedback] = useState<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const [showResumeModal, setShowResumeModal] = useState(false);
+  const [savedSessionData, setSavedSessionData] = useState<any>(null);
+
+  // Load Session Progress
+  useEffect(() => {
+    const rawSaved = localStorage.getItem("tcf_session_speaking_course");
+    if (rawSaved) {
+      try {
+        const parsed = JSON.parse(rawSaved);
+        if (parsed && (parsed.currentLesson > 0 || parsed.recordState === "done")) {
+          setSavedSessionData(parsed);
+          setShowResumeModal(true);
+        }
+      } catch (e) {
+        console.error("Erreur de parsing session:", e);
+      }
+    }
+  }, []);
+
+  // Auto-Save Session Progress
+  useEffect(() => {
+    if (!showResumeModal && (currentLesson > 0 || recordState === "done")) {
+      saveSessionState("tcf_session_speaking_course", {
+        currentLesson,
+        recordState
+      });
+    }
+  }, [currentLesson, recordState, showResumeModal]);
+
+  const handleResumeSession = () => {
+    if (savedSessionData) {
+      if (typeof savedSessionData.currentLesson === "number") setCurrentLesson(savedSessionData.currentLesson);
+      if (savedSessionData.recordState) setRecordState(savedSessionData.recordState);
+    }
+    setShowResumeModal(false);
+  };
+
+  const handleRestartSession = () => {
+    localStorage.removeItem("tcf_session_speaking_course");
+    setCurrentLesson(0);
+    setRecordState("idle");
+    setShowResumeModal(false);
+  };
+
+  // Mark course as started and track learning time day by day
+  useEffect(() => {
+    markCourseStarted("po", LESSONS.length);
+    const timer = setInterval(() => {
+      addLearningTimeSeconds(1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const lesson = LESSONS[currentLesson];
 
@@ -82,6 +148,7 @@ export default function SpeakingCoursePage() {
     setAiFeedback(null);
     await new Promise(r => setTimeout(r, 2000));
     setAiFeedback(AI_ORAL_FEEDBACK.join("\n\n"));
+    markLessonCompleted("po", currentLesson + 1, LESSONS.length);
     setAiLoading(false);
   };
 
@@ -93,6 +160,14 @@ export default function SpeakingCoursePage() {
 
   return (
     <div className="space-y-6 pb-12 max-w-4xl mx-auto">
+      <ResumeSessionModal 
+        isOpen={showResumeModal}
+        title="Leçon en cours détectée"
+        message="Vous avez déjà commencé cette leçon. Souhaitez-vous reprendre là où vous en étiez ?"
+        onResume={handleResumeSession}
+        onRestart={handleRestartSession}
+      />
+
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs text-slate-500">
         <Link href="/dashboard/courses" className="hover:text-purple-600 flex items-center gap-1">

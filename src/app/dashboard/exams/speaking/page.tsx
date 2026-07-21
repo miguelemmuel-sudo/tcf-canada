@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,9 +9,13 @@ import {
   Clock, Mic, Square, Play, RotateCcw,
   BrainCircuit, ChevronLeft, ChevronRight, CheckCircle2, Volume2
 } from "lucide-react";
+import { ResumeSessionModal } from "@/components/ui/ResumeSessionModal";
+import { saveSessionState } from "@/utils/sessionManager";
+import { getCurrentUserPack, PACK_CONFIGS } from "@/utils/subscriptionEngine";
+import { generateExamWritingTasksForPack } from "@/utils/courseGenerator";
 
 // ─── Tâches orales ────────────────────────────────────────────────────────────
-const ORAL_TASKS = [
+const BASE_ORAL_TASKS = [
   {
     id: 1,
     title: "Tâche 1 — Monologue guidé",
@@ -60,6 +64,10 @@ function Timer({ seconds, color = "text-foreground" }: { seconds: number; color?
 }
 
 export default function SpeakingExamPage() {
+  const [pack, setPack] = useState(getCurrentUserPack());
+  useEffect(() => setPack(getCurrentUserPack()), []);
+  const ORAL_TASKS = React.useMemo<typeof BASE_ORAL_TASKS>(() => generateExamWritingTasksForPack(BASE_ORAL_TASKS, pack, PACK_CONFIGS[pack], "speaking"), [pack]);
+
   const [currentTask, setCurrentTask] = useState(0);
   const [recordState, setRecordState] = useState<RecordState>("idle");
   const [prepTimeLeft, setPrepTimeLeft] = useState(0);
@@ -72,8 +80,56 @@ export default function SpeakingExamPage() {
   const [submitted, setSubmitted] = useState(false);
   const [isSpeakingPrompt, setIsSpeakingPrompt] = useState(false);
 
+  // Resume Session Modal State
+  const [showResumeModal, setShowResumeModal] = useState(false);
+  const [savedSessionData, setSavedSessionData] = useState<any>(null);
+
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const audioSimRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Detect Saved Session on Mount
+  useEffect(() => {
+    const rawSaved = localStorage.getItem("tcf_session_speaking_exam");
+    if (rawSaved) {
+      try {
+        const parsed = JSON.parse(rawSaved);
+        if (parsed && !parsed.submitted && (parsed.hasRecording?.some((r: boolean) => r) || parsed.currentTask > 0)) {
+          setSavedSessionData(parsed);
+          setShowResumeModal(true);
+        }
+      } catch (e) {
+        console.error("Erreur de parsing session PO:", e);
+      }
+    }
+  }, []);
+
+  // Auto-Save Session Progress
+  useEffect(() => {
+    if (!submitted && !showResumeModal && (hasRecording.some(r => r) || currentTask > 0)) {
+      saveSessionState("tcf_session_speaking_exam", {
+        currentTask,
+        hasRecording,
+        globalTimeLeft
+      });
+    }
+  }, [currentTask, hasRecording, globalTimeLeft, submitted, showResumeModal]);
+
+  const handleResumeSession = () => {
+    if (savedSessionData) {
+      if (savedSessionData.hasRecording) setHasRecording(savedSessionData.hasRecording);
+      if (typeof savedSessionData.currentTask === "number") setCurrentTask(savedSessionData.currentTask);
+      if (typeof savedSessionData.globalTimeLeft === "number") setGlobalTimeLeft(savedSessionData.globalTimeLeft);
+    }
+    setShowResumeModal(false);
+  };
+
+  const handleRestartSession = () => {
+    localStorage.removeItem("tcf_session_speaking_exam");
+    setHasRecording(Array(ORAL_TASKS.length).fill(false));
+    setCurrentTask(0);
+    setGlobalTimeLeft(12 * 60);
+    setShowResumeModal(false);
+  };
 
   const task = ORAL_TASKS[currentTask];
 
@@ -137,7 +193,18 @@ export default function SpeakingExamPage() {
     try {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorderRef.current = new MediaRecorder(stream);
+        
+        // Options de compression (voix) pour limiter drastiquement la taille (16kbps)
+        const options: MediaRecorderOptions = { audioBitsPerSecond: 16000 };
+        if (typeof MediaRecorder.isTypeSupported === 'function') {
+          if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+            options.mimeType = 'audio/webm;codecs=opus';
+          } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+            options.mimeType = 'audio/mp4';
+          }
+        }
+        
+        mediaRecorderRef.current = new MediaRecorder(stream, options);
         audioChunksRef.current = [];
 
         mediaRecorderRef.current.ondataavailable = (event) => {
@@ -147,7 +214,8 @@ export default function SpeakingExamPage() {
         };
 
         mediaRecorderRef.current.onstop = () => {
-          const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+          const mimeType = mediaRecorderRef.current?.mimeType || "audio/webm";
+          const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
           if (audioBlobUrlRef.current) {
             URL.revokeObjectURL(audioBlobUrlRef.current);
           }
@@ -298,6 +366,14 @@ export default function SpeakingExamPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-4">
+      {/* Resume Session Modal */}
+      <ResumeSessionModal
+        isOpen={showResumeModal}
+        title="Test en cours détecté"
+        message="Vous avez déjà commencé ce test. Souhaitez-vous reprendre là où vous en étiez ?"
+        onResume={handleResumeSession}
+        onRestart={handleRestartSession}
+      />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

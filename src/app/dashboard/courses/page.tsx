@@ -5,9 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { 
   BookOpen, CheckCircle2, Clock, ChevronRight, PlayCircle, Lock,
-  Volume2, PenTool, Mic, Star, Loader2
+  Volume2, PenTool, Mic, Loader2
 } from "lucide-react";
 import { createClient } from "@/lib/supabaseClient";
+import { getSummaryCourseStats, getStoredCoursesData } from "@/utils/courseTracker";
 
 const courseCategories = [
   { name: "Tous les cours", href: "/dashboard/courses" },
@@ -30,14 +31,14 @@ const defaultCoursesList = [
     href: "/dashboard/courses/listening",
     color: "blue",
     lessons_list: [
-      { title: "Introduction à la CO TCF", duration: "12 min", done: false },
-      { title: "Conversations courtes — niveau A2", duration: "15 min", done: false },
-      { title: "Conversations longues — niveau B1", duration: "18 min", done: false },
-      { title: "Annonces et messages", duration: "14 min", done: false },
-      { title: "Débats et discussions", duration: "20 min", done: false },
-      { title: "Écoute sélective avancée", duration: "22 min", done: false },
-      { title: "Simulation — Compréhension orale B2", duration: "25 min", done: false },
-      { title: "Test final CO", duration: "30 min", done: false },
+      { id: 1, title: "Introduction à la CO TCF", duration: "12 min", done: false },
+      { id: 2, title: "Conversations courtes — niveau A2", duration: "15 min", done: false },
+      { id: 3, title: "Conversations longues — niveau B1", duration: "18 min", done: false },
+      { id: 4, title: "Annonces et messages", duration: "14 min", done: false },
+      { id: 5, title: "Débats et discussions", duration: "20 min", done: false },
+      { id: 6, title: "Écoute sélective avancée", duration: "22 min", done: false },
+      { id: 7, title: "Simulation — Compréhension orale B2", duration: "25 min", done: false },
+      { id: 8, title: "Test final CO", duration: "30 min", done: false },
     ]
   },
   {
@@ -52,16 +53,16 @@ const defaultCoursesList = [
     href: "/dashboard/courses/reading",
     color: "emerald",
     lessons_list: [
-      { title: "Stratégies de lecture rapide", duration: "10 min", done: false },
-      { title: "Comprendre les articles de presse", duration: "15 min", done: false },
-      { title: "Textes administratifs et formulaires", duration: "12 min", done: false },
-      { title: "Textes littéraires", duration: "18 min", done: false },
-      { title: "Inférences et implicite", duration: "20 min", done: false },
-      { title: "Vocabulaire en contexte", duration: "16 min", done: false },
-      { title: "Textes scientifiques et techniques", duration: "22 min", done: false },
-      { title: "Lecture et résumé", duration: "20 min", done: false },
-      { title: "Simulation — CE niveau B2", duration: "35 min", done: false },
-      { title: "Test final CE", duration: "40 min", done: false },
+      { id: 1, title: "Stratégies de lecture rapide", duration: "10 min", done: false },
+      { id: 2, title: "Comprendre les articles de presse", duration: "15 min", done: false },
+      { id: 3, title: "Textes administratifs et formulaires", duration: "12 min", done: false },
+      { id: 4, title: "Textes littéraires", duration: "18 min", done: false },
+      { id: 5, title: "Inférences et implicite", duration: "20 min", done: false },
+      { id: 6, title: "Vocabulaire en contexte", duration: "16 min", done: false },
+      { id: 7, title: "Textes scientifiques et techniques", duration: "22 min", done: false },
+      { id: 8, title: "Lecture et résumé", duration: "20 min", done: false },
+      { id: 9, title: "Simulation — CE niveau B2", duration: "35 min", done: false },
+      { id: 10, title: "Test final CE", duration: "40 min", done: false },
     ]
   },
   {
@@ -76,16 +77,16 @@ const defaultCoursesList = [
     href: "/dashboard/courses/writing",
     color: "amber",
     lessons_list: [
-      { title: "Structure d'un courriel formel", duration: "12 min", done: false },
-      { title: "Rédaction d'une lettre officielle", duration: "15 min", done: false },
-      { title: "Argumentation et cohérence", duration: "18 min", done: false },
-      { title: "Connecteurs logiques", duration: "10 min", done: false },
-      { title: "Essai argumentatif — B1", duration: "25 min", done: false },
-      { title: "Synthèse de documents", duration: "22 min", done: false },
-      { title: "Vocabulaire de l'argumentation", duration: "14 min", done: false },
-      { title: "Révision et correction", duration: "20 min", done: false },
-      { title: "Simulation PE — niveau B2", duration: "40 min", done: false },
-      { title: "Test final PE", duration: "45 min", done: false },
+      { id: 1, title: "Structure d'un courriel formel", duration: "12 min", done: false },
+      { id: 2, title: "Rédaction d'une lettre officielle", duration: "15 min", done: false },
+      { id: 3, title: "Argumentation et cohérence", duration: "18 min", done: false },
+      { id: 4, title: "Connecteurs logiques", duration: "10 min", done: false },
+      { id: 5, title: "Essai argumentatif — B1", duration: "25 min", done: false },
+      { id: 6, title: "Synthèse de documents", duration: "22 min", done: false },
+      { id: 7, title: "Vocabulaire de l'argumentation", duration: "14 min", done: false },
+      { id: 8, title: "Révision et correction", duration: "20 min", done: false },
+      { id: 9, title: "Simulation PE — niveau B2", duration: "40 min", done: false },
+      { id: 10, title: "Test final PE", duration: "45 min", done: false },
     ]
   },
   {
@@ -100,16 +101,16 @@ const defaultCoursesList = [
     href: "/dashboard/courses/speaking",
     color: "purple",
     lessons_list: [
-      { title: "Techniques de prise de parole", duration: "12 min", done: false },
-      { title: "Monologue guidé — Présentation personnelle", duration: "15 min", done: false },
-      { title: "Interaction simulée — Niveau A2/B1", duration: "20 min", done: false },
-      { title: "Exprimer son opinion", duration: "18 min", done: false },
-      { title: "Débat : pour et contre", duration: "22 min", done: false },
-      { title: "Vocabulaire oral et hésitations", duration: "15 min", done: false },
-      { title: "Prononciation avancée", duration: "18 min", done: false },
-      { title: "Simulation orale — Niveau B2", duration: "30 min", done: false },
-      { title: "Point de vue argumenté", duration: "25 min", done: false },
-      { title: "Test final PO", duration: "35 min", done: false },
+      { id: 1, title: "Techniques de prise de parole", duration: "12 min", done: false },
+      { id: 2, title: "Monologue guidé — Présentation personnelle", duration: "15 min", done: false },
+      { id: 3, title: "Interaction simulée — Niveau A2/B1", duration: "20 min", done: false },
+      { id: 4, title: "Exprimer son opinion", duration: "18 min", done: false },
+      { id: 5, title: "Débat : pour et contre", duration: "22 min", done: false },
+      { id: 6, title: "Vocabulaire oral et hésitations", duration: "15 min", done: false },
+      { id: 7, title: "Prononciation avancée", duration: "18 min", done: false },
+      { id: 8, title: "Simulation orale — Niveau B2", duration: "30 min", done: false },
+      { id: 9, title: "Point de vue argumenté", duration: "25 min", done: false },
+      { id: 10, title: "Test final PO", duration: "35 min", done: false },
     ]
   }
 ];
@@ -133,69 +134,54 @@ export default function CoursesPage() {
     totalTimeFormatted: "0h00",
   });
 
-  useEffect(() => {
-    const loadCourseProgress = async () => {
-      try {
-        setLoading(true);
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+  const refreshCourseData = () => {
+    const trackerStats = getSummaryCourseStats();
+    const storedCourses = getStoredCoursesData();
 
-        if (user) {
-          const { data: userProgress, error } = await supabase
-            .from("course_progress")
-            .select("*")
-            .eq("user_id", user.id);
+    const updatedCourses = defaultCoursesList.map((c) => {
+      const courseData = storedCourses[c.id];
+      if (courseData) {
+        const completedIds = new Set(courseData.completedLessons || []);
+        const doneCount = completedIds.size;
+        const totalCount = c.lessons_list.length;
+        const percentage = Math.min(100, Math.round((doneCount / totalCount) * 100));
 
-          if (!error && userProgress && userProgress.length > 0) {
-            let totalLessons = 0;
-            let inProgressCount = 0;
+        const updatedLessonsList = c.lessons_list.map((l) => ({
+          ...l,
+          done: completedIds.has(l.id) || completedIds.has(l.id.toString()),
+        }));
 
-            const updatedCourses = defaultCoursesList.map(c => {
-              const prog = userProgress.find(p => p.course_id === c.id);
-              if (prog) {
-                const percentage = prog.completion_percentage || 0;
-                if (percentage > 0) inProgressCount++;
-                const doneCount = Math.round((percentage / 100) * c.lessons_list.length);
-                totalLessons += doneCount;
-
-                const updatedLessonsList = c.lessons_list.map((l, idx) => ({
-                  ...l,
-                  done: idx < doneCount
-                }));
-
-                return {
-                  ...c,
-                  progress: percentage,
-                  lessons: `${doneCount} / ${c.lessons_list.length} leçons`,
-                  lessons_list: updatedLessonsList
-                };
-              }
-              return c;
-            });
-
-            setCourses(updatedCourses);
-            setStats({
-              coursesInProgress: inProgressCount,
-              lessonsCompleted: totalLessons,
-              totalTimeFormatted: `${Math.round(totalLessons * 0.3)}h${(totalLessons * 15) % 60}m`,
-            });
-          } else {
-            setCourses(defaultCoursesList);
-            setStats({
-              coursesInProgress: 0,
-              lessonsCompleted: 0,
-              totalTimeFormatted: "0h00",
-            });
-          }
-        }
-      } catch (err) {
-        console.error("Erreur chargement des cours Supabase:", err);
-      } finally {
-        setLoading(false);
+        return {
+          ...c,
+          progress: percentage,
+          lessons: `${doneCount} / ${totalCount} leçons`,
+          lessons_list: updatedLessonsList,
+        };
       }
-    };
+      return c;
+    });
 
-    loadCourseProgress();
+    setCourses(updatedCourses);
+    setStats({
+      coursesInProgress: trackerStats.coursesInProgress,
+      lessonsCompleted: trackerStats.lessonsCompleted,
+      totalTimeFormatted: trackerStats.totalTimeFormatted,
+    });
+  };
+
+  useEffect(() => {
+    refreshCourseData();
+    setLoading(false);
+
+    // Event Listeners for real-time updates
+    const handleUpdate = () => refreshCourseData();
+    window.addEventListener("storage_course_progress_updated", handleUpdate);
+    window.addEventListener("storage_learning_time_updated", handleUpdate);
+
+    return () => {
+      window.removeEventListener("storage_course_progress_updated", handleUpdate);
+      window.removeEventListener("storage_learning_time_updated", handleUpdate);
+    };
   }, []);
 
   if (loading) {
@@ -236,7 +222,7 @@ export default function CoursesPage() {
         </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* KPI Cards (Dynamic real-time values) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-slate-950 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center space-x-4">
           <div className="h-12 w-12 rounded-full bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-blue-600 shrink-0">

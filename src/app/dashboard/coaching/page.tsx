@@ -11,18 +11,26 @@ import {
   Download, 
   PlayCircle 
 } from "lucide-react";
+import { isFeatureAccessible, getCurrentUserPack } from "@/utils/subscriptionEngine";
+import { LockedFeatureBanner } from "@/components/ui/LockedFeatureBanner";
 
 export default function CoachingPage() {
   const [activeTab, setActiveTab] = useState("Mes coachings");
   const [isNewUser, setIsNewUser] = useState(false);
   const [downloadingResource, setDownloadingResource] = useState<string | null>(null);
+  const [pack, setPack] = useState(getCurrentUserPack());
 
   useEffect(() => {
     const newFlag = localStorage.getItem("griffon_user_new");
     if (newFlag === "true") {
       setIsNewUser(true);
     }
+    setPack(getCurrentUserPack());
   }, []);
+
+  if (!isFeatureAccessible("coaching", pack)) {
+    return <LockedFeatureBanner featureName="Coaching Individuel & Visioconférence" />;
+  }
 
   const handleDownload = (filename: string, content: string) => {
     setDownloadingResource(filename);

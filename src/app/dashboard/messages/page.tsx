@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Search, 
   Plus, 
@@ -13,6 +13,8 @@ import {
   Filter,
   ArrowLeft
 } from "lucide-react";
+import { isFeatureAccessible, getCurrentUserPack } from "@/utils/subscriptionEngine";
+import { LockedFeatureBanner } from "@/components/ui/LockedFeatureBanner";
 
 const conversations = [
   { id: 1, name: "Coach Marie L.", time: "10:30", lastMsg: "Parfait ! Continue ainsi pour atteindre...", badge: "1", isCoach: true, avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&auto=format&fit=crop&q=80" },
@@ -32,6 +34,16 @@ interface Message {
 }
 
 export default function MessagesPage() {
+  const [pack, setPack] = useState(getCurrentUserPack());
+
+  useEffect(() => {
+    setPack(getCurrentUserPack());
+  }, []);
+
+  if (!isFeatureAccessible("messages", pack)) {
+    return <LockedFeatureBanner featureName="Messagerie directe avec votre Coach" />;
+  }
+
   const [selectedConv, setSelectedConv] = useState(conversations[0]);
   const [msgInput, setMsgInput] = useState("");
   const [showMobileChat, setShowMobileChat] = useState(false);

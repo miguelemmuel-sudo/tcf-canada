@@ -1,14 +1,19 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { 
   Volume2, Play, Pause, RotateCcw, CheckCircle2, 
   ChevronLeft, BrainCircuit, Clock, Headphones, Award, Sparkles, Check, X
 } from "lucide-react";
 import { ResumeSessionModal } from "@/components/ui/ResumeSessionModal";
+import { saveSessionState } from "@/utils/sessionManager";
 
-const LESSONS = [
+import { markCourseStarted, markLessonCompleted, addLearningTimeSeconds } from "@/utils/courseTracker";
+import { getCurrentUserPack, PACK_CONFIGS } from "@/utils/subscriptionEngine";
+import { generateLessonsForPack } from "@/utils/courseGenerator";
+
+const BASE_LESSONS = [
   {
     id: 1, title: "Introduction à la CO TCF", duration: "12:00",
     audioText: "Bienvenue dans le cours de compréhension orale TCF Canada. Dans cette leçon, vous allez apprendre les stratégies essentielles pour réussir les épreuves d'écoute.",
@@ -46,6 +51,14 @@ const AI_TIPS = [
 ];
 
 export default function ListeningCoursePage() {
+  const [pack, setPack] = useState(getCurrentUserPack());
+  
+  useEffect(() => {
+    setPack(getCurrentUserPack());
+  }, []);
+
+  const LESSONS = React.useMemo<typeof BASE_LESSONS>(() => generateLessonsForPack(BASE_LESSONS, pack, PACK_CONFIGS[pack]), [pack]);
+
   const [currentLesson, setCurrentLesson] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -58,6 +71,15 @@ export default function ListeningCoursePage() {
   const [savedSessionData, setSavedSessionData] = useState<any>(null);
 
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
+
+  // Mark course as started and track learning time day by day
+  useEffect(() => {
+    markCourseStarted("co", LESSONS.length);
+    const timer = setInterval(() => {
+      addLearningTimeSeconds(1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Detect Saved Session on Mount
   useEffect(() => {
@@ -78,11 +100,10 @@ export default function ListeningCoursePage() {
   // Auto-Save Session Progress
   useEffect(() => {
     if (!showResults && !showResumeModal && (Object.keys(answers).length > 0 || currentLesson > 0)) {
-      localStorage.setItem("tcf_session_listening_course", JSON.stringify({
+      saveSessionState("tcf_session_listening_course", {
         currentLesson,
-        answers,
-        timestamp: Date.now()
-      }));
+        answers
+      });
     }
   }, [currentLesson, answers, showResults, showResumeModal]);
 
@@ -345,6 +366,7 @@ export default function ListeningCoursePage() {
           <button 
             onClick={() => {
               setShowResults(true);
+              markLessonCompleted("co", currentLesson + 1, LESSONS.length);
               localStorage.removeItem("tcf_session_listening_course");
             }} 
             disabled={Object.keys(answers).length < lesson.questions.length || showResults}

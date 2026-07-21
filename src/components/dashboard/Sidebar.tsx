@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -15,17 +16,20 @@ import {
   User,
   Settings,
   LogOut,
+  Lock,
+  Crown
 } from "lucide-react";
+import { getCurrentUserPack, isFeatureAccessible, getPackPermissions, PackType } from "@/utils/subscriptionEngine";
 
 const navItems = [
   { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
   { href: "/dashboard/courses", label: "Mes cours", icon: BookOpen },
   { href: "/dashboard/exams", label: "Tests pratiques", icon: FileCheck2 },
   { href: "/dashboard/results", label: "Résultats", icon: BarChart3 },
-  { href: "/dashboard/coaching", label: "Coaching", icon: UserCheck },
-  { href: "/dashboard/reservations", label: "Mes réservations", icon: Calendar },
+  { href: "/dashboard/coaching", label: "Coaching", icon: UserCheck, featureKey: "coaching" as const },
+  { href: "/dashboard/reservations", label: "Mes réservations", icon: Calendar, featureKey: "reservations" as const },
   { href: "/dashboard/payments", label: "Paiements", icon: CreditCard },
-  { href: "/dashboard/messages", label: "Messages", icon: MessageSquare, badge: "2" },
+  { href: "/dashboard/messages", label: "Messages", icon: MessageSquare, featureKey: "messages" as const },
   { href: "/dashboard/profile", label: "Mon profil", icon: User },
   { href: "/dashboard/settings", label: "Paramètres", icon: Settings },
 ];
@@ -37,6 +41,19 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const [pack, setPack] = useState<PackType>("griffon");
+
+  const refreshPack = () => {
+    setPack(getCurrentUserPack());
+  };
+
+  useEffect(() => {
+    refreshPack();
+    window.addEventListener("storage_user_pack_updated", refreshPack);
+    return () => window.removeEventListener("storage_user_pack_updated", refreshPack);
+  }, []);
+
+  const config = getPackPermissions(pack);
 
   return (
     <>
@@ -68,27 +85,46 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           </div>
         </div>
 
+        {/* Current Pack Badge */}
+        <div className="px-4 pt-3">
+          <div className="px-3 py-2 rounded-xl bg-slate-800/80 border border-slate-700/60 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Crown className="h-4 w-4 text-amber-400 shrink-0" />
+              <span className="text-xs font-black text-white">{config.name}</span>
+            </div>
+            {config.badge && (
+              <span className="text-[9px] font-extrabold uppercase bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded">
+                ★
+              </span>
+            )}
+          </div>
+        </div>
+
         {/* Main Navigation Menu */}
         <nav className="flex-1 py-4 px-3 space-y-1.5">
           {navItems.map((item) => {
             const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+            const isLocked = item.featureKey ? !isFeatureAccessible(item.featureKey, pack) : false;
+
             return (
               <Link key={item.href} href={item.href} onClick={onClose}>
                 <div
                   className={cn(
-                    "flex items-center justify-between px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-150",
+                    "flex items-center justify-between px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-150 relative",
                     active
                       ? "bg-[#1d4ed8] text-white shadow-lg shadow-blue-900/40 font-bold"
-                      : "text-slate-300 hover:bg-slate-800/60 hover:text-white"
+                      : "text-slate-300 hover:bg-slate-800/60 hover:text-white",
+                    isLocked && "opacity-75"
                   )}
                 >
                   <div className="flex items-center space-x-3.5">
                     <item.icon className={cn("h-5 w-5", active ? "text-white" : "text-slate-400")} />
                     <span>{item.label}</span>
                   </div>
-                  {item.badge && (
-                    <span className="h-5 w-5 rounded-full bg-red-600 text-white text-xs font-bold flex items-center justify-center">
-                      {item.badge}
+
+                  {isLocked && (
+                    <span className="h-5 w-5 rounded-full bg-slate-800 text-amber-400 flex items-center justify-center border border-slate-700">
+                      <Lock className="h-3 w-3" />
                     </span>
                   )}
                 </div>
@@ -98,37 +134,19 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
           <button
             onClick={() => {
-              localStorage.removeItem("griffon_user_name");
-              localStorage.removeItem("griffon_user_email");
-              window.location.href = "/";
+              if (typeof window !== "undefined") {
+                localStorage.removeItem("griffon_user_name");
+                localStorage.removeItem("griffon_user_email");
+                window.location.href = "/login";
+              }
             }}
-            className="w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl text-slate-300 hover:bg-red-700/60 hover:text-white transition-all font-semibold text-sm mt-2"
+            className="w-full flex items-center space-x-3.5 px-4 py-3 rounded-xl font-semibold text-sm text-red-400 hover:bg-red-950/40 hover:text-red-300 transition-all mt-4"
           >
-            <LogOut className="h-5 w-5 text-slate-400" />
+            <LogOut className="h-5 w-5" />
             <span>Déconnexion</span>
           </button>
         </nav>
-
-        {/* Bottom Promo Card */}
-        <div className="p-4 m-3 rounded-2xl bg-gradient-to-b from-[#0e2c52] to-[#0a1e38] border border-blue-800/40 text-center relative overflow-hidden">
-          <div className="text-xs font-semibold text-slate-300">Réussissez votre</div>
-          <div className="text-base font-extrabold text-white tracking-wide mt-0.5">TCF CANADA</div>
-          <div className="text-[11px] text-slate-300 mt-1 leading-tight">
-            Atteignez vos objectifs d'immigration et d'études !
-          </div>
-          <div className="mt-3 relative rounded-xl overflow-hidden shadow-md">
-            <img 
-              src="https://images.unsplash.com/photo-1517935703635-27c737822457?w=400&auto=format&fit=crop&q=80" 
-              alt="Toronto Canada skyline" 
-              className="w-full h-24 object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end justify-center pb-2">
-              <img src="https://flagcdn.com/ca.svg" alt="Drapeau Canada" className="h-4 w-auto rounded-[2px]" />
-            </div>
-          </div>
-        </div>
       </aside>
     </>
   );
 }
-

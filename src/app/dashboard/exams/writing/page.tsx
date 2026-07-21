@@ -1,14 +1,18 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Clock, PenTool, BrainCircuit, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle } from "lucide-react";
+import { ResumeSessionModal } from "@/components/ui/ResumeSessionModal";
+import { saveSessionState } from "@/utils/sessionManager";
+import { getCurrentUserPack, PACK_CONFIGS } from "@/utils/subscriptionEngine";
+import { generateExamWritingTasksForPack } from "@/utils/courseGenerator";
 
 // ─── Tâches d'Expression Écrite ──────────────────────────────────────────────
-const TASKS = [
+const BASE_TASKS = [
   {
     id: 1,
     type: "courriel",
@@ -77,19 +81,72 @@ function countWords(text: string): number {
 }
 
 export default function WritingExamPage() {
+  const [pack, setPack] = useState(getCurrentUserPack());
+  useEffect(() => setPack(getCurrentUserPack()), []);
+  const TASKS = React.useMemo<typeof BASE_TASKS>(() => generateExamWritingTasksForPack(BASE_TASKS, pack, PACK_CONFIGS[pack], "writing"), [pack]);
+
   const [currentTask, setCurrentTask] = useState(0);
   const [texts, setTexts] = useState<string[]>(Array(TASKS.length).fill(""));
   const [timeLeft, setTimeLeft] = useState(TOTAL_TIME);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiFeedback, setAiFeedback] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  
+  // Resume Session Modal State
+  const [showResumeModal, setShowResumeModal] = useState(false);
+  const [savedSessionData, setSavedSessionData] = useState<any>(null);
+
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Detect Saved Session on Mount
   useEffect(() => {
-    if (submitted) return;
+    const rawSaved = localStorage.getItem("tcf_session_writing_exam");
+    if (rawSaved) {
+      try {
+        const parsed = JSON.parse(rawSaved);
+        if (parsed && !parsed.submitted && (parsed.texts?.some((t: string) => t.trim().length > 0) || parsed.currentTask > 0)) {
+          setSavedSessionData(parsed);
+          setShowResumeModal(true);
+        }
+      } catch (e) {
+        console.error("Erreur de parsing session PE:", e);
+      }
+    }
+  }, []);
+
+  // Auto-Save Session Progress
+  useEffect(() => {
+    if (!submitted && !showResumeModal && (texts.some(t => t.trim().length > 0) || currentTask > 0)) {
+      saveSessionState("tcf_session_writing_exam", {
+        currentTask,
+        texts,
+        timeLeft
+      });
+    }
+  }, [currentTask, texts, timeLeft, submitted, showResumeModal]);
+
+  const handleResumeSession = () => {
+    if (savedSessionData) {
+      if (savedSessionData.texts) setTexts(savedSessionData.texts);
+      if (typeof savedSessionData.currentTask === "number") setCurrentTask(savedSessionData.currentTask);
+      if (typeof savedSessionData.timeLeft === "number") setTimeLeft(savedSessionData.timeLeft);
+    }
+    setShowResumeModal(false);
+  };
+
+  const handleRestartSession = () => {
+    localStorage.removeItem("tcf_session_writing_exam");
+    setTexts(Array(TASKS.length).fill(""));
+    setCurrentTask(0);
+    setTimeLeft(TOTAL_TIME);
+    setShowResumeModal(false);
+  };
+
+  useEffect(() => {
+    if (submitted || showResumeModal) return;
     timerRef.current = setInterval(() => setTimeLeft((t) => Math.max(0, t - 1)), 1000);
     return () => clearInterval(timerRef.current!);
-  }, [submitted]);
+  }, [submitted, showResumeModal]);
 
   const handleAICorrection = useCallback(async () => {
     if (!texts[currentTask].trim()) return;
@@ -152,6 +209,15 @@ export default function WritingExamPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-4">
+      {/* Resume Session Modal */}
+      <ResumeSessionModal
+        isOpen={showResumeModal}
+        title="Test en cours détecté"
+        message="Vous avez déjà commencé ce test. Souhaitez-vous reprendre là où vous en étiez ?"
+        onResume={handleResumeSession}
+        onRestart={handleRestartSession}
+      />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
