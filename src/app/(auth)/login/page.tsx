@@ -64,16 +64,16 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen w-full flex flex-col lg:flex-row bg-slate-50 dark:bg-slate-950 overflow-hidden">
       
-      {/* Côté Gauche: Formulaire & Informations */}
-      <div className="flex-1 flex flex-col justify-between p-6 sm:p-10 lg:p-14 max-w-xl mx-auto w-full z-10">
+      {/* Côté Gauche / Formulaire Principal */}
+      <div className="flex-1 flex flex-col justify-between p-4 sm:p-8 lg:p-14 max-w-xl mx-auto w-full z-10">
         
         {/* Header Logo TCF Canada */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="h-12 w-12 rounded-2xl bg-red-50 dark:bg-red-950/60 border border-red-100 dark:border-red-900/50 flex items-center justify-center text-red-600 shadow-sm shrink-0">
-            <GraduationCap className="h-7 w-7" />
+        <div className="flex items-center gap-3 mb-4 sm:mb-6">
+          <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-2xl bg-red-50 dark:bg-red-950/60 border border-red-100 dark:border-red-900/50 flex items-center justify-center text-red-600 shadow-sm shrink-0">
+            <GraduationCap className="h-6 w-6 sm:h-7 sm:w-7" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
               TCF Canada
             </h1>
             <p className="text-xs font-semibold text-slate-500 flex items-center gap-1">
@@ -82,23 +82,26 @@ export default function LoginPage() {
           </div>
         </div>
 
+        {/* Visuel Canadien sur Mobile (Visible uniquement sur Smartphone) */}
+        <AuthRightPanel quote="Chaque effort aujourd'hui, est un pas de plus vers votre avenir au Canada." />
+
         {/* Form Main Card */}
         <motion.div 
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-200/80 dark:border-slate-800 space-y-6"
+          className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-8 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-200/80 dark:border-slate-800 space-y-5 sm:space-y-6"
         >
           {/* Card Header Icon & Title */}
           <div className="flex items-start gap-4">
-            <div className="h-12 w-12 rounded-2xl bg-red-50 dark:bg-red-950/60 border border-red-100 dark:border-red-900/40 flex items-center justify-center text-red-600 shrink-0">
-              <Lock className="h-6 w-6" />
+            <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-2xl bg-red-50 dark:bg-red-950/60 border border-red-100 dark:border-red-900/40 flex items-center justify-center text-red-600 shrink-0">
+              <Lock className="h-5 w-5 sm:h-6 sm:w-6" />
             </div>
             <div>
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-                Bon retour ! <span className="text-xl">👋</span>
+              <h2 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                Bon retour ! <span className="text-lg sm:text-xl">👋</span>
               </h2>
-              <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
                 Connectez-vous pour continuer votre préparation au TCF.
               </p>
             </div>
@@ -156,14 +159,14 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Remember & Forgot Password */}
-            <div className="flex items-center justify-between pt-1">
+            {/* Remember & Forgot Password (Fixed mobile collision with flex wrap) */}
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
               <label className="flex items-center space-x-2 text-xs font-semibold text-slate-600 dark:text-slate-400 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-4 w-4 rounded border-slate-300 text-red-600 focus:ring-red-500 accent-red-600"
+                  className="h-4 w-4 rounded border-slate-300 text-red-600 focus:ring-red-500 accent-red-600 shrink-0"
                 />
                 <span>Se souvenir de moi</span>
               </label>
@@ -229,7 +232,7 @@ export default function LoginPage() {
         </motion.div>
 
         {/* Footer 4 Feature Columns */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-8 border-t border-slate-200/60 dark:border-slate-800/60 mt-8 text-center">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 sm:pt-8 border-t border-slate-200/60 dark:border-slate-800/60 mt-6 sm:mt-8 text-center">
           <div className="space-y-1">
             <div className="h-9 w-9 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 flex items-center justify-center mx-auto">
               <BookOpen className="h-4.5 w-4.5" />
@@ -264,9 +267,6 @@ export default function LoginPage() {
         </div>
 
       </div>
-
-      {/* Côté Droit: Visuel Canadien Exact */}
-      <AuthRightPanel quote="Chaque effort aujourd'hui, est un pas de plus vers votre avenir au Canada." />
 
     </div>
   );

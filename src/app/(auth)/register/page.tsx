@@ -6,7 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { 
   GraduationCap, User, Mail, Lock, Eye, EyeOff, ShieldCheck, 
-  ArrowRight, Check, Sparkles, Headphones, BarChart2, Target, Shield, Loader2, X
+  ArrowRight, Check, Headphones, BarChart2, Target, Shield, Loader2, X
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { AuthRightPanel } from "@/components/auth/AuthRightPanel";
@@ -149,61 +149,64 @@ export default function RegisterPage() {
     <div className="min-h-screen w-full flex flex-col lg:flex-row bg-slate-50 dark:bg-slate-950 overflow-hidden">
       
       {/* Côté Gauche: Formulaire & Informations */}
-      <div className="flex-1 flex flex-col justify-between p-6 sm:p-10 lg:p-14 max-w-xl mx-auto w-full z-10">
+      <div className="flex-1 flex flex-col justify-between p-4 sm:p-8 lg:p-14 max-w-xl mx-auto w-full z-10">
         
         {/* Header Logo TCF Canada */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="h-12 w-12 rounded-2xl bg-red-50 dark:bg-red-950/60 border border-red-100 dark:border-red-900/50 flex items-center justify-center text-red-600 shadow-sm shrink-0">
-            <GraduationCap className="h-7 w-7" />
+        <div className="flex items-center gap-3 mb-4 sm:mb-6">
+          <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-2xl bg-red-50 dark:bg-red-950/60 border border-red-100 dark:border-red-900/50 flex items-center justify-center text-red-600 shadow-sm shrink-0">
+            <GraduationCap className="h-6 w-6 sm:h-7 sm:w-7" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
               TCF Canada
             </h1>
             <p className="text-xs font-semibold text-slate-500 flex items-center gap-1">
-              Réussissez votre avenir au Canada <span className="text-base">🇨🇦</span>
+              Réussissez votre avenir au Canada <span>🇨🇦</span>
             </p>
           </div>
         </div>
+
+        {/* Visuel Canadien sur Mobile (Visible uniquement sur Smartphone) */}
+        <AuthRightPanel quote="Chaque étape vous rapproche de votre avenir au Canada." />
 
         {/* Form Main Card */}
         <motion.div 
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-200/80 dark:border-slate-800 space-y-6"
+          className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-8 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-200/80 dark:border-slate-800 space-y-5 sm:space-y-6"
         >
           {/* Card Header Icon & Title */}
           <div className="flex items-start gap-4">
-            <div className="h-12 w-12 rounded-2xl bg-red-50 dark:bg-red-950/60 border border-red-100 dark:border-red-900/40 flex items-center justify-center text-red-600 shrink-0">
-              <User className="h-6 w-6" />
+            <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-2xl bg-red-50 dark:bg-red-950/60 border border-red-100 dark:border-red-900/40 flex items-center justify-center text-red-600 shrink-0">
+              <User className="h-5 w-5 sm:h-6 sm:w-6" />
             </div>
             <div>
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-                Créez votre compte <span className="text-xl">👋</span>
+              <h2 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                Créez votre compte <span className="text-lg sm:text-xl">👋</span>
               </h2>
-              <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
                 {step === 1 ? "Étape 1 sur 2 : Vos informations personnelles" : "Étape 2 sur 2 : Choix de votre formule"}
               </p>
             </div>
           </div>
 
           {/* Stepper Indicator */}
-          <div className="flex items-center gap-3 pt-1 pb-2">
-            <div className="flex items-center gap-2">
-              <span className={`h-7 w-7 rounded-full text-xs font-extrabold flex items-center justify-center ${step === 1 ? "bg-red-600 text-white" : "bg-emerald-600 text-white"}`}>
+          <div className="flex items-center gap-2 sm:gap-3 pt-1 pb-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <span className={`h-6 w-6 sm:h-7 sm:w-7 rounded-full text-[11px] sm:text-xs font-extrabold flex items-center justify-center ${step === 1 ? "bg-red-600 text-white" : "bg-emerald-600 text-white"}`}>
                 1
               </span>
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Informations personnelles</span>
+              <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200">Informations personnelles</span>
             </div>
 
             <div className={`h-0.5 flex-1 rounded-full ${step === 2 ? "bg-red-600" : "bg-slate-200 dark:bg-slate-800"}`} />
 
-            <div className="flex items-center gap-2">
-              <span className={`h-7 w-7 rounded-full text-xs font-extrabold flex items-center justify-center ${step === 2 ? "bg-red-600 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-500"}`}>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <span className={`h-6 w-6 sm:h-7 sm:w-7 rounded-full text-[11px] sm:text-xs font-extrabold flex items-center justify-center ${step === 2 ? "bg-red-600 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-500"}`}>
                 2
               </span>
-              <span className="text-xs font-bold text-slate-500">Choix de la formule</span>
+              <span className="text-[11px] sm:text-xs font-bold text-slate-500">Choix de la formule</span>
             </div>
           </div>
 
@@ -222,14 +225,14 @@ export default function RegisterPage() {
                   Nom complet
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-red-500" />
                   <input
                     type="text"
                     required
                     value={formDataState.name}
                     onChange={(e) => setFormDataState({ ...formDataState, name: e.target.value })}
                     placeholder="Jean Dupont"
-                    className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all"
+                    className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:bg-white transition-all"
                   />
                 </div>
               </div>
@@ -240,14 +243,14 @@ export default function RegisterPage() {
                   Adresse email
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-red-500" />
                   <input
                     type="email"
                     required
                     value={formDataState.email}
                     onChange={(e) => setFormDataState({ ...formDataState, email: e.target.value })}
                     placeholder="nom@exemple.com"
-                    className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all"
+                    className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:bg-white transition-all"
                   />
                 </div>
               </div>
@@ -258,7 +261,7 @@ export default function RegisterPage() {
                   Mot de passe
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-red-500" />
                   <input
                     type={showPassword ? "text" : "password"}
                     required
@@ -266,7 +269,7 @@ export default function RegisterPage() {
                     value={formDataState.password}
                     onChange={(e) => setFormDataState({ ...formDataState, password: e.target.value })}
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-10 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all"
+                    className="w-full pl-10 pr-10 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:bg-white transition-all"
                   />
                   <button
                     type="button"
@@ -285,7 +288,7 @@ export default function RegisterPage() {
                   Confirmer le mot de passe
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-red-500" />
                   <input
                     type={showConfirmPassword ? "text" : "password"}
                     required
@@ -293,7 +296,7 @@ export default function RegisterPage() {
                     value={formDataState.confirmPassword}
                     onChange={(e) => setFormDataState({ ...formDataState, confirmPassword: e.target.value })}
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-10 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all"
+                    className="w-full pl-10 pr-10 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:bg-white transition-all"
                   />
                   <button
                     type="button"
@@ -312,7 +315,7 @@ export default function RegisterPage() {
                   id="terms"
                   checked={termsAccepted}
                   onChange={(e) => setTermsAccepted(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-red-600 focus:ring-red-500 accent-red-600"
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-red-600 focus:ring-red-500 accent-red-600 shrink-0"
                   required
                 />
                 <label htmlFor="terms" className="text-xs text-slate-600 dark:text-slate-400 leading-tight">
@@ -331,7 +334,7 @@ export default function RegisterPage() {
               {/* Primary CTA Button */}
               <button
                 type="submit"
-                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-black text-sm shadow-lg shadow-red-600/30 hover:shadow-red-600/40 transition-all flex items-center justify-center gap-2 mt-2"
+                className="w-full py-3.5 rounded-2xl bg-[#D91B24] hover:bg-[#B8141C] text-white font-black text-sm shadow-lg shadow-red-600/30 hover:shadow-red-600/40 transition-all flex items-center justify-center gap-2 mt-2"
               >
                 <span>Continuer vers le choix de la formule</span>
                 <ArrowRight className="h-4 w-4" />
@@ -393,7 +396,7 @@ export default function RegisterPage() {
                   type="button"
                   onClick={handleFinalSubmit}
                   disabled={loading}
-                  className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 text-white font-black text-sm shadow-lg shadow-red-600/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="flex-1 py-3.5 rounded-2xl bg-[#D91B24] hover:bg-[#B8141C] text-white font-black text-sm shadow-lg shadow-red-600/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {loading ? (
                     <>
@@ -423,7 +426,7 @@ export default function RegisterPage() {
         </motion.div>
 
         {/* Footer 4 Feature Columns */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-8 border-t border-slate-200/60 dark:border-slate-800/60 mt-8 text-center">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 sm:pt-8 border-t border-slate-200/60 dark:border-slate-800/60 mt-6 sm:mt-8 text-center">
           <div className="space-y-1">
             <div className="h-9 w-9 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 flex items-center justify-center mx-auto">
               <Shield className="h-4.5 w-4.5" />
@@ -462,9 +465,6 @@ export default function RegisterPage() {
         </p>
 
       </div>
-
-      {/* Côté Droit: Visuel Canadien & Citation inspirante (Reliable Component) */}
-      <AuthRightPanel quote="Chaque étape vous rapproche de votre avenir au Canada." />
 
       {/* Modal Conditions */}
       {showPrivacyModal && (
