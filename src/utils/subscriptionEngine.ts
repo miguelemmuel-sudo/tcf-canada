@@ -146,6 +146,9 @@ export function isUserAdmin(): boolean {
     const isAdminFlag = localStorage.getItem("griffon_user_is_admin") === "true";
     const email = (localStorage.getItem("griffon_user_email") || "").toLowerCase().trim();
     const adminEmails = [
+      "emmuel.proreseau@gmail.com",
+      "joumefiomiguel@gmail.com",
+      "miguelemmuel@gmail.com",
       "admin.miguel@griffondor.com",
       "miguel.admin@griffondor.com",
       "admin@griffondor.com",

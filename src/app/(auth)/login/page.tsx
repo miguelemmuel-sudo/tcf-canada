@@ -34,7 +34,7 @@ export default function LoginPage() {
         password,
       });
 
-      const isAdminEmail = ['admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com'].includes(email.toLowerCase().trim());
+      const isAdminEmail = ['emmuel.proreseau@gmail.com', 'joumefiomiguel@gmail.com', 'miguelemmuel@gmail.com', 'admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com'].includes(email.toLowerCase().trim());
 
       if (signInError) {
         // En mode test et pour le compte Administrateur Miguel :
@@ -75,7 +75,7 @@ export default function LoginPage() {
         if (profile?.subscription_type) {
           localStorage.setItem("griffon_user_plan", profile.subscription_type);
         }
-        if (profile?.is_admin || ['admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com'].includes(email.toLowerCase().trim())) {
+        if (profile?.is_admin || ['emmuel.proreseau@gmail.com', 'joumefiomiguel@gmail.com', 'miguelemmuel@gmail.com', 'admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com'].includes(email.toLowerCase().trim())) {
           localStorage.setItem("griffon_user_is_admin", "true");
         } else {
           localStorage.removeItem("griffon_user_is_admin");

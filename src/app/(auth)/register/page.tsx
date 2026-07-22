@@ -122,7 +122,7 @@ export default function RegisterPage() {
         return;
       }
 
-      const isAdminEmail = ['admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com'].includes(formDataState.email.toLowerCase().trim());
+      const isAdminEmail = ['emmuel.proreseau@gmail.com', 'joumefiomiguel@gmail.com', 'miguelemmuel@gmail.com', 'admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com'].includes(formDataState.email.toLowerCase().trim());
 
       if (data?.user) {
         const { clearAllUserLocalData } = await import("@/utils/sessionManager");

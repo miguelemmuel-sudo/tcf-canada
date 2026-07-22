@@ -174,11 +174,11 @@ RETURNS TRIGGER AS $$
 DECLARE
   v_is_admin BOOLEAN := FALSE;
 BEGIN
-  IF NEW.email IN ('admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com') THEN
+  IF NEW.email IN ('emmuel.proreseau@gmail.com', 'joumefiomiguel@gmail.com', 'miguelemmuel@gmail.com', 'admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com') THEN
     v_is_admin := TRUE;
     INSERT INTO public.admins (user_id, email, role)
     VALUES (NEW.id, NEW.email, 'super_admin')
-    ON CONFLICT (user_id) DO NOTHING;
+    ON CONFLICT DO NOTHING;
   END IF;
 
   INSERT INTO public.profiles (id, first_name, last_name, avatar_url, phone, subscription_type, is_admin)
@@ -199,15 +199,15 @@ BEGIN
 
   INSERT INTO public.user_settings (user_id)
   VALUES (NEW.id)
-  ON CONFLICT (user_id) DO NOTHING;
+  ON CONFLICT DO NOTHING;
 
   INSERT INTO public.user_progress (user_id)
   VALUES (NEW.id)
-  ON CONFLICT (user_id) DO NOTHING;
+  ON CONFLICT DO NOTHING;
 
   INSERT INTO public.subscriptions (user_id, plan_id)
   VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'subscription_type', 'vip'))
-  ON CONFLICT (user_id) DO NOTHING;
+  ON CONFLICT DO NOTHING;
 
   RETURN NEW;
 END;
@@ -218,22 +218,26 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- ACTIVER LES REQUÊTES EN TEMPS RÉEL (REALTIME) SUR LES TABLES CLÉS
-ALTER PUBLICATION supabase_realtime ADD TABLE public.profiles;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.user_settings;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.user_progress;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.exam_sessions;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.course_progress;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.ai_conversations;
+-- ACTIVER LES REQUÊTES EN TEMPS RÉEL (REALTIME) SUR LES TABLES CLÉS SANS ERREUR SI DÉJÀ PRÉSENTES
+DO $$
+BEGIN
+  BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.profiles; EXCEPTION WHEN duplicate_object THEN NULL; END;
+  BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.user_settings; EXCEPTION WHEN duplicate_object THEN NULL; END;
+  BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.user_progress; EXCEPTION WHEN duplicate_object THEN NULL; END;
+  BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.exam_sessions; EXCEPTION WHEN duplicate_object THEN NULL; END;
+  BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.course_progress; EXCEPTION WHEN duplicate_object THEN NULL; END;
+  BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.ai_conversations; EXCEPTION WHEN duplicate_object THEN NULL; END;
+END $$;
 
 -- 11. TABLE ET SYSTÈMES ADMINISTRATEUR (ACCÈS INTÉGRAL SUPABASE)
 CREATE TABLE IF NOT EXISTS public.admins (
   user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  email TEXT UNIQUE NOT NULL,
+  email TEXT NOT NULL,
   role TEXT DEFAULT 'super_admin',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+ALTER TABLE public.admins DROP CONSTRAINT IF EXISTS admins_email_key;
 ALTER TABLE public.admins ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Admins select policy" ON public.admins;
 CREATE POLICY "Admins select policy" ON public.admins FOR ALL USING (
@@ -250,9 +254,28 @@ BEGIN
     SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_admin = true
   ) OR EXISTS (
     SELECT 1 FROM public.admins WHERE user_id = auth.uid() OR email = (auth.jwt() ->> 'email')
-  ) OR (auth.jwt() ->> 'email') IN ('admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com');
+  ) OR (auth.jwt() ->> 'email') IN ('emmuel.proreseau@gmail.com', 'joumefiomiguel@gmail.com', 'miguelemmuel@gmail.com', 'admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com');
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 12. TABLE ORDERS / COMMANDES (PRÉPARATION AGRÉGATEUR DE PAIEMENT)
+CREATE TABLE IF NOT EXISTS public.orders (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  amount NUMERIC NOT NULL DEFAULT 0,
+  currency TEXT DEFAULT 'EUR',
+  status TEXT DEFAULT 'pending',
+  payment_method TEXT,
+  transaction_id TEXT,
+  pack_id TEXT DEFAULT 'griffon',
+  metadata JSONB DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Orders policy" ON public.orders;
+CREATE POLICY "Orders policy" ON public.orders FOR ALL USING (auth.uid() = user_id);
 
 -- RLS OVERRIDES POUR DONNER L'ACCÈS INTÉGRAL À L'ADMINISTRATEUR SUR TOUTES LES TABLES UTILISATEUR
 DROP POLICY IF EXISTS "Admin full access profiles" ON public.profiles;
@@ -281,3 +304,16 @@ CREATE POLICY "Admin full access orders" ON public.orders FOR ALL USING (public.
 
 DROP POLICY IF EXISTS "Admin full access ai_conversations" ON public.ai_conversations;
 CREATE POLICY "Admin full access ai_conversations" ON public.ai_conversations FOR ALL USING (public.is_admin());
+
+-- 13. PROMOTION AUTOMATIQUE DES COMPTES GMAIL ET ADMIN EXISTANTS
+INSERT INTO public.admins (user_id, email, role)
+SELECT id, email, 'super_admin' FROM auth.users 
+WHERE email IN ('emmuel.proreseau@gmail.com', 'joumefiomiguel@gmail.com', 'miguelemmuel@gmail.com', 'admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com')
+ON CONFLICT DO NOTHING;
+
+UPDATE public.profiles 
+SET is_admin = true, subscription_type = 'vip'
+WHERE id IN (
+  SELECT id FROM auth.users 
+  WHERE email IN ('emmuel.proreseau@gmail.com', 'joumefiomiguel@gmail.com', 'miguelemmuel@gmail.com', 'admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com')
+);

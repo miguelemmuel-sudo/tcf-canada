@@ -161,7 +161,14 @@ export default function SpeakingExamPage() {
     setShowResumeModal(false);
   };
 
-  const task = ORAL_TASKS[currentTask];
+  const rawTask = ORAL_TASKS[currentTask] || BASE_ORAL_TASKS[0] || {};
+  const task = {
+    ...BASE_ORAL_TASKS[0],
+    ...rawTask,
+    tips: rawTask.tips || BASE_ORAL_TASKS[0]?.tips || [],
+    prepTime: rawTask.prepTime || 30,
+    speakTime: rawTask.speakTime || 90,
+  };
 
   // Vocalisation du sujet audio avec SpeechSynthesis
   const speakPrompt = useCallback((text: string) => {
@@ -472,14 +479,14 @@ export default function SpeakingExamPage() {
               <p className="text-xs text-muted-foreground">Prise de parole</p>
             </div>
             <div className="text-center p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-              <p className="text-lg font-bold">{task.tips.length}</p>
+              <p className="text-lg font-bold">{(task.tips || []).length}</p>
               <p className="text-xs text-muted-foreground">Conseils</p>
             </div>
           </div>
           <div className="space-y-1.5">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Conseils</p>
             <ul className="space-y-1">
-              {task.tips.map((tip, i) => (
+              {(task.tips || []).map((tip: string, i: number) => (
                 <li key={i} className="text-sm text-slate-600 dark:text-slate-400 flex items-start gap-2">
                   <span className="text-emerald-500 mt-0.5">•</span> {tip}
                 </li>

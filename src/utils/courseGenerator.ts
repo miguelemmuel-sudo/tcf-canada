@@ -69,13 +69,9 @@ export function generateExamPassagesForPack(basePassages: any[], currentPack: Pa
 export function generateExamWritingTasksForPack(baseTasks: any[], currentPack: PackType, packConfig: PackPermissions, type: "writing"|"speaking") {
   // Pour PE et PO, il y a généralement 3 tâches. Pour atteindre le quota, on fixe une limite visuelle acceptable
   const targetCount = packConfig.questionsPerExam > 10 ? 10 : packConfig.questionsPerExam;
-  if (type === "writing") {
-    const filtered = filterByPack(writingTasks, currentPack);
-    return fillToTarget(filtered, targetCount);
-  } else {
-    const filtered = filterByPack(speakingTasks, currentPack);
-    return fillToTarget(filtered, targetCount);
-  }
+  const sourceTasks = baseTasks && baseTasks.length > 0 ? baseTasks : (type === "writing" ? writingTasks : speakingTasks);
+  const filtered = filterByPack(sourceTasks, currentPack);
+  return fillToTarget(filtered, targetCount);
 }
 
 
