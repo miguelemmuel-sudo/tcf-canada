@@ -53,7 +53,7 @@ export default function SpeakingCoursePage() {
     setPack(getCurrentUserPack());
   }, []);
 
-  const LESSONS = React.useMemo<typeof BASE_LESSONS>(() => generateLessonsForPack(BASE_LESSONS, pack, PACK_CONFIGS[pack]), [pack]);
+  const LESSONS = React.useMemo<typeof BASE_LESSONS>(() => generateLessonsForPack(BASE_LESSONS, pack, PACK_CONFIGS[pack], "speaking"), [pack]);
 
   const [currentLesson, setCurrentLesson] = useState(0);
   const [recordState, setRecordState] = useState<RecordState>("idle");

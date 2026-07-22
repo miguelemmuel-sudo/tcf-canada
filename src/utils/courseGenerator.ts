@@ -3,40 +3,31 @@ import { listeningCourses, readingCourses, writingCourses, speakingCourses } fro
 import { listeningQuestions, readingPassages, writingTasks, speakingTasks } from "../data/realExams";
 
 function filterByPack(items: any[], pack: PackType) {
-  if (items.length === 0) return items;
-  if (pack === "standard") return items.slice(0, Math.min(2, items.length));
-  if (pack === "griffon") return items.slice(0, Math.min(4, items.length));
+  if (!items || items.length === 0) return [];
+  if (pack === "standard") return items.slice(0, Math.max(1, Math.ceil(items.length * 0.4)));
+  if (pack === "griffon") return items.slice(0, Math.max(2, Math.ceil(items.length * 0.8)));
   return items; // VIP
 }
 
 function fillToTarget(items: any[], targetCount: number) {
-  if (items.length === 0 || targetCount === 0) return items;
-  const result = [];
-  let idCounter = 1;
-  for (let i = 0; i < targetCount; i++) {
-    const originalItem = items[i % items.length];
-    const clone = { ...originalItem, id: idCounter };
-    if (i >= items.length) {
-      if (clone.title) {
-        clone.title = `${originalItem.title} (Entraînement #${Math.floor(i / items.length) + 1})`;
-      }
-      if (clone.question) {
-        clone.question = `${originalItem.question} (Variante #${Math.floor(i / items.length) + 1})`;
-      }
-    }
-    result.push(clone);
-    idCounter++;
-  }
-  return result;
+  if (!items || items.length === 0 || targetCount === 0) return [];
+  // En production : AUCUNE duplication ni répétition artificielle de cours ou de questions !
+  // Chaque cours et chaque question doit être 100% unique, indépendant et authentique.
+  const limit = Math.min(items.length, targetCount);
+  return items.slice(0, limit);
 }
 
 export function generateLessonsForPack(baseLessons: any[], currentPack: PackType, packConfig: PackPermissions, type: "listening"|"reading"|"writing"|"speaking" = "listening") {
   let realData = [];
-  switch (type) {
-    case "listening": realData = listeningCourses; break;
-    case "reading": realData = readingCourses; break;
-    case "writing": realData = writingCourses; break;
-    case "speaking": realData = speakingCourses; break;
+  if (baseLessons && baseLessons.length > 0) {
+    realData = baseLessons;
+  } else {
+    switch (type) {
+      case "listening": realData = listeningCourses; break;
+      case "reading": realData = readingCourses; break;
+      case "writing": realData = writingCourses; break;
+      case "speaking": realData = speakingCourses; break;
+    }
   }
   const filtered = filterByPack(realData, currentPack);
   return fillToTarget(filtered, packConfig.coursesCount);
@@ -44,30 +35,28 @@ export function generateLessonsForPack(baseLessons: any[], currentPack: PackType
 
 export function generateExamQuestionsForPack(baseQuestions: any[], currentPack: PackType, packConfig: PackPermissions, type: "reading"|"listening"|"writing"|"speaking") {
   if (type === "listening") {
-    const filtered = filterByPack(listeningQuestions, currentPack);
+    const source = baseQuestions && baseQuestions.length > 0 ? baseQuestions : listeningQuestions;
+    const filtered = filterByPack(source, currentPack);
     return fillToTarget(filtered, packConfig.questionsPerExam);
   }
   return [];
 }
 
 export function generateExamPassagesForPack(basePassages: any[], currentPack: PackType, packConfig: PackPermissions) {
-  const filtered = filterByPack(readingPassages, currentPack);
-  // Pour la CE, packConfig.questionsPerExam est le nombre total de *questions* attendues, pas de *textes*.
-  // Dans notre fichier réel, chaque texte a 2 questions.
+  const source = basePassages && basePassages.length > 0 ? basePassages : readingPassages;
+  const filtered = filterByPack(source, currentPack);
   const targetPassages = Math.ceil(packConfig.questionsPerExam / 2);
   const result = fillToTarget(filtered, targetPassages);
   
-  // Refaire les IDs des questions pour éviter les conflits React key
+  // Clonage profond des passages et refonte propre des IDs des questions sans muter les données sources
   let qIdCounter = 1;
-  result.forEach(passage => {
-    passage.questions = passage.questions.map((q: any) => ({ ...q, id: qIdCounter++ }));
-  });
-  
-  return result;
+  return result.map((passage: any) => ({
+    ...passage,
+    questions: (passage.questions || []).map((q: any) => ({ ...q, id: qIdCounter++ }))
+  }));
 }
 
 export function generateExamWritingTasksForPack(baseTasks: any[], currentPack: PackType, packConfig: PackPermissions, type: "writing"|"speaking") {
-  // Pour PE et PO, il y a généralement 3 tâches. Pour atteindre le quota, on fixe une limite visuelle acceptable
   const targetCount = packConfig.questionsPerExam > 10 ? 10 : packConfig.questionsPerExam;
   const sourceTasks = baseTasks && baseTasks.length > 0 ? baseTasks : (type === "writing" ? writingTasks : speakingTasks);
   const filtered = filterByPack(sourceTasks, currentPack);

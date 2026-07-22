@@ -68,7 +68,7 @@ export default function WritingCoursePage() {
     setPack(getCurrentUserPack());
   }, []);
 
-  const LESSONS = React.useMemo<typeof BASE_LESSONS>(() => generateLessonsForPack(BASE_LESSONS, pack, PACK_CONFIGS[pack]), [pack]);
+  const LESSONS = React.useMemo<typeof BASE_LESSONS>(() => generateLessonsForPack(BASE_LESSONS, pack, PACK_CONFIGS[pack], "writing"), [pack]);
 
   const [currentLesson, setCurrentLesson] = useState(0);
   const [text, setText] = useState("");
