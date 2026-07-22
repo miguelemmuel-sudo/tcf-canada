@@ -11,6 +11,7 @@ import { createClient } from "@/lib/supabaseClient";
 import { getSummaryCourseStats, getStoredCoursesData } from "@/utils/courseTracker";
 import { getCurrentUserPack, PACK_CONFIGS } from "@/utils/subscriptionEngine";
 import { generateLessonsForPack } from "@/utils/courseGenerator";
+import { getModulesForPack } from "@/utils/curriculumEngine";
 
 const courseCategories = [
   { name: "Tous les cours", href: "/dashboard/courses" },
@@ -247,7 +248,7 @@ export default function CoursesPage() {
           </div>
           <div>
             <div className="text-2xl font-black text-slate-900 dark:text-white">{maxCourses}</div>
-            <div className="text-xs text-slate-500 font-medium">Cours au total</div>
+            <div className="text-xs text-slate-500 font-medium">{getModulesForPack(userPack).length} modules accessibles</div>
           </div>
         </div>
 

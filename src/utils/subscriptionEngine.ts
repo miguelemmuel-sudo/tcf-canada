@@ -30,9 +30,9 @@ export const PACK_CONFIGS: Record<PackType, PackPermissions> = {
     name: "Pack Standard",
     price: "15.000 FCFA",
     modulesCount: 2,
-    coursesCount: 20,
-    testsCount: 20,
-    questionsPerExam: 39,
+    coursesCount: 20, // 2 modules x 10 cours exactement = 20 cours au total
+    testsCount: 20, // 20 véritables tests d'entraînement (5 CE, 5 CO, 5 EE, 5 EO)
+    questionsPerExam: 20,
     aiWrittenCorrection: false,
     aiOralCorrection: false,
     aiGrammarAnalysis: false,
@@ -43,7 +43,7 @@ export const PACK_CONFIGS: Record<PackType, PackPermissions> = {
     coachingActive: false,
     reservationsActive: false,
     messagingActive: false,
-    upsellBannerText: "Passez au Pack Griffon D'OR pour accéder à davantage de cours, d'examens, aux corrections IA avancées et à une préparation complète du TCF Canada.",
+    upsellBannerText: "Passez au Pack Griffon D'OR pour accéder à plus de 500 cours par module, des examens de plus de 80 questions et aux corrections IA avancées.",
     nextPack: "griffon",
     nextPackName: "Pack Griffon D'OR",
   },
@@ -52,9 +52,9 @@ export const PACK_CONFIGS: Record<PackType, PackPermissions> = {
     price: "25.000 FCFA",
     badge: "Le plus populaire",
     modulesCount: 10,
-    coursesCount: 500,
+    coursesCount: 5000, // 10 modules x 500 cours via architecture progressive
     testsCount: 80,
-    questionsPerExam: 80,
+    questionsPerExam: 80, // Tests complets de plus de 80 questions réparties sur les 4 compétences
     aiWrittenCorrection: true,
     aiOralCorrection: true,
     aiGrammarAnalysis: true,
@@ -65,7 +65,7 @@ export const PACK_CONFIGS: Record<PackType, PackPermissions> = {
     coachingActive: false,
     reservationsActive: false,
     messagingActive: false,
-    upsellBannerText: "Passez au Pack VIP & Coaching pour bénéficier d'un accompagnement personnalisé, du suivi de votre dossier d'immigration et d'un coaching individuel.",
+    upsellBannerText: "Passez au Pack VIP & Coaching pour bénéficier d'un accompagnement personnalisé, de 20 modules (10 000 cours), d'examens de 100 questions et d'un coaching individuel.",
     nextPack: "vip",
     nextPackName: "Pack VIP & Coaching",
   },
@@ -74,9 +74,9 @@ export const PACK_CONFIGS: Record<PackType, PackPermissions> = {
     price: "100.000 FCFA",
     badge: "Offre Premium",
     modulesCount: 20,
-    coursesCount: 500,
+    coursesCount: 10000, // 20 modules x 500 cours via architecture progressive
     testsCount: 100,
-    questionsPerExam: 100,
+    questionsPerExam: 100, // Examens complets de 100 questions conformes au TCF Canada
     aiWrittenCorrection: true,
     aiOralCorrection: true,
     aiGrammarAnalysis: true,

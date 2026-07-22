@@ -136,7 +136,7 @@ export default function TestsPage() {
           </div>
           <div>
             <div className="text-2xl font-black text-slate-900 dark:text-white">{maxExams}</div>
-            <div className="text-xs text-slate-500 font-medium">Tests disponibles</div>
+            <div className="text-xs text-slate-500 font-medium">Tests ({PACK_CONFIGS[userPack].name})</div>
           </div>
         </div>
 
