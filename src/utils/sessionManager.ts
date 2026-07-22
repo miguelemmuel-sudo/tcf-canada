@@ -79,6 +79,39 @@ export async function clearInterruptedSession(key: string) {
 }
 
 /**
+ * Clears all user-bound local storage data (sessions, course progress, profile, payment info)
+ * Ensures 100% data isolation between different users on the same device.
+ */
+export function clearAllUserLocalData() {
+  if (typeof window === "undefined") return;
+  try {
+    const keysToRemove = [
+      "griffon_user_name",
+      "griffon_user_email",
+      "griffon_user_phone",
+      "griffon_user_country",
+      "griffon_user_plan",
+      "griffon_user_new",
+      "griffon_courses_progress_v2",
+      "griffon_completed_lessons_v2",
+      "griffon_learning_time_seconds_v2",
+      "griffon_user_payment_methods"
+    ];
+    keysToRemove.forEach(k => localStorage.removeItem(k));
+    SESSION_KEYS.forEach(s => localStorage.removeItem(s.key));
+
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith("griffon_avatar_url_") || key.startsWith("tcf_session_") || key.startsWith("pending_save_"))) {
+        localStorage.removeItem(key);
+      }
+    }
+  } catch (e) {
+    console.error("Error clearing user local data:", e);
+  }
+}
+
+/**
  * Saves session state locally and debounces sync to Supabase
  */
 const syncTimeouts: Record<string, NodeJS.Timeout> = {};

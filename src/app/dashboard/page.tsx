@@ -19,6 +19,7 @@ import { ResumeSessionModal } from "@/components/ui/ResumeSessionModal";
 import { UpsellBanner } from "@/components/ui/UpsellBanner";
 import { getCurrentUserPack, PACK_CONFIGS } from "@/utils/subscriptionEngine";
 import { findInterruptedSession, clearInterruptedSession, InterruptedSession, loadSessionsFromSupabase } from "@/utils/sessionManager";
+import { loadCoursesProgressFromSupabase } from "@/utils/courseTracker";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -62,8 +63,9 @@ export default function DashboardPage() {
         setUserEmail(user.email || "");
         setUserId(user.id);
         
-        // Charger les sessions interrompues depuis Supabase vers le localStorage
+        // Charger les sessions et la progression des cours depuis Supabase vers le localStorage
         await loadSessionsFromSupabase(user.id);
+        await loadCoursesProgressFromSupabase(user.id);
         
         // Re-vérifier s'il y a une session (au cas où elle vient d'être chargée)
         const activeSession = findInterruptedSession();

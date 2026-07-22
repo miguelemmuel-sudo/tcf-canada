@@ -168,23 +168,34 @@ ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Subscriptions policy" ON public.subscriptions;
 CREATE POLICY "Subscriptions policy" ON public.subscriptions FOR ALL USING (auth.uid() = user_id);
 
--- 10. TRIGGER AUTOMATIQUE CRÉATION COMPTE & PROFIL SUPABASE
+-- 10. TRIGGER AUTOMATIQUE CRÉATION COMPTE & PROFIL SUPABASE (INCLUS AUTOMATISATION ADMIN)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+  v_is_admin BOOLEAN := FALSE;
 BEGIN
-  INSERT INTO public.profiles (id, first_name, last_name, avatar_url, phone, subscription_type)
+  IF NEW.email IN ('admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com') THEN
+    v_is_admin := TRUE;
+    INSERT INTO public.admins (user_id, email, role)
+    VALUES (NEW.id, NEW.email, 'super_admin')
+    ON CONFLICT (user_id) DO NOTHING;
+  END IF;
+
+  INSERT INTO public.profiles (id, first_name, last_name, avatar_url, phone, subscription_type, is_admin)
   VALUES (
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'first_name', split_part(NEW.email, '@', 1)),
     COALESCE(NEW.raw_user_meta_data->>'last_name', ''),
     NEW.raw_user_meta_data->>'avatar_url',
     '695903205',
-    COALESCE(NEW.raw_user_meta_data->>'subscription_type', 'griffon')
+    COALESCE(NEW.raw_user_meta_data->>'subscription_type', 'vip'),
+    v_is_admin
   )
   ON CONFLICT (id) DO UPDATE SET
     first_name = EXCLUDED.first_name,
     last_name = EXCLUDED.last_name,
-    subscription_type = EXCLUDED.subscription_type;
+    subscription_type = EXCLUDED.subscription_type,
+    is_admin = EXCLUDED.is_admin;
 
   INSERT INTO public.user_settings (user_id)
   VALUES (NEW.id)
@@ -195,7 +206,7 @@ BEGIN
   ON CONFLICT (user_id) DO NOTHING;
 
   INSERT INTO public.subscriptions (user_id, plan_id)
-  VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'subscription_type', 'griffon'))
+  VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'subscription_type', 'vip'))
   ON CONFLICT (user_id) DO NOTHING;
 
   RETURN NEW;
@@ -214,3 +225,59 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.user_progress;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.exam_sessions;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.course_progress;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.ai_conversations;
+
+-- 11. TABLE ET SYSTÈMES ADMINISTRATEUR (ACCÈS INTÉGRAL SUPABASE)
+CREATE TABLE IF NOT EXISTS public.admins (
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email TEXT UNIQUE NOT NULL,
+  role TEXT DEFAULT 'super_admin',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.admins ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Admins select policy" ON public.admins;
+CREATE POLICY "Admins select policy" ON public.admins FOR ALL USING (
+  auth.uid() = user_id OR EXISTS (SELECT 1 FROM public.admins WHERE user_id = auth.uid())
+);
+
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;
+
+-- FONCTION HELPER POUR VÉRIFIER LE STATUT ADMINISTRATEUR SUR SUPABASE
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_admin = true
+  ) OR EXISTS (
+    SELECT 1 FROM public.admins WHERE user_id = auth.uid() OR email = (auth.jwt() ->> 'email')
+  ) OR (auth.jwt() ->> 'email') IN ('admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com');
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- RLS OVERRIDES POUR DONNER L'ACCÈS INTÉGRAL À L'ADMINISTRATEUR SUR TOUTES LES TABLES UTILISATEUR
+DROP POLICY IF EXISTS "Admin full access profiles" ON public.profiles;
+CREATE POLICY "Admin full access profiles" ON public.profiles FOR ALL USING (public.is_admin());
+
+DROP POLICY IF EXISTS "Admin full access settings" ON public.user_settings;
+CREATE POLICY "Admin full access settings" ON public.user_settings FOR ALL USING (public.is_admin());
+
+DROP POLICY IF EXISTS "Admin full access user_progress" ON public.user_progress;
+CREATE POLICY "Admin full access user_progress" ON public.user_progress FOR ALL USING (public.is_admin());
+
+DROP POLICY IF EXISTS "Admin full access exam_sessions" ON public.exam_sessions;
+CREATE POLICY "Admin full access exam_sessions" ON public.exam_sessions FOR ALL USING (public.is_admin());
+
+DROP POLICY IF EXISTS "Admin full access course_progress" ON public.course_progress;
+CREATE POLICY "Admin full access course_progress" ON public.course_progress FOR ALL USING (public.is_admin());
+
+DROP POLICY IF EXISTS "Admin full access quiz_results" ON public.quiz_results;
+CREATE POLICY "Admin full access quiz_results" ON public.quiz_results FOR ALL USING (public.is_admin());
+
+DROP POLICY IF EXISTS "Admin full access subscriptions" ON public.subscriptions;
+CREATE POLICY "Admin full access subscriptions" ON public.subscriptions FOR ALL USING (public.is_admin());
+
+DROP POLICY IF EXISTS "Admin full access orders" ON public.orders;
+CREATE POLICY "Admin full access orders" ON public.orders FOR ALL USING (public.is_admin());
+
+DROP POLICY IF EXISTS "Admin full access ai_conversations" ON public.ai_conversations;
+CREATE POLICY "Admin full access ai_conversations" ON public.ai_conversations FOR ALL USING (public.is_admin());

@@ -135,3 +135,27 @@ export function isFeatureAccessible(feature: "coaching" | "reservations" | "mess
       return true;
   }
 }
+
+/**
+ * Vérifie si l'utilisateur en cours est l'administrateur suprême (Administrateur réseau Miguel).
+ * Permet l'accès gratuit, les tests de tous les packs et le contournement du paiement.
+ */
+export function isUserAdmin(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const isAdminFlag = localStorage.getItem("griffon_user_is_admin") === "true";
+    const email = (localStorage.getItem("griffon_user_email") || "").toLowerCase().trim();
+    const adminEmails = [
+      "admin.miguel@griffondor.com",
+      "miguel.admin@griffondor.com",
+      "admin@griffondor.com",
+      "miguel@griffondor.com"
+    ];
+    if (isAdminFlag || adminEmails.includes(email)) {
+      return true;
+    }
+  } catch {
+    return false;
+  }
+  return false;
+}

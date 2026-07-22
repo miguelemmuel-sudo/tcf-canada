@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Lock, Check, Crown, Sparkles, X, ArrowRight, ShieldCheck } from "lucide-react";
-import { PackType, PACK_CONFIGS, getCurrentUserPack, setUserPack } from "@/utils/subscriptionEngine";
+import { PackType, PACK_CONFIGS, getCurrentUserPack, setUserPack, isUserAdmin } from "@/utils/subscriptionEngine";
 import { createClient } from "@/lib/supabaseClient";
 
 interface UpgradePackModalProps {
@@ -14,6 +14,7 @@ interface UpgradePackModalProps {
 export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: UpgradePackModalProps) {
   const [loading, setLoading] = useState(false);
   const [selectedPack, setSelectedPack] = useState<PackType>(targetPack);
+  const adminMode = isUserAdmin();
 
   if (!isOpen) return null;
 
@@ -44,6 +45,14 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
     <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
       <div className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-xl w-full p-6 sm:p-8 space-y-6 animate-in fade-in zoom-in duration-200 relative overflow-hidden">
         
+        {/* Admin Badge Banner */}
+        {adminMode && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3 flex items-center gap-3 text-amber-500 text-xs sm:text-sm font-semibold">
+            <Sparkles className="h-5 w-5 shrink-0 animate-pulse" />
+            <span>Mode Administrateur activé : Changement de pack gratuit et illimité pour vos tests de contrôle. Contournement automatique du paiement.</span>
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
           <div className="flex items-center gap-3">

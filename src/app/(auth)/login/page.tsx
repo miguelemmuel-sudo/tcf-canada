@@ -41,9 +41,12 @@ export default function LoginPage() {
       }
 
       if (data.user) {
+        const { clearAllUserLocalData } = await import("@/utils/sessionManager");
+        clearAllUserLocalData();
+
         const { data: profile } = await supabase
           .from("profiles")
-          .select("full_name, subscription_type")
+          .select("full_name, subscription_type, is_admin")
           .eq("id", data.user.id)
           .single();
 
@@ -51,6 +54,11 @@ export default function LoginPage() {
         localStorage.setItem("griffon_user_email", email);
         if (profile?.subscription_type) {
           localStorage.setItem("griffon_user_plan", profile.subscription_type);
+        }
+        if (profile?.is_admin || ['admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com'].includes(email.toLowerCase().trim())) {
+          localStorage.setItem("griffon_user_is_admin", "true");
+        } else {
+          localStorage.removeItem("griffon_user_is_admin");
         }
       }
 

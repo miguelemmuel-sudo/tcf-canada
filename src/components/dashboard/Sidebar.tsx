@@ -133,10 +133,13 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           })}
 
           <button
-            onClick={() => {
+            onClick={async () => {
               if (typeof window !== "undefined") {
-                localStorage.removeItem("griffon_user_name");
-                localStorage.removeItem("griffon_user_email");
+                const { createClient } = await import("@/lib/supabaseClient");
+                const { clearAllUserLocalData } = await import("@/utils/sessionManager");
+                const supabase = createClient();
+                await supabase.auth.signOut();
+                clearAllUserLocalData();
                 window.location.href = "/login";
               }
             }}

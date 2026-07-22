@@ -1,4 +1,4 @@
-// Utility for real-time tracking of course progress, completed lessons & learning time
+import { createClient } from "@/lib/supabaseClient";
 
 const COURSES_PROGRESS_KEY = "griffon_courses_progress_v2";
 const COMPLETED_LESSONS_KEY = "griffon_completed_lessons_v2";
@@ -21,13 +21,74 @@ export function getStoredCoursesData(): Record<string, CourseProgressData> {
   }
 }
 
+let courseSyncTimeout: NodeJS.Timeout | null = null;
+
 export function saveStoredCoursesData(data: Record<string, CourseProgressData>) {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(COURSES_PROGRESS_KEY, JSON.stringify(data));
     window.dispatchEvent(new Event("storage_course_progress_updated"));
+
+    if (courseSyncTimeout) clearTimeout(courseSyncTimeout);
+    courseSyncTimeout = setTimeout(async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          for (const courseId of Object.keys(data)) {
+            const item = data[courseId];
+            const pct = item.totalLessons > 0 ? Math.min(100, Math.round((item.completedLessons.length / item.totalLessons) * 100)) : 0;
+            await supabase.from("course_progress").upsert({
+              user_id: user.id,
+              course_id: courseId,
+              current_lesson: JSON.stringify(item.completedLessons),
+              completion_percentage: pct,
+              updated_at: new Date().toISOString()
+            }, { onConflict: "user_id, course_id" });
+          }
+        }
+      } catch (err) {
+        console.error("Failed to sync course progress to Supabase:", err);
+      }
+    }, 2000);
   } catch (e) {
     console.error("Error saving course progress data:", e);
+  }
+}
+
+export async function loadCoursesProgressFromSupabase(userId: string) {
+  if (typeof window === "undefined") return;
+  try {
+    const supabase = createClient();
+    const { data: rows, error } = await supabase
+      .from("course_progress")
+      .select("*")
+      .eq("user_id", userId);
+
+    if (error || !rows) return;
+
+    const current: Record<string, CourseProgressData> = {};
+    rows.forEach(row => {
+      let completed: (string | number)[] = [];
+      try {
+        if (row.current_lesson) completed = JSON.parse(row.current_lesson);
+      } catch {
+        completed = [];
+      }
+      current[row.course_id] = {
+        courseId: row.course_id,
+        completedLessons: Array.isArray(completed) ? completed : [],
+        totalLessons: 8,
+        inProgress: true
+      };
+    });
+
+    if (Object.keys(current).length > 0) {
+      localStorage.setItem(COURSES_PROGRESS_KEY, JSON.stringify(current));
+      window.dispatchEvent(new Event("storage_course_progress_updated"));
+    }
+  } catch (err) {
+    console.error("Failed to load course progress from Supabase:", err);
   }
 }
 
