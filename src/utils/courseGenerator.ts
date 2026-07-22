@@ -6,7 +6,7 @@ import { PackType, PackPermissions } from "./subscriptionEngine";
 import { getModulesForPack } from "./curriculumEngine";
 import { listeningCourses, readingCourses, writingCourses, speakingCourses } from "../data/realCourses";
 import { listeningQuestions, readingPassages, writingTasks, speakingTasks } from "../data/realExams";
-import { THEMATIC_BANK, UniquenessValidator, generateUniqueLesson, CECRLevel, SkillType } from "./tcfContentEngine";
+import { THEMATIC_BANK, UniquenessValidator, generateUniqueLesson, CECRLevel, SkillType, TCFProceduralLibrary } from "./tcfContentEngine";
 import { AudioRotationEngine, AUDIO_SCENARIO_DATABASE, VOICE_PROFILES } from "./audioContentEngine";
 
 /**
@@ -199,7 +199,7 @@ export function generateExamQuestionsForPack(
 
 /**
  * Générateur d'examens pratiques réels TCF Canada (CE - Compréhension Écrite) :
- * Zéro répétition, thèmes variés, QCM calibrés selon le niveau CECR.
+ * Zéro répétition, thèmes variés, QCM calibrés selon le niveau CECR via TCFProceduralLibrary.
  */
 export function generateExamPassagesForPack(
   basePassages: any[],
@@ -212,58 +212,16 @@ export function generateExamPassagesForPack(
   let currentPassages = [...source];
   let currentQCount = currentPassages.reduce((sum: number, p: any) => sum + (p.questions?.length || 0), 0);
   let nextId = Math.max(...source.map((p: any) => p.id || 0), 0) + 1;
-  let nextQId = Math.max(...source.flatMap((p: any) => (p.questions || []).map((q: any) => q.id || 0)), 0) + 1;
   const levels: ("A1"|"A2"|"B1"|"B2"|"C1"|"C2")[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
-  let synthIndex = 0;
 
   while (currentQCount < targetQuestions) {
     const lvl = levels[Math.min(Math.floor((currentQCount / targetQuestions) * levels.length), levels.length - 1)];
-    const theme = THEMATIC_BANK[(synthIndex + nextId) % THEMATIC_BANK.length];
-    const sc = theme.readingScenarios[synthIndex % theme.readingScenarios.length] || {
-      title: `Article de presse canadienne : L'évolution de ${theme.name.toLowerCase()}`,
-      text: `Dans le cadre des mutations sociales et économiques contemporaines au Canada, le secteur de ${theme.name.toLowerCase()} connaît une transformation sans précédent. Les experts observent que les initiatives relatives à ${theme.contexts[0].toLowerCase()} renforcent durablement l'autonomie et l'intégration des citoyens, en particulier dans les grands centres urbains de Montréal, Toronto et Vancouver.`,
-      q: `Quelle conclusion principale ressort de cette analyse concernant ${theme.name.toLowerCase()} ?`,
-      opt: [
-        `Les initiatives sur ${theme.contexts[0].toLowerCase()} favorisent significativement l'autonomie et l'intégration des citoyens.`,
-        "Le gouvernement fédéral a décidé d'interdire toute nouvelle modification dans ce secteur.",
-        "Les coûts associés ont rendu ces services inaccessibles à l'ensemble de la population.",
-        "Les citoyens ont signé une pétition unanime pour revenir aux anciennes réglementations."
-      ],
-      ans: 0,
-      exp: "Le texte indique explicitement que ces initiatives renforcent durablement l'autonomie et l'intégration des citoyens."
-    };
-
     const qCountInPassage = Math.min(2, targetQuestions - currentQCount);
-    const questions = [];
     
-    for (let i = 0; i < qCountInPassage; i++) {
-      questions.push({
-        id: nextQId++,
-        text: i === 0 ? sc.q : `Question complémentaire #${nextQId - 1} (${lvl}) : Quelle attitude l'auteur adopte-t-il envers les transformations décrites ?`,
-        options: i === 0 ? sc.opt : [
-          "Une attitude analytique et objective mettant en lumière les bénéfices structurels.",
-          "Une hostilité systématique et un refus des évolutions technologiques ou sociales.",
-          "Une indifférence totale quant aux répercussions sur la population canadienne.",
-          "Une ironie mordante visant à décrédibiliser les institutions provinciales."
-        ],
-        correct: i === 0 ? sc.ans : 0,
-        detailedCorrection: i === 0 ? sc.exp : "L'auteur adopte une posture d'analyse factuelle et objective typique des articles d'examen TCF de niveau " + lvl + ".",
-        errorAnalysis: "Piège : Ne pas confondre le point de vue d'un groupe cité dans le texte avec la posture propre à l'auteur.",
-        cecrLevel: lvl
-      });
-    }
-
-    currentPassages.push({
-      id: nextId++,
-      title: `Document d'Examen TCF #${nextId - 1} : ${sc.title} (Niveau ${lvl})`,
-      content: `**Document officiel d'évaluation de lecture (Niveau ${lvl})**\n\n${sc.text}\n\n*Consigne officielle : Répondez aux QCM ci-dessous en sélectionnant l'unique proposition correcte.*`,
-      level: lvl,
-      timerMinutes: 15,
-      questions
-    });
-
+    // Synthèse procédurale d'un passage et de QCM 100% inédits (zéro répétition)
+    const newPassage = TCFProceduralLibrary.generateReadingExamPassage(nextId++, lvl, qCountInPassage);
+    currentPassages.push(newPassage);
     currentQCount += qCountInPassage;
-    synthIndex++;
   }
 
   let total = 0;
@@ -316,60 +274,15 @@ export function generateExamWritingTasksForPack(
   const progressiveTasks = [...sourceTasks];
   let nextId = Math.max(...sourceTasks.map((t: any) => t.id || 0), 0) + 1;
   const levels: ("A1"|"A2"|"B1"|"B2"|"C1"|"C2")[] = ["A2", "B1", "B2", "C1", "C2"];
-  let synthIndex = 0;
 
   while (progressiveTasks.length < targetCount) {
     const lvl = levels[Math.min(Math.floor((progressiveTasks.length / targetCount) * levels.length), levels.length - 1)];
-    const theme = THEMATIC_BANK[(synthIndex + nextId) % THEMATIC_BANK.length];
     
     if (type === "writing") {
-      const p = theme.writingPrompts[synthIndex % theme.writingPrompts.length] || {
-        type: "article",
-        title: `Essai argumentatif - ${theme.name}`,
-        instructions: `« Face aux enjeux de ${theme.name.toLowerCase()} au Canada, le gouvernement devrait-il adopter des mesures contraignantes pour encadrer ce secteur ? » Argumentez en 150-180 mots en illustrant par deux exemples canadiens.`,
-        min: 150,
-        max: 180,
-        time: 25
-      };
-      
-      progressiveTasks.push({
-        id: nextId,
-        type: p.type,
-        title: `Épreuve Officielle d'Expression Écrite – ${p.title} (Niveau ${lvl}) #${nextId}`,
-        instructions: p.instructions,
-        minWords: p.min,
-        maxWords: p.max,
-        timeMinutes: p.time,
-        level: lvl,
-        gradingScale: "Grille officielle FLE : Respect de la consigne (2 pts), Cohérence/Cohésion (4 pts), Grammaire/Syntaxe (7 pts), Lexique (7 pts). Total converti sur 699 points NCLC.",
-        detailedCorrection: "Correction modèle experte : Vérifiez la présence des articulateurs logiques, le respect strict des quotas de mots (aucun mot au-dessus du plafond ou sous le seuil), et la richesse lexicale.",
-        errorAnalysis: "Piège éliminatoire : Ne pas respecter le nombre minimum ou maximum de mots entraîne une pénalisation immédiate. Comptez vos mots et soignez la ponctuation.",
-        cecrEvaluation: `Évaluation CECR : Cette tâche permet d'atteindre le niveau ${lvl} (NCLC ${lvl === "C1" || lvl === "C2" ? "9-10" : "7-8"}).`
-      });
+      progressiveTasks.push(TCFProceduralLibrary.generateWritingExamTask(nextId++, lvl));
     } else {
-      const p = theme.speakingPrompts[synthIndex % theme.speakingPrompts.length] || {
-        type: "monologue",
-        title: `Débat oral – ${theme.name}`,
-        prompt: `« Dans la société canadienne contemporaine, comment concilier le développement de ${theme.name.toLowerCase()} avec les intérêts de tous les citoyens ? » Présentez votre opinion argumentée pendant 4 minutes 30.`,
-        prep: 60,
-        speak: 150,
-        tips: ["Structurez une introduction claire.", "Développez 2 arguments contrastés.", "Concluez de manière nuancée."]
-      };
-      
-      progressiveTasks.push({
-        id: nextId,
-        title: `Épreuve Officielle d'Expression Orale – ${p.title} (Niveau ${lvl}) #${nextId}`,
-        promptText: p.prompt,
-        duration: p.speak === 120 ? "3 min 30" : "4 min 30",
-        level: lvl,
-        gradingScale: "Barème officiel TCF : Prononciation et fluidité (5 pts), Morphosyntaxe (5 pts), Vocabulaire et pertinence (5 pts), Interaction et autonomie (5 pts).",
-        detailedCorrection: "Conseil de l'examinateur FLE : En Tâche 2, c'est VOUS qui devez poser les questions sans laisser de blanc. En Tâche 3, commencez par une introduction claire, développez avec connecteurs, et concluez fermement.",
-        errorAnalysis: "Analyse des erreurs fréquentes : L'hésitation longue (>5 secondes) ou le recours à une syntaxe calquée sur l'anglais fait chuter immédiatement la note en dessous de B2.",
-        cecrEvaluation: `Niveau visé : ${lvl} (NCLC ${lvl === "C1" || lvl === "C2" ? "10" : "8"}).`
-      });
+      progressiveTasks.push(TCFProceduralLibrary.generateSpeakingExamTask(nextId++, lvl));
     }
-    nextId++;
-    synthIndex++;
   }
 
   return progressiveTasks.slice(0, targetCount).map((t: any, idx: number) => {
