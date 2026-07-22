@@ -24,7 +24,7 @@ export default function ReservationsPage() {
   }, []);
 
   if (!isFeatureAccessible("reservations", pack)) {
-    return <LockedFeatureBanner featureName="Réservation de créneaux avec un Coach" />;
+    return <LockedFeatureBanner featureName="Réservation de créneaux avec un Coach" requiredPackName="VIP & Coaching" targetPack="vip" />;
   }
 
   useEffect(() => {

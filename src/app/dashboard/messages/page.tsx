@@ -41,7 +41,7 @@ export default function MessagesPage() {
   }, []);
 
   if (!isFeatureAccessible("messages", pack)) {
-    return <LockedFeatureBanner featureName="Messagerie directe avec votre Coach" />;
+    return <LockedFeatureBanner featureName="Messagerie directe avec votre Coach" requiredPackName="VIP & Coaching" targetPack="vip" />;
   }
 
   const [selectedConv, setSelectedConv] = useState(conversations[0]);

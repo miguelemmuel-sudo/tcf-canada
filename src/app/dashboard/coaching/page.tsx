@@ -29,7 +29,7 @@ export default function CoachingPage() {
   }, []);
 
   if (!isFeatureAccessible("coaching", pack)) {
-    return <LockedFeatureBanner featureName="Coaching Individuel & Visioconférence" />;
+    return <LockedFeatureBanner featureName="Coaching Individuel & Visioconférence" requiredPackName="VIP & Coaching" targetPack="vip" />;
   }
 
   const handleDownload = (filename: string, content: string) => {

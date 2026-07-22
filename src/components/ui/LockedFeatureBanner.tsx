@@ -20,9 +20,10 @@ export function LockedFeatureBanner({
   const currentPack = getCurrentUserPack();
   const config = getPackPermissions(currentPack);
 
-  const target = targetPack || config.nextPack || "griffon";
-  const targetName = requiredPackName || (currentPack === "standard" ? "Griffon D'OR ou VIP & Coaching" : "VIP & Coaching");
-  const buttonText = currentPack === "standard" ? "Passer au Pack Griffon D'OR" : "Passer au Pack VIP & Coaching";
+  const isVipOnly = targetPack === "vip" || featureName.toLowerCase().includes("coach") || featureName.toLowerCase().includes("visio") || featureName.toLowerCase().includes("réserv") || featureName.toLowerCase().includes("messa");
+  const target: PackType = isVipOnly ? "vip" : (targetPack || config.nextPack || "griffon");
+  const targetName = requiredPackName || (isVipOnly ? "VIP & Coaching" : (currentPack === "standard" ? "Griffon D'OR ou VIP & Coaching" : "VIP & Coaching"));
+  const buttonText = isVipOnly ? "Passer au Pack VIP & Coaching" : (currentPack === "standard" ? "Passer au Pack Griffon D'OR" : "Passer au Pack VIP & Coaching");
 
   return (
     <div className="min-h-[500px] flex items-center justify-center p-4 sm:p-8">
