@@ -20,6 +20,7 @@ import {
   Crown
 } from "lucide-react";
 import { getCurrentUserPack, isFeatureAccessible, getPackPermissions, PackType } from "@/utils/subscriptionEngine";
+import { UpgradePackModal } from "@/components/ui/UpgradePackModal";
 
 const navItems = [
   { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
@@ -42,6 +43,7 @@ interface SidebarProps {
 export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const pathname = usePathname();
   const [pack, setPack] = useState<PackType>("griffon");
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const refreshPack = () => {
     setPack(getCurrentUserPack());
@@ -85,12 +87,19 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           </div>
         </div>
 
-        {/* Current Pack Badge */}
+        {/* Current Pack Badge - Clickable to switch packs */}
         <div className="px-4 pt-3">
-          <div className="px-3 py-2 rounded-xl bg-slate-800/80 border border-slate-700/60 flex items-center justify-between">
+          <div 
+            onClick={() => setShowUpgradeModal(true)}
+            className="px-3 py-2 rounded-xl bg-slate-800/80 border border-slate-700/60 hover:border-amber-500/80 hover:bg-slate-800 flex items-center justify-between cursor-pointer transition-all group shadow-sm"
+            title="Cliquez pour tester un autre Pack (Mode Administrateur / Changement de formule)"
+          >
             <div className="flex items-center gap-2">
-              <Crown className="h-4 w-4 text-amber-400 shrink-0" />
-              <span className="text-xs font-black text-white">{config.name}</span>
+              <Crown className="h-4 w-4 text-amber-400 shrink-0 group-hover:scale-110 transition-transform" />
+              <div className="flex flex-col">
+                <span className="text-xs font-black text-white">{config.name}</span>
+                <span className="text-[9px] text-amber-400/90 font-medium">Changer de formule ⇄</span>
+              </div>
             </div>
             {config.badge && (
               <span className="text-[9px] font-extrabold uppercase bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded">
@@ -150,6 +159,8 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           </button>
         </nav>
       </aside>
+
+      <UpgradePackModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
     </>
   );
 }
