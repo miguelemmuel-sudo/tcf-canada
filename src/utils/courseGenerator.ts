@@ -144,7 +144,7 @@ export function generateExamQuestionsForPack(
 ) {
   if (type !== "listening") return [];
   
-  const targetCount = currentPack === "standard" ? 5 : packConfig.questionsPerExam;
+  const targetCount = packConfig.questionsPerExam;
   const allowedLevels: CECRLevel[] = currentPack === "standard" 
     ? ["A1", "A2"] 
     : currentPack === "griffon" 
@@ -207,7 +207,7 @@ export function generateExamPassagesForPack(
   packConfig: PackPermissions
 ) {
   const source = basePassages && basePassages.length > 0 ? basePassages : readingPassages;
-  const targetQuestions = currentPack === "standard" ? 5 : packConfig.questionsPerExam;
+  const targetQuestions = packConfig.questionsPerExam;
   
   let currentPassages = [...source];
   let currentQCount = currentPassages.reduce((sum: number, p: any) => sum + (p.questions?.length || 0), 0);
@@ -268,7 +268,7 @@ export function generateExamWritingTasksForPack(
   packConfig: PackPermissions,
   type: "writing" | "speaking"
 ) {
-  const targetCount = currentPack === "standard" ? 5 : packConfig.questionsPerExam;
+  const targetCount = packConfig.questionsPerExam;
   const sourceTasks = baseTasks && baseTasks.length > 0 ? baseTasks : (type === "writing" ? writingTasks : speakingTasks);
   
   const progressiveTasks = [...sourceTasks];

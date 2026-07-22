@@ -2,7 +2,7 @@
 // Architecture Haut de Gamme pour la Production : Zéro boucle, Diversité absolue des voix, des accents et des dialogues.
 // Gestionnaire d'historique utilisateur, rotation intelligente et base de scénarios pré-définis (A1 -> C2).
 
-import { CECRLevel } from "./tcfContentEngine";
+import { CECRLevel, TCFProceduralLibrary } from "./tcfContentEngine";
 
 /**
  * Profil vocal professionnel et varié pour la synthèse et les dialogues audio.
@@ -870,29 +870,24 @@ export class AudioRotationEngine {
       }
     }
 
-    // 5. Si nous avons besoin de plus de questions que la base ne contient (ex: Pack VIP sur 20 examens),
-    // nous générons des variantes dynamiques dérivées de nos thèmes avec notre validateur d'unicité,
-    // mais toujours avec des profils vocaux variés assignés.
+    // 5. Si nous avons besoin de plus de questions que la base ne contient (ex: Pack Standard sur 20 examens ou Pack VIP),
+    // nous générons des scénarios audio et des dialogues 100% inédits via TCFProceduralLibrary, sans aucune répétition.
     let synthCounter = 1;
+    const lvls: CECRLevel[] = allowedLevels && allowedLevels.length > 0 ? allowedLevels : ["A1", "A2", "B1", "B2"];
     while (result.length < targetCount) {
-      const baseSc = AUDIO_SCENARIO_DATABASE[synthCounter % AUDIO_SCENARIO_DATABASE.length];
-      const nextId = `co-dyn-${Date.now()}-${synthCounter++}`;
       const vProfile1 = VOICE_PROFILES[synthCounter % VOICE_PROFILES.length];
       const vProfile2 = VOICE_PROFILES[(synthCounter + 5) % VOICE_PROFILES.length];
+      const lvl = lvls[synthCounter % lvls.length];
       
-      result.push({
-        ...baseSc,
-        id: nextId,
-        title: `${baseSc.theme} – Simulation authentique #${synthCounter}`,
-        voiceProfiles: [vProfile1, vProfile2],
-        audioUrl: baseSc.audioUrl,
-        script: `[Simulation Audio TCF Canada - ${vProfile1.name} & ${vProfile2.name}]\n\n${baseSc.script}`,
-        structuredDialogue: baseSc.structuredDialogue.map((line, idx) => ({
-          ...line,
-          speakerName: idx % 2 === 0 ? `${vProfile1.name} (Locuteur A)` : `${vProfile2.name} (Locuteur B)`,
-          voiceProfileId: idx % 2 === 0 ? vProfile1.id : vProfile2.id
-        }))
-      } as any);
+      const proceduralSc = TCFProceduralLibrary.generateListeningAudioScenario(
+        Date.now() + synthCounter,
+        result.length + 1,
+        lvl,
+        vProfile1,
+        vProfile2
+      );
+      result.push(proceduralSc as any);
+      synthCounter++;
     }
 
     return result;

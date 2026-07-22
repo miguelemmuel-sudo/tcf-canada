@@ -852,6 +852,61 @@ export class TCFProceduralLibrary {
       cecrEvaluation: `Niveau d'évaluation : Palier cible ${level} (NCLC ${level === "C1" || level === "C2" ? "9-10" : "7-8"}).`
     };
   }
+
+  /**
+   * Génère un scénario audio d'examen CO 100% inédit, canadien et avec dialogues multi-locuteurs sans répétition.
+   */
+  public static generateListeningAudioScenario(id: number, synthCounter: number, level: string, voiceProfile1: any, voiceProfile2: any) {
+    const topic = this.getTopic(id, 40 + synthCounter);
+    const inst = this.getInstitution(id, 41 + synthCounter);
+    const city = this.getCity(id, 42 + synthCounter);
+
+    const scriptText = `${voiceProfile1.name} (Usager) : Bonjour ! J'appelle le bureau de ${inst} à ${city} parce que je souhaite avoir des renseignements précis sur ${topic.shortName.toLowerCase()}. Comment dois-je procéder pour mon dossier ?\n\n${voiceProfile2.name} (Agent officiel) : Bonjour ! Avec grand plaisir. Pour tout ce qui concerne ${topic.context.toLowerCase()}, il est essentiel d'apporter votre pièce d'identité et de remplir le formulaire officiel qui mentionne notamment ${topic.vocab[0]} et ${topic.vocab[1]}.\n\n${voiceProfile1.name} : D'accord, c'est très clair. Est-ce que les démarches prennent beaucoup de temps en ce moment à ${city} ?\n\n${voiceProfile2.name} : Actuellement, le traitement prend environ deux semaines si votre dossier est complet et inclut bien le justificatif concernant ${topic.vocab[2] || topic.vocab[0]}.`;
+
+    return {
+      id: `co-procedural-${id}-${synthCounter}`,
+      cecrLevel: level,
+      skill: "listening",
+      theme: topic.category,
+      difficulty: level === "A1" || level === "A2" ? 1 : level === "B1" || level === "B2" ? 2 : 3,
+      durationSeconds: 45,
+      vocabularyTags: topic.vocab,
+      pedagogicalObjective: `Comprendre un dialogue authentique concernant ${topic.shortName.toLowerCase()} en contexte canadien (${inst}, ${city}).`,
+      dialogueMetadata: {
+        speakersCount: 2,
+        personalities: ["Usager canadien intéressé", "Agent officiel informatif"],
+        professions: ["Citoyen / Candidat", `Représentant(e) ${inst}`],
+        emotion: "Échange professionnel et courtois",
+        context: `Entrevue ou appel téléphonique à ${city} concernant ${topic.title}`,
+        communicationGoal: `Obtenir des précisions et valider un dossier relatif à ${topic.vocab[0]}`
+      },
+      voiceProfiles: [voiceProfile1, voiceProfile2],
+      audioUrl: `/audio/tcf/co_dyn_${synthCounter}.mp3`,
+      script: `[Simulation Audio TCF Canada - ${voiceProfile1.name} & ${voiceProfile2.name}]\n\n${scriptText}`,
+      structuredDialogue: [
+        { speakerName: `${voiceProfile1.name} (Usager)`, voiceProfileId: voiceProfile1.id, text: `Bonjour ! J'appelle le bureau de ${inst} à ${city} parce que je souhaite avoir des renseignements précis sur ${topic.shortName.toLowerCase()}. Comment dois-je procéder pour mon dossier ?` },
+        { speakerName: `${voiceProfile2.name} (Agent officiel)`, voiceProfileId: voiceProfile2.id, text: `Bonjour ! Avec grand plaisir. Pour tout ce qui concerne ${topic.context.toLowerCase()}, il est essentiel d'apporter votre pièce d'identité et de remplir le formulaire officiel qui mentionne notamment ${topic.vocab[0]} et ${topic.vocab[1]}.` },
+        { speakerName: `${voiceProfile1.name} (Usager)`, voiceProfileId: voiceProfile1.id, text: `D'accord, c'est très clair. Est-ce que les démarches prennent beaucoup de temps en ce moment à ${city} ?` },
+        { speakerName: `${voiceProfile2.name} (Agent officiel)`, voiceProfileId: voiceProfile2.id, text: `Actuellement, le traitement prend environ deux semaines si votre dossier est complet et inclut bien le justificatif concernant ${topic.vocab[2] || topic.vocab[0]}.` }
+      ],
+      questions: [
+        {
+          id: synthCounter,
+          question: `Question #${synthCounter} (${level}) : Selon l'agent de ${inst} à ${city}, quelle condition est requise pour le traitement du dossier de ${topic.shortName.toLowerCase()} ?`,
+          options: [
+            `Apporter sa pièce d'identité et remplir le formulaire officiel mentionnant ${topic.vocab[0]}.`,
+            `Payer immédiatement une taxe en espèces au guichet sans aucun document.`,
+            `Attendre la convocation d'un tribunal fédéral avant de commencer les démarches.`,
+            `Renoncer à sa résidence à ${city} pour s'inscrire dans une autre province.`
+          ],
+          correct: 0,
+          detailedCorrection: `L'agent(e) précise explicitement dans le dialogue : « il est essentiel d'apporter votre pièce d'identité et de remplir le formulaire officiel qui mentionne notamment ${topic.vocab[0]} ».`,
+          errorAnalysis: `Distracteur administratif : Ne pas confondre les démarches courantes auprès de ${inst} avec une procédure judiciaire ou une taxe exceptionnelle.`,
+          cecrEvaluation: `Niveau ${level} - NCLC ${level === "C1" || level === "C2" ? "9-10" : level === "B1" || level === "B2" ? "6-8" : "4-5"} (Compréhension d'échanges administratifs canadiens).`
+        }
+      ]
+    };
+  }
 }
 
 // ─── GESTIONNAIRE D'UNICITÉ ET ANTI-BOUCLES (ZERO REPETITION) ─────────────────
