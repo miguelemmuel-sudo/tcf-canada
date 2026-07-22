@@ -7,13 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Play, Pause, Volume2, Clock, ChevronLeft, ChevronRight,
-  CheckCircle2, Headphones, XCircle, Award, Target, Trophy, Sparkles
+  CheckCircle2, Headphones, XCircle, Award, Target, Trophy, Sparkles, UserCheck, MapPin
 } from "lucide-react";
 import { createClient } from "@/lib/supabaseClient";
 import { ResumeSessionModal } from "@/components/ui/ResumeSessionModal";
 import { saveSessionState } from "@/utils/sessionManager";
 import { getCurrentUserPack, PACK_CONFIGS } from "@/utils/subscriptionEngine";
 import { generateExamQuestionsForPack } from "@/utils/courseGenerator";
+import { playMultiSpeakerDialogue, AudioScenario, AudioVoiceProfile } from "@/utils/audioContentEngine";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface Question {
@@ -22,6 +23,11 @@ interface Question {
   text: string;
   options: string[];
   correct: number;
+  voiceProfiles?: AudioVoiceProfile[];
+  dialogueMetadata?: any;
+  pedagogicalObjective?: string;
+  vocabularyTags?: string[];
+  durationSeconds?: number;
 }
 
 // ─── Données de questions TCF ───────────────────────────────────────────────
@@ -146,7 +152,7 @@ function Timer({ seconds }: { seconds: number }) {
 export default function ListeningExamPage() {
   const [pack, setPack] = useState(getCurrentUserPack());
   useEffect(() => setPack(getCurrentUserPack()), []);
-  const QUESTIONS = React.useMemo<typeof DEMO_QUESTIONS>(() => generateExamQuestionsForPack(DEMO_QUESTIONS, pack, PACK_CONFIGS[pack], "listening"), [pack]);
+  const QUESTIONS = React.useMemo<Question[]>(() => generateExamQuestionsForPack(DEMO_QUESTIONS, pack, PACK_CONFIGS[pack], "listening"), [pack]);
 
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<(number | null)[]>(Array(QUESTIONS.length).fill(null));
@@ -162,6 +168,7 @@ export default function ListeningExamPage() {
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const cancelAudioRef = useRef<(() => void) | null>(null);
 
   // Detect Saved Session on Mount
   useEffect(() => {
@@ -230,44 +237,38 @@ export default function ListeningExamPage() {
   }, [submitted, showResumeModal]);
 
   const playAudioForQuestion = (qIndex: number) => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
-
-    window.speechSynthesis.cancel();
+    if (typeof window === "undefined") return;
+    if (cancelAudioRef.current) {
+      cancelAudioRef.current();
+      cancelAudioRef.current = null;
+    }
     if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
 
     const question = QUESTIONS[qIndex];
-    const utterance = new SpeechSynthesisUtterance(question.audioText);
-    utterance.lang = "fr-FR";
-    utterance.rate = 0.92;
+    setIsPlaying(true);
+    setAudioProgress(0);
 
-    const estimatedDurationMs = (question.audioText.length / 14) * 1000;
-    const startTime = Date.now();
-
-    utterance.onstart = () => {
-      setIsPlaying(true);
-      setAudioProgress(0);
-      progressIntervalRef.current = setInterval(() => {
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min(99, (elapsed / estimatedDurationMs) * 100);
-        setAudioProgress(progress);
-      }, 100);
-    };
-
-    utterance.onend = () => {
-      setIsPlaying(false);
-      setAudioProgress(100);
-      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
-    };
-
-    utterance.onerror = () => {
-      setIsPlaying(false);
-      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
-    };
-
-    window.speechSynthesis.speak(utterance);
+    // Utilisation du lecteur multi-locuteurs avec diversité de voix (Québécois, Parisien, Acadien, etc.)
+    const cancelFn = playMultiSpeakerDialogue(
+      question as any,
+      (progress) => setAudioProgress(progress),
+      () => {
+        setIsPlaying(false);
+        setAudioProgress(100);
+      },
+      (err) => {
+        console.warn("Erreur lecture audio TCF:", err);
+        setIsPlaying(false);
+      }
+    );
+    cancelAudioRef.current = cancelFn;
   };
 
   const stopAudio = () => {
+    if (cancelAudioRef.current) {
+      cancelAudioRef.current();
+      cancelAudioRef.current = null;
+    }
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
     }
@@ -402,7 +403,7 @@ export default function ListeningExamPage() {
     );
   }
 
-  const currentQuestionData = QUESTIONS[currentQ];
+  const currentQuestionData = QUESTIONS[currentQ] || DEMO_QUESTIONS[0];
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-12 px-2 sm:px-4">
@@ -433,6 +434,29 @@ export default function ListeningExamPage() {
         <Timer seconds={timeLeft} />
       </div>
 
+      {/* Bannières Métadonnées Professionnelles Audio (Voix, Accents, Scénarios) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="p-3.5 rounded-xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/60 dark:border-blue-900/40 flex items-start gap-3">
+          <UserCheck className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+          <div className="text-xs">
+            <span className="font-bold text-blue-900 dark:text-blue-200 block mb-0.5">Profils Vocaux & Accents Francophones</span>
+            <span className="text-blue-700 dark:text-blue-300 font-medium">
+              {currentQuestionData.voiceProfiles?.map((v: any) => `${v.name} (${v.accent})`).join(" & ") || "Marc (Montréal, QC) & Sophie (Paris, France)"}
+            </span>
+          </div>
+        </div>
+
+        <div className="p-3.5 rounded-xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/60 dark:border-indigo-900/40 flex items-start gap-3">
+          <MapPin className="h-5 w-5 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
+          <div className="text-xs">
+            <span className="font-bold text-indigo-900 dark:text-indigo-200 block mb-0.5">Contexte du Scénario TCF</span>
+            <span className="text-indigo-700 dark:text-indigo-300 font-medium">
+              {currentQuestionData.dialogueMetadata?.context || "Dialogue authentique en milieu canadien"}
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* Main Question Card */}
       <Card className="border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm rounded-2xl overflow-hidden">
         <CardHeader className="border-b border-slate-100 dark:border-slate-800 pb-4">
@@ -457,7 +481,7 @@ export default function ListeningExamPage() {
 
             <div className="flex-1 space-y-1.5">
               <div className="flex justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
-                <span>{isPlaying ? "🔊 Écoute en cours..." : "Prêt à l'écoute"}</span>
+                <span>{isPlaying ? "🔊 Dialogue en cours d'écoute..." : "Prêt à l'écoute (Voix professionnelles)"}</span>
                 <span>{Math.round(audioProgress)}%</span>
               </div>
               <div className="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
@@ -465,6 +489,12 @@ export default function ListeningExamPage() {
               </div>
             </div>
           </div>
+          
+          {currentQuestionData.pedagogicalObjective && (
+            <p className="text-xs text-slate-500 dark:text-slate-400 italic mt-2">
+              🎯 <strong className="font-semibold">Objectif d'évaluation :</strong> {currentQuestionData.pedagogicalObjective}
+            </p>
+          )}
         </CardHeader>
 
         <CardContent className="pt-6 space-y-6">

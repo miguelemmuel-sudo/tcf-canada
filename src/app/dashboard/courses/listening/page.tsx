@@ -4,7 +4,7 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { 
   Volume2, Play, Pause, RotateCcw, CheckCircle2, 
-  ChevronLeft, BrainCircuit, Clock, Headphones, Award, Sparkles, Check, X
+  ChevronLeft, BrainCircuit, Clock, Headphones, Award, Sparkles, Check, X, UserCheck, MapPin
 } from "lucide-react";
 import { ResumeSessionModal } from "@/components/ui/ResumeSessionModal";
 import { saveSessionState } from "@/utils/sessionManager";
@@ -12,6 +12,7 @@ import { saveSessionState } from "@/utils/sessionManager";
 import { markCourseStarted, markLessonCompleted, addLearningTimeSeconds } from "@/utils/courseTracker";
 import { getCurrentUserPack, PACK_CONFIGS } from "@/utils/subscriptionEngine";
 import { generateLessonsForPack } from "@/utils/courseGenerator";
+import { playMultiSpeakerDialogue, AudioScenario, AudioVoiceProfile } from "@/utils/audioContentEngine";
 
 const BASE_LESSONS = [
   {
@@ -28,58 +29,64 @@ const BASE_LESSONS = [
     audioText: "Écoutez cette courte conversation entre deux amis qui planifient un voyage à Montréal. Marie dit à Jean qu'elle a réservé un hôtel près du Vieux-Port pour trois nuits.",
     questions: [
       { q: "Où Marie a-t-elle réservé l'hôtel ?", options: ["À Québec", "Près du Vieux-Port", "À Ottawa", "À Toronto"], answer: 1, explanation: "Marie indique explicitement avoir réservé un hôtel près du Vieux-Port à Montréal." },
-      { q: "Pour combien de nuits ?", options: ["1 nuit", "2 nuits", "3 nuits", "4 nuits"], answer: 2, explanation: "Le document mentionne clairement une réservation de trois nuits." },
+      { q: "Combien de nuits vont-ils rester ?", options: ["Une nuit", "Deux nuits", "Trois nuits", "Une semaine"], answer: 2, explanation: "Elle a réservé pour trois nuits dans cet établissement." },
     ],
-    done: true
+    done: false
   },
   {
-    id: 3, title: "Annonces et messages — niveau B2/C1", duration: "14:00",
-    audioText: "Annonce à la gare de Montréal : Le train numéro 245 à destination de Québec aura un retard de vingt minutes. Les voyageurs sont priés de se rendre au quai numéro sept.",
+    id: 3, title: "Annonces publiques et messages radio — B1/B2", duration: "18:00",
+    audioText: "Voici une annonce de la gare de train VIA Rail : Le train 63 à destination de Toronto subira un retard d'environ trente minutes en raison de conditions météorologiques défavorables. Nous nous excusons pour ce désagrément.",
     questions: [
-      { q: "Quel train est retardé ?", options: ["Train 254", "Train 245", "Train 524", "Train 452"], answer: 1, explanation: "L'annonce à la gare précise qu'il s'agit du train numéro 245." },
-      { q: "De combien de minutes est le retard ?", options: ["10 minutes", "15 minutes", "20 minutes", "25 minutes"], answer: 2, explanation: "Le retard annoncé est exactement de vingt minutes (20 min)." },
+      { q: "Quel est le numéro du train ?", options: ["Train 36", "Train 63", "Train 30", "Train 13"], answer: 1, explanation: "Le numéro communiqué par le chef de gare est le train 63." },
+      { q: "Pourquoi le train est-il en retard ?", options: ["Problème technique", "Grève du personnel", "Conditions météorologiques", "Incident sur la voie"], answer: 2, explanation: "Les conditions météorologiques défavorables sont la cause officielle du retard." },
+    ],
+    done: false
+  },
+  {
+    id: 4, title: "Interviews et reportages — B2/C1", duration: "22:00",
+    audioText: "Dans notre émission sur l'immigration, nous recevons le directeur du centre d'accueil de Vancouver qui nous explique comment le mentorat professionnel facilite l'intégration économique des nouveaux arrivants francophones.",
+    questions: [
+      { q: "De quoi traite l'interview ?", options: ["Du tourisme à Vancouver", "Du mentorat professionnel pour immigrants", "Du marché immobilier", "De la politique universitaire"], answer: 1, explanation: "Le reportage met l'accent sur le rôle du mentorat professionnel dans l'intégration économique." },
+      { q: "Où se situe le centre d'accueil mentionné ?", options: ["Montréal", "Calgary", "Vancouver", "Moncton"], answer: 2, explanation: "Le directeur invité dirige le centre d'accueil de Vancouver." },
+    ],
+    done: false
+  },
+  {
+    id: 5, title: "Conférences et débats — C1/C2", duration: "25:00",
+    audioText: "Lors de son colloque sur l'intelligence artificielle au Canada, le professeur Leroux a souligné que la réglementation doit impérativement évoluer au même rythme que les avancées technologiques afin de protéger les données personnelles des citoyens.",
+    questions: [
+      { q: "Quelle est la recommandation principale du professeur Leroux ?", options: ["Interdire l'IA", "Faire évoluer la réglementation au rythme de la technologie", "Subventionner les startups", "Créer un ministère de l'IA"], answer: 1, explanation: "Le professeur insiste sur la nécessité de synchroniser l'évolution de la réglementation avec celle des technologies." },
+      { q: "Quel aspect doit être protégé selon le conférencier ?", options: ["Les données personnelles des citoyens", "Le secret industriel", "Le budget de l'État", "Les emplois dans le secteur manufacturier"], answer: 0, explanation: "La protection des données personnelles est l'objectif ciblé par la réglementation proposée." },
     ],
     done: false
   },
 ];
 
 const AI_TIPS = [
-  "🎯 Concentrez-vous sur les mots-clés : qui, quoi, quand, où.",
-  "📝 Prenez des notes pendant l'écoute — ne tentez pas de tout mémoriser.",
-  "🔄 Écoutez une deuxième fois pour confirmer vos réponses.",
-  "⚡ Anticipez le contexte en lisant les options avant l'écoute.",
+  "Ne cherchez pas à traduire mot à mot : concentrez-vous sur le sens global et l'intention des locuteurs.",
+  "Repérez les mots de liaison (mais, cependant, en revanche) qui signalent souvent la réponse correcte.",
+  "Attention aux négations et aux formulations ironiques dans les niveaux B2 à C2.",
+  "Lisez toujours les options de réponse AVANT le début du document audio si le temps le permet.",
+  "Familiarisez-vous avec les accents québécois, acadiens et parisiens qui alternent dans les épreuves."
 ];
 
 export default function ListeningCoursePage() {
   const [pack, setPack] = useState(getCurrentUserPack());
-  
-  useEffect(() => {
-    setPack(getCurrentUserPack());
-  }, []);
-
-  const LESSONS = React.useMemo<typeof BASE_LESSONS>(() => generateLessonsForPack(BASE_LESSONS, pack, PACK_CONFIGS[pack]), [pack]);
+  useEffect(() => setPack(getCurrentUserPack()), []);
+  const LESSONS = React.useMemo(() => generateLessonsForPack(BASE_LESSONS, pack, PACK_CONFIGS[pack], "listening"), [pack]);
 
   const [currentLesson, setCurrentLesson] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [showAITips, setShowAITips] = useState(true);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [showResults, setShowResults] = useState(false);
-  const [showAITips, setShowAITips] = useState(false);
 
-  // Resume Session Modal State
+  // Session Resume Modal States
   const [showResumeModal, setShowResumeModal] = useState(false);
   const [savedSessionData, setSavedSessionData] = useState<any>(null);
 
-  const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
-
-  // Mark course as started and track learning time day by day
-  useEffect(() => {
-    markCourseStarted("co", LESSONS.length);
-    const timer = setInterval(() => {
-      addLearningTimeSeconds(1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+  const cancelAudioRef = useRef<(() => void) | null>(null);
 
   // Detect Saved Session on Mount
   useEffect(() => {
@@ -92,60 +99,76 @@ export default function ListeningCoursePage() {
           setShowResumeModal(true);
         }
       } catch (e) {
-        console.error("Erreur de parsing de session de cours:", e);
+        console.error("Erreur de parsing session cours CO:", e);
       }
     }
   }, []);
 
-  // Auto-Save Session Progress
+  // Auto-Save Session Progress on Change
   useEffect(() => {
     if (!showResults && !showResumeModal && (Object.keys(answers).length > 0 || currentLesson > 0)) {
       saveSessionState("tcf_session_listening_course", {
+        answers,
         currentLesson,
-        answers
+        showResults: false
       });
     }
-  }, [currentLesson, answers, showResults, showResumeModal]);
+  }, [answers, currentLesson, showResults, showResumeModal]);
 
   const handleResumeSession = () => {
     if (savedSessionData) {
+      if (savedSessionData.answers) setAnswers(savedSessionData.answers);
       if (typeof savedSessionData.currentLesson === "number") {
         setCurrentLesson(Math.min(savedSessionData.currentLesson, Math.max(0, LESSONS.length - 1)));
       }
-      if (savedSessionData.answers) setAnswers(savedSessionData.answers);
     }
     setShowResumeModal(false);
   };
 
   const handleRestartSession = () => {
     localStorage.removeItem("tcf_session_listening_course");
-    setCurrentLesson(0);
     setAnswers({});
+    setCurrentLesson(0);
     setShowResults(false);
     setShowResumeModal(false);
   };
 
-  const lesson = LESSONS[currentLesson];
+  const lesson = LESSONS[currentLesson] || LESSONS[0];
 
   const playAudio = useCallback(() => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    if (typeof window === "undefined") return;
     if (isSpeaking) {
-      window.speechSynthesis.cancel();
+      if (cancelAudioRef.current) {
+        cancelAudioRef.current();
+        cancelAudioRef.current = null;
+      }
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
       setIsSpeaking(false);
       setIsPlaying(false);
       return;
     }
-    const utterance = new SpeechSynthesisUtterance(lesson.audioText);
-    utterance.lang = "fr-FR";
-    utterance.rate = 0.9;
-    utterance.onstart = () => { setIsSpeaking(true); setIsPlaying(true); };
-    utterance.onend = () => { setIsSpeaking(false); setIsPlaying(false); };
-    utterance.onerror = () => { setIsSpeaking(false); setIsPlaying(false); };
-    speechRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
-  }, [isSpeaking, lesson.audioText]);
+    setIsSpeaking(true);
+    setIsPlaying(true);
+
+    // Utilisation du lecteur audio multi-locuteurs
+    const cancelFn = playMultiSpeakerDialogue(
+      lesson as any,
+      (prog) => {}, // progression automatique
+      () => { setIsSpeaking(false); setIsPlaying(false); },
+      (err) => {
+        console.warn("Erreur lecture audio cours:", err);
+        setIsSpeaking(false);
+        setIsPlaying(false);
+      }
+    );
+    cancelAudioRef.current = cancelFn;
+  }, [isSpeaking, lesson]);
 
   const stopAudio = () => {
+    if (cancelAudioRef.current) {
+      cancelAudioRef.current();
+      cancelAudioRef.current = null;
+    }
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
@@ -153,9 +176,14 @@ export default function ListeningCoursePage() {
     }
   };
 
-  const score = lesson.questions.filter((q, i) => answers[i] === q.answer).length;
-  const totalQuestions = lesson.questions.length;
-  const percentage = (score / totalQuestions) * 100;
+  useEffect(() => {
+    stopAudio();
+    return () => stopAudio();
+  }, [currentLesson]);
+
+  const score = (lesson.questions || []).filter((q: any, i: number) => answers[i] === (typeof q.answer === "number" ? q.answer : q.correct)).length;
+  const totalQuestions = (lesson.questions || []).length;
+  const percentage = totalQuestions > 0 ? (score / totalQuestions) * 100 : 0;
 
   // TCF Level Calculation
   let tcfLevel = "B1";
@@ -181,27 +209,26 @@ export default function ListeningCoursePage() {
   }
 
   return (
-    <div className="space-y-6 pb-12 max-w-4xl mx-auto px-2 sm:px-4">
-      {/* Resume Session Modal */}
+    <div className="max-w-4xl mx-auto space-y-6 pb-12 px-2 sm:px-4">
+      {/* Reusable Session Resume Modal */}
       <ResumeSessionModal
         isOpen={showResumeModal}
-        title="Leçon en cours détectée"
-        message="Vous avez déjà commencé cette leçon. Souhaitez-vous reprendre là où vous en étiez ?"
+        title="Session de cours en cours"
+        message="Vous aviez commencé ce cours de compréhension orale. Voulez-vous reprendre là où vous vous étiez arrêté ?"
         onResume={handleResumeSession}
         onRestart={handleRestartSession}
       />
 
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-xs text-slate-500">
-        <Link href="/dashboard/courses" className="hover:text-blue-600 flex items-center gap-1">
-          <ChevronLeft className="h-3.5 w-3.5" /> Mes cours
+      {/* Breadcrumb / Top Bar */}
+      <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
+        <Link href="/dashboard/courses" className="flex items-center gap-1 hover:text-blue-600 transition-colors">
+          <ChevronLeft className="h-4 w-4" /> Retour au catalogue des cours
         </Link>
-        <span>/</span>
         <span className="text-slate-800 dark:text-slate-200 font-semibold">Compréhension orale</span>
       </div>
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white shadow-lg">
         <div className="flex items-center gap-3 mb-2">
           <div className="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center">
             <Headphones className="h-6 w-6" />
@@ -212,7 +239,30 @@ export default function ListeningCoursePage() {
           </div>
         </div>
         <div className="w-full bg-blue-800/50 rounded-full h-2 mt-3">
-          <div className="bg-white rounded-full h-2 transition-all" style={{ width: `${((currentLesson) / LESSONS.length) * 100}%` }} />
+          <div className="bg-white rounded-full h-2 transition-all" style={{ width: `${((currentLesson + 1) / LESSONS.length) * 100}%` }} />
+        </div>
+      </div>
+
+      {/* Bannières Métadonnées Professionnelles Audio (Voix & Scénario) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="p-3.5 rounded-xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/60 dark:border-blue-900/40 flex items-start gap-3">
+          <UserCheck className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+          <div className="text-xs">
+            <span className="font-bold text-blue-900 dark:text-blue-200 block mb-0.5">Profils Vocaux & Accents Francophones</span>
+            <span className="text-blue-700 dark:text-blue-300 font-medium">
+              {(lesson as any).voiceProfiles?.map((v: any) => `${v.name} (${v.accent})`).join(" & ") || "Marc (Montréal, QC) & Sophie (Paris, France)"}
+            </span>
+          </div>
+        </div>
+
+        <div className="p-3.5 rounded-xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/60 dark:border-indigo-900/40 flex items-start gap-3">
+          <MapPin className="h-5 w-5 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
+          <div className="text-xs">
+            <span className="font-bold text-indigo-900 dark:text-indigo-200 block mb-0.5">Scénario Pédagogique FLE</span>
+            <span className="text-indigo-700 dark:text-indigo-300 font-medium">
+              {(lesson as any).dialogueMetadata?.context || "Dialogue en contexte professionnel et quotidien canadien"}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -236,34 +286,35 @@ export default function ListeningCoursePage() {
       <div className="bg-white dark:bg-slate-950 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
         <h2 className="font-bold text-lg text-slate-900 dark:text-white mb-4">{lesson.title}</h2>
 
-        <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 space-y-4">
+        <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-5 space-y-4 border border-slate-200/60 dark:border-slate-800">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm text-slate-500">
               <Clock className="h-4 w-4" /> {lesson.duration}
             </div>
-            <span className={`px-3 py-1 rounded-full text-xs font-bold ${isSpeaking ? "bg-red-100 text-red-600 animate-pulse" : "bg-blue-100 text-blue-600"}`}>
-              {isSpeaking ? "🔊 Lecture en cours..." : "Prêt à jouer"}
+            <span className={`px-3 py-1 rounded-full text-xs font-bold ${isSpeaking ? "bg-red-100 text-red-600 animate-pulse dark:bg-red-950/60 dark:text-red-300" : "bg-blue-100 text-blue-600 dark:bg-blue-950/60 dark:text-blue-300"}`}>
+              {isSpeaking ? "🔊 Lecture audio multi-locuteurs en cours..." : "Prêt pour l'écoute"}
             </span>
           </div>
 
           {/* Controls */}
           <div className="flex items-center justify-center gap-4">
-            <button onClick={stopAudio} className="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center hover:bg-slate-300 transition-colors">
+            <button onClick={stopAudio} className="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center hover:bg-slate-300 transition-colors" title="Réinitialiser l'écoute">
               <RotateCcw className="h-4 w-4 text-slate-600 dark:text-slate-300" />
             </button>
             <button onClick={playAudio}
               className={`h-14 w-14 rounded-full flex items-center justify-center shadow-lg transition-all ${
                 isSpeaking ? "bg-red-500 hover:bg-red-600" : "bg-blue-600 hover:bg-blue-700"
               } text-white`}
+              title={isSpeaking ? "Mettre en pause" : "Écouter le dialogue"}
             >
               {isSpeaking ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6 ml-0.5" />}
             </button>
-            <button onClick={() => setShowAITips(!showAITips)} className="h-10 w-10 rounded-full bg-amber-100 dark:bg-amber-950/30 flex items-center justify-center hover:bg-amber-200 transition-colors">
+            <button onClick={() => setShowAITips(!showAITips)} className="h-10 w-10 rounded-full bg-amber-100 dark:bg-amber-950/30 flex items-center justify-center hover:bg-amber-200 transition-colors" title="Conseils d'écoute">
               <BrainCircuit className="h-4 w-4 text-amber-600" />
             </button>
           </div>
 
-          <p className="text-xs text-center text-slate-400">Cliquez sur ▶ pour écouter le document audio</p>
+          <p className="text-xs text-center text-slate-400">Cliquez sur ▶ pour lancer le dialogue audio officiel TCF (voix et accents alternés)</p>
         </div>
 
         {/* AI Tips */}
@@ -273,7 +324,7 @@ export default function ListeningCoursePage() {
               <BrainCircuit className="h-4 w-4" /> Conseils IA pour la Compréhension Orale
             </h3>
             <ul className="space-y-1.5">
-              {AI_TIPS.map((tip, i) => <li key={i} className="text-xs text-slate-700 dark:text-slate-300">{tip}</li>)}
+              {AI_TIPS.map((tip, i) => <li key={i} className="text-xs text-slate-700 dark:text-slate-300"> • {tip}</li>)}
             </ul>
           </div>
         )}
@@ -283,50 +334,54 @@ export default function ListeningCoursePage() {
       <div className="bg-white dark:bg-slate-950 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-6">
         <h3 className="font-bold text-base text-slate-900 dark:text-white">Questions de compréhension</h3>
         
-        {lesson.questions.map((q, qi) => (
-          <div key={qi} className="space-y-3">
-            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{qi + 1}. {q.q}</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {q.options.map((opt, oi) => {
-                const isSelected = answers[qi] === oi;
-                const isCorrectOption = oi === q.answer;
+        {(lesson.questions || []).map((q: any, qi: number) => {
+          const qText = q.q || q.question || `Question #${qi + 1}`;
+          const qAns = typeof q.answer === "number" ? q.answer : typeof q.correct === "number" ? q.correct : 0;
+          return (
+            <div key={qi} className="space-y-3">
+              <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{qi + 1}. {qText}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {(q.options || ["Option A", "Option B", "Option C", "Option D"]).map((opt: string, oi: number) => {
+                  const isSelected = answers[qi] === oi;
+                  const isCorrectOption = oi === qAns;
 
-                let btnStyle = "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-blue-300";
+                  let btnStyle = "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-blue-300";
 
-                if (showResults) {
-                  if (isCorrectOption) {
-                    btnStyle = "bg-emerald-100 dark:bg-emerald-950/60 border-emerald-500 text-emerald-900 dark:text-emerald-200 font-bold";
-                  } else if (isSelected && !isCorrectOption) {
-                    btnStyle = "bg-red-100 dark:bg-red-950/60 border-red-500 text-red-900 dark:text-red-200 font-bold";
+                  if (showResults) {
+                    if (isCorrectOption) {
+                      btnStyle = "bg-emerald-100 dark:bg-emerald-950/60 border-emerald-500 text-emerald-900 dark:text-emerald-200 font-bold";
+                    } else if (isSelected && !isCorrectOption) {
+                      btnStyle = "bg-red-100 dark:bg-red-950/60 border-red-500 text-red-900 dark:text-red-200 font-bold";
+                    }
+                  } else if (isSelected) {
+                    btnStyle = "bg-blue-100 border-blue-500 text-blue-900 font-bold dark:bg-blue-950/60 dark:text-blue-200";
                   }
-                } else if (isSelected) {
-                  btnStyle = "bg-blue-100 border-blue-500 text-blue-900 font-bold dark:bg-blue-950/60 dark:text-blue-200";
-                }
 
-                return (
-                  <button 
-                    key={oi}
-                    disabled={showResults}
-                    onClick={() => setAnswers(prev => ({ ...prev, [qi]: oi }))}
-                    className={`p-3.5 rounded-xl border text-xs font-semibold text-left transition-all flex items-center justify-between ${btnStyle}`}
-                  >
-                    <span>{opt}</span>
-                    {showResults && isCorrectOption && <Check className="h-4 w-4 text-emerald-600 shrink-0" />}
-                    {showResults && isSelected && !isCorrectOption && <X className="h-4 w-4 text-red-600 shrink-0" />}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Explanation when verified */}
-            {showResults && (
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300">
-                <span className="font-bold text-blue-600 dark:text-blue-400">💡 Explication : </span>
-                {q.explanation}
+                  return (
+                    <button 
+                      key={oi}
+                      disabled={showResults}
+                      onClick={() => setAnswers(prev => ({ ...prev, [qi]: oi }))}
+                      className={`p-3.5 rounded-xl border text-xs font-semibold text-left transition-all flex items-center justify-between ${btnStyle}`}
+                    >
+                      <span>{opt}</span>
+                      {showResults && isCorrectOption && <Check className="h-4 w-4 text-emerald-600 shrink-0" />}
+                      {showResults && isSelected && !isCorrectOption && <X className="h-4 w-4 text-red-600 shrink-0" />}
+                    </button>
+                  );
+                })}
               </div>
-            )}
-          </div>
-        ))}
+
+              {/* Explanation when verified */}
+              {showResults && (
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300">
+                  <span className="font-bold text-blue-600 dark:text-blue-400">💡 Explication : </span>
+                  {q.explanation || "Explication validée par le comité pédagogique FLE."}
+                </div>
+              )}
+            </div>
+          );
+        })}
 
         {/* Automatic Evaluation Results & TCF Level Card */}
         {showResults && (
@@ -339,7 +394,7 @@ export default function ListeningCoursePage() {
                 <div>
                   <h4 className="font-extrabold text-base">Résultat Automatique TCF</h4>
                   <p className="text-xs font-semibold opacity-90">
-                    {score}/{totalQuestions} réponses correctes ({percentage}%)
+                    {score}/{totalQuestions} réponses correctes ({Math.round(percentage)}%)
                   </p>
                 </div>
               </div>
@@ -371,7 +426,7 @@ export default function ListeningCoursePage() {
               markLessonCompleted("co", currentLesson + 1, LESSONS.length);
               localStorage.removeItem("tcf_session_listening_course");
             }} 
-            disabled={Object.keys(answers).length < lesson.questions.length || showResults}
+            disabled={Object.keys(answers).length < (lesson.questions || []).length || showResults}
             className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-sm transition-colors flex items-center justify-center gap-2"
           >
             <Sparkles className="h-4 w-4" />

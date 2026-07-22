@@ -1,12 +1,13 @@
 // Générateur Pédagogique et Connecteur d'Alimentation Progressive - TCF Canada Pro (Griffon d'OR)
 // Moteur refondu pour éliminer 100% des boucles, répétitions, et reformulations stériles.
-// Respecte rigoureusement la progression CECR (A1 -> C2), la diversité des 17 thèmes officiels, et les quotas par Pack.
+// Intégration complète du moteur audio professionnel (rotation intelligente, profils vocaux multiples, dialogues multi-locuteurs).
 
 import { PackType, PackPermissions } from "./subscriptionEngine";
 import { getModulesForPack } from "./curriculumEngine";
 import { listeningCourses, readingCourses, writingCourses, speakingCourses } from "../data/realCourses";
 import { listeningQuestions, readingPassages, writingTasks, speakingTasks } from "../data/realExams";
 import { THEMATIC_BANK, UniquenessValidator, generateUniqueLesson, CECRLevel, SkillType } from "./tcfContentEngine";
+import { AudioRotationEngine, AUDIO_SCENARIO_DATABASE, VOICE_PROFILES } from "./audioContentEngine";
 
 /**
  * Filtre stérile et rigoureux du cahier des charges par Pack :
@@ -87,8 +88,25 @@ export function generateLessonsForPack(
       explanation: q.explanation || "Explication validée par le comité FLE."
     }));
 
+    // Si c'est un cours d'écoute (CO), nous associons un scénario de la bibliothèque audio professionnelle
+    // afin que le cours bénéficie aussi des dialogues multi-locuteurs, des accents et des profils vocaux !
+    let audioMetadata = {};
+    if (type === "listening") {
+      const audioSc = AUDIO_SCENARIO_DATABASE[idx % AUDIO_SCENARIO_DATABASE.length];
+      audioMetadata = {
+        audioUrl: audioSc.audioUrl,
+        voiceProfiles: audioSc.voiceProfiles,
+        dialogueMetadata: audioSc.dialogueMetadata,
+        structuredDialogue: audioSc.structuredDialogue,
+        pedagogicalObjective: audioSc.pedagogicalObjective,
+        vocabularyTags: audioSc.vocabularyTags,
+        audioText: audioSc.script || l.audioText || l.text
+      };
+    }
+
     return {
       ...l,
+      ...audioMetadata,
       id: l.id || idx + 1,
       title: l.title || `Leçon #${idx + 1}`,
       duration: l.duration || "20 min",
@@ -96,7 +114,7 @@ export function generateLessonsForPack(
       instruction: l.instruction || l.intro || l.objective || "Complétez cette leçon en étudiant le développement et les exercices.",
       objective: l.objective || l.intro || "Maîtriser les compétences requises par l'examen TCF Canada.",
       text: l.text || l.audioText || l.instruction || "Contenu pédagogique officiel en cours de chargement pour cette leçon.",
-      audioText: l.audioText || l.text || l.instruction || "Bienvenue dans cette leçon d'entraînement officiel pour le TCF Canada.",
+      audioText: (audioMetadata as any).audioText || l.audioText || l.text || l.instruction || "Bienvenue dans cette leçon d'entraînement officiel pour le TCF Canada.",
       intro: l.intro || l.instruction || l.objective || "Introduction aux compétences de cette leçon.",
       promptText: l.promptText || l.instruction || l.text || "Sujet officiel de réflexion et d'argumentation TCF Canada.",
       modelAnswer: l.modelAnswer || l.summary || "Exemple de réponse officielle : introduction claire, arguments avec connecteurs logiques, et conclusion nuancée.",
@@ -115,7 +133,8 @@ export function generateLessonsForPack(
 
 /**
  * Générateur d'examens pratiques réels TCF Canada (CO - Compréhension Orale) :
- * Garantie zéro répétition et authenticité des scénarios par niveau CECR.
+ * Connecté au Moteur Audio Professionnel (AudioRotationEngine) pour garantir l'absence totale
+ * de répétition, une rotation intelligente de thèmes et des dialogues multi-locuteurs (voix et accents variés).
  */
 export function generateExamQuestionsForPack(
   baseQuestions: any[],
@@ -124,68 +143,56 @@ export function generateExamQuestionsForPack(
   type: "reading" | "listening" | "writing" | "speaking"
 ) {
   if (type !== "listening") return [];
-  const source = baseQuestions && baseQuestions.length > 0 ? baseQuestions : listeningQuestions;
   
-  // Pour le pack Standard, exactement 5 questions de Compréhension Orale (20 au total sur les 4 compétences)
   const targetCount = currentPack === "standard" ? 5 : packConfig.questionsPerExam;
-  
-  const progressiveQuestions = [...source];
-  let nextId = Math.max(...source.map((q: any) => q.id || 0), 0) + 1;
-  const levels: ("A1"|"A2"|"B1"|"B2"|"C1"|"C2")[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
-  let synthIndex = 0;
+  const allowedLevels: CECRLevel[] = currentPack === "standard" 
+    ? ["A1", "A2"] 
+    : currentPack === "griffon" 
+      ? ["A1", "A2", "B1", "B2"] 
+      : ["A1", "A2", "B1", "B2", "C1", "C2"];
 
-  while (progressiveQuestions.length < targetCount) {
-    const lvl = levels[Math.min(Math.floor((progressiveQuestions.length / targetCount) * levels.length), levels.length - 1)];
-    const theme = THEMATIC_BANK[(synthIndex + nextId) % THEMATIC_BANK.length];
-    const sc = theme.listeningScenarios[synthIndex % theme.listeningScenarios.length] || {
-      title: `${theme.name} – Situation d'écoute au Canada`,
-      audioText: `[Enregistrement TCF Canada - Niveau ${lvl}] Dialogue en contexte professionnel et social canadien sur le thème : ${theme.name}.`,
-      q: `Question officielle #${nextId} (Niveau ${lvl}) : Que peut-on déduire de l'attitude et des propos du locuteur principal concernant ${theme.name.toLowerCase()} ?`,
-      opt: [
-        `Il exprime une opinion nuancée favorable à l'amélioration de ${theme.contexts[0].toLowerCase()}.`,
-        "Il rejette catégoriquement l'ensemble des propositions formulées sans explication.",
-        "Il demande un report immédiat de la décision à une année ultérieure.",
-        "Il confirme que les démarches ont été annulées par l'administration provinciale."
+  // Sélection intelligente de scénarios audio INÉDITS via le moteur de rotation professionnelle
+  const selectedScenarios = AudioRotationEngine.selectUniqueAudioScenarios(targetCount, allowedLevels);
+
+  return selectedScenarios.map((sc, idx) => {
+    const qItem = sc.questions[0] || {
+      id: idx + 1,
+      question: `Question TCF Canada (${sc.cecrLevel}) : Quelle est l'idée principale du dialogue ?`,
+      options: [
+        `Une explication précise concernant ${sc.theme.toLowerCase()}.`,
+        "Une annulation définitive des procédures provinciales.",
+        "Une demande de report sans justificatif médical.",
+        "Un refus catégorique de négocier les conditions."
       ],
-      ans: 0,
-      exp: `La bonne réponse repose sur la détection des articulateurs logiques et de l'opinion implicite de niveau ${lvl}.`
+      correct: 0,
+      detailedCorrection: `La bonne réponse s'appuie sur le lexique et la situation de communication abordés en ${sc.cecrLevel}.`,
+      errorAnalysis: "Ne pas se laisser tromper par les mots isolés qui apparaissent dans les distracteurs.",
+      cecrEvaluation: `Niveau visé : ${sc.cecrLevel} (NCLC 6 à 10).`
     };
 
-    progressiveQuestions.push({
-      id: nextId,
-      audio: `/audio/tcf_co_${lvl.toLowerCase()}_sample.mp3`,
-      text: `[Enregistrement Audio TCF Canada - ${sc.title}] (Niveau ${lvl}) – Écoute unique. Chronomètre actif : 45 secondes.`,
-      question: sc.q,
-      options: sc.opt,
-      answer: sc.ans,
-      level: lvl,
-      gradingScale: "1 point par bonne réponse (Barème 699 points NCLC)",
-      detailedCorrection: `Correction détaillée (Item #${nextId}) : ${sc.exp}`,
-      errorAnalysis: "Piège fréquent : Attention aux distracteurs qui reprennent des mots isolés de l'audio sans correspondre au sens global de la phrase.",
-      cecrEvaluation: `Évaluation CECR : Réussir cet item certifie une compétence d'écoute de niveau ${lvl} (NCLC ${lvl === "C1" || lvl === "C2" ? "9+" : lvl === "B2" ? "8" : "6"}).`
-    });
-    nextId++;
-    synthIndex++;
-  }
-
-  return progressiveQuestions.slice(0, targetCount).map((q: any, idx: number) => {
-    const textStr = q.text || q.question || `Question d'examen #${idx + 1}`;
-    const ansNum = typeof q.correct === "number" ? q.correct : typeof q.answer === "number" ? q.answer : 0;
     return {
-      ...q,
-      id: q.id || idx + 1,
-      text: textStr,
-      question: q.question || textStr,
-      audioText: q.audioText || textStr || "Enregistrement officiel TCF Canada.",
-      audio: q.audio || "/audio/tcf_co_b2_sample.mp3",
-      options: q.options || ["Option A", "Option B", "Option C", "Option D"],
-      correct: ansNum,
-      answer: ansNum,
-      level: q.level || "B2",
-      gradingScale: q.gradingScale || "1 point par bonne réponse",
-      detailedCorrection: q.detailedCorrection || "Correction détaillée officielle.",
-      errorAnalysis: q.errorAnalysis || "Analyse des distracteurs.",
-      cecrEvaluation: q.cecrEvaluation || "Niveau CECR B2 / NCLC 7."
+      id: idx + 1,
+      scenarioId: sc.id,
+      text: `[Épreuve officielle de Compréhension Orale - Niveau ${sc.cecrLevel}] Thème : ${sc.theme}. Écoute unique.`,
+      question: qItem.question,
+      audioText: sc.script,
+      audioUrl: sc.audioUrl,
+      audio: sc.audioUrl,
+      voiceProfiles: sc.voiceProfiles,
+      dialogueMetadata: sc.dialogueMetadata,
+      structuredDialogue: sc.structuredDialogue,
+      vocabularyTags: sc.vocabularyTags,
+      pedagogicalObjective: sc.pedagogicalObjective,
+      options: qItem.options,
+      correct: qItem.correct,
+      answer: qItem.correct,
+      level: sc.cecrLevel,
+      difficulty: sc.difficulty,
+      durationSeconds: sc.durationSeconds,
+      gradingScale: "1 point par bonne réponse (Converti sur le barème 699 points NCLC)",
+      detailedCorrection: qItem.detailedCorrection,
+      errorAnalysis: qItem.errorAnalysis,
+      cecrEvaluation: qItem.cecrEvaluation
     };
   });
 }
