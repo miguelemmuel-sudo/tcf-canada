@@ -53,19 +53,25 @@ export default function DashboardPage() {
       try {
         setLoading(true);
         const { data: { user }, error: userErr } = await supabase.auth.getUser();
+        const localEmail = typeof window !== "undefined" ? localStorage.getItem("griffon_user_email") : null;
+        const localName = typeof window !== "undefined" ? localStorage.getItem("griffon_user_name") : null;
 
-        if (userErr || !user) {
+        if ((userErr || !user) && !localEmail) {
           console.warn("Utilisateur non connecté");
           router.push("/login");
           return;
         }
 
-        setUserEmail(user.email || "");
-        setUserId(user.id);
+        const effectiveEmail = user?.email || localEmail || "";
+        const effectiveId = user?.id || `local_user_${effectiveEmail}`;
+        setUserEmail(effectiveEmail);
+        setUserId(effectiveId);
         
         // Charger les sessions et la progression des cours depuis Supabase vers le localStorage
-        await loadSessionsFromSupabase(user.id);
-        await loadCoursesProgressFromSupabase(user.id);
+        if (user?.id) {
+          await loadSessionsFromSupabase(user.id);
+          await loadCoursesProgressFromSupabase(user.id);
+        }
         
         // Re-vérifier s'il y a une session (au cas où elle vient d'être chargée)
         const activeSession = findInterruptedSession();
@@ -73,30 +79,34 @@ export default function DashboardPage() {
           setInterruptedSession(activeSession);
         }
         
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-          .single();
+        if (user?.id) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", user.id)
+            .single();
 
-        if (profile && (profile.first_name || profile.last_name)) {
-          const name = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
-          setUserName(name);
+          if (profile && (profile.first_name || profile.last_name)) {
+            const name = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+            setUserName(name);
+          } else {
+            const fallbackName = user.email ? user.email.split("@")[0] : (localName || "Candidat");
+            setUserName(fallbackName);
+          }
         } else {
-          const fallbackName = user.email ? user.email.split("@")[0] : "Candidat";
-          setUserName(fallbackName);
+          setUserName(localName || (effectiveEmail ? effectiveEmail.split("@")[0] : "Candidat"));
         }
 
-        const { data: examSessions } = await supabase
+        const { data: examSessions } = user?.id ? await supabase
           .from("exam_sessions")
           .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false });
+          .eq("user_id", effectiveId)
+          .order("created_at", { ascending: false }) : { data: null };
 
-        const { data: courseProgress } = await supabase
+        const { data: courseProgress } = user?.id ? await supabase
           .from("course_progress")
           .select("*")
-          .eq("user_id", user.id);
+          .eq("user_id", effectiveId) : { data: null };
 
         if (examSessions && examSessions.length > 0) {
           const completed = examSessions.filter(e => e.status === "completed");

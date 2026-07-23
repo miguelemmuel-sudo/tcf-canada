@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Lock, Check, Crown, Sparkles, X, ArrowRight, ShieldCheck } from "lucide-react";
 import { PackType, PACK_CONFIGS, getCurrentUserPack, setUserPack, isUserAdmin } from "@/utils/subscriptionEngine";
 import { createClient } from "@/lib/supabaseClient";
@@ -12,6 +13,7 @@ interface UpgradePackModalProps {
 }
 
 export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: UpgradePackModalProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [selectedPack, setSelectedPack] = useState<PackType>(targetPack);
   const adminMode = isUserAdmin();
@@ -19,6 +21,12 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
   if (!isOpen) return null;
 
   const handleUpgrade = async () => {
+    if (!adminMode) {
+      onClose();
+      router.push("/dashboard/payments");
+      return;
+    }
+
     setLoading(true);
     try {
       setUserPack(selectedPack);
@@ -138,7 +146,11 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
               <span>Mise à jour en cours...</span>
             ) : (
               <>
-                <span>Confirmer le choix du {PACK_CONFIGS[selectedPack].name}</span>
+                <span>
+                  {adminMode 
+                    ? `Confirmer le choix du ${PACK_CONFIGS[selectedPack].name}` 
+                    : `Passer au ${PACK_CONFIGS[selectedPack].name} (Paiement sécurisé)`}
+                </span>
                 <ArrowRight className="h-4 w-4" />
               </>
             )}

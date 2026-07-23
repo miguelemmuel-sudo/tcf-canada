@@ -19,7 +19,7 @@ import {
   Lock,
   Crown
 } from "lucide-react";
-import { getCurrentUserPack, isFeatureAccessible, getPackPermissions, PackType } from "@/utils/subscriptionEngine";
+import { getCurrentUserPack, isFeatureAccessible, getPackPermissions, PackType, isUserAdmin } from "@/utils/subscriptionEngine";
 import { UpgradePackModal } from "@/components/ui/UpgradePackModal";
 
 const navItems = [
@@ -56,6 +56,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   }, []);
 
   const config = getPackPermissions(pack);
+  const isAdmin = isUserAdmin();
 
   return (
     <>
@@ -87,18 +88,25 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           </div>
         </div>
 
-        {/* Current Pack Badge - Clickable to switch packs */}
+        {/* Current Pack Badge - Clickable ONLY for admin to switch packs */}
         <div className="px-4 pt-3">
           <div 
-            onClick={() => setShowUpgradeModal(true)}
-            className="px-3 py-2 rounded-xl bg-slate-800/80 border border-slate-700/60 hover:border-amber-500/80 hover:bg-slate-800 flex items-center justify-between cursor-pointer transition-all group shadow-sm"
-            title="Cliquez pour tester un autre Pack (Mode Administrateur / Changement de formule)"
+            onClick={isAdmin ? () => setShowUpgradeModal(true) : undefined}
+            className={cn(
+              "px-3 py-2 rounded-xl bg-slate-800/80 border border-slate-700/60 flex items-center justify-between transition-all group shadow-sm",
+              isAdmin ? "hover:border-amber-500/80 hover:bg-slate-800 cursor-pointer" : "cursor-default"
+            )}
+            title={isAdmin ? "Cliquez pour tester un autre Pack (Mode Administrateur / Changement de formule)" : `Formule active : ${config.name}`}
           >
             <div className="flex items-center gap-2">
               <Crown className="h-4 w-4 text-amber-400 shrink-0 group-hover:scale-110 transition-transform" />
               <div className="flex flex-col">
                 <span className="text-xs font-black text-white">{config.name}</span>
-                <span className="text-[9px] text-amber-400/90 font-medium">Changer de formule ⇄</span>
+                {isAdmin ? (
+                  <span className="text-[9px] text-amber-400/90 font-medium">Changer de formule ⇄</span>
+                ) : (
+                  <span className="text-[9px] text-slate-400 font-medium">Formule active</span>
+                )}
               </div>
             </div>
             {config.badge && (
