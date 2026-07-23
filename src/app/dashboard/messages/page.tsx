@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { isFeatureAccessible, getCurrentUserPack } from "@/utils/subscriptionEngine";
 import { LockedFeatureBanner } from "@/components/ui/LockedFeatureBanner";
+import { generateStructuredAssistantReply } from "@/utils/aiCoachAssistant";
 
 const conversations = [
   { id: 1, name: "Coach Marie L.", time: "10:30", lastMsg: "Parfait ! Continue ainsi pour atteindre...", badge: "1", isCoach: true, avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&auto=format&fit=crop&q=80" },
@@ -57,56 +58,13 @@ export default function MessagesPage() {
   ]);
   const [isAiTyping, setIsAiTyping] = useState(false);
 
-  // Moteur de réponse IA pédagogique précis TCF Canada & Grille NCLC/Échelles de points
+  // Moteur de réponse IA pédagogique structurée & performante TCF Canada
   const generateAiReply = (userMsg: string): string => {
-    const lower = userMsg.toLowerCase();
-    
-    // 1. Calcul précis de points / Barème TCF & NCLC
-    if (lower.includes("point") || lower.includes("calcul") || lower.includes("nclc") || lower.includes("score") || lower.includes("barème")) {
-      return `📊 **Barème Officiel & Calcul de Score TCF Canada :**
-
-Le TCF Canada attribue un score de **100 à 699 points** par épreuve, converti directement en Niveau de Compétence Linguistique Canadien (**NCLC**) :
-
-• **600 – 699 pts** ➔ **NCLC 10 à 12** (C1/C2 - Élevé / Excellent)
-• **523 – 599 pts** ➔ **NCLC 9** (C1 - Avancé)
-• **500 – 522 pts** ➔ **NCLC 8** (B2 - Intermédiaire Supérieur)
-• **453 – 499 pts** ➔ **NCLC 7** (B2 - Seuil requis pour la résidence permanente)
-• **398 – 452 pts** ➔ **NCLC 6** (B1 - Intermédiaire)
-• **342 – 397 pts** ➔ **NCLC 5** (B1 - Intermédiaire Initial)
-
-*Conseil Coach : Pour obtenir le maximum de points CRS (Entrée Express), vous devez viser au moins le **NCLC 7** (453+ pts en CO/CE).*`;
-    }
-
-    // 2. Compréhension Orale & Écrite
-    if (lower.includes("orale") || lower.includes("ecoute") || lower.includes("ecrite") || lower.includes("lecture")) {
-      return `🎯 **Conseils Pédagogiques pour les Épreuves QCM :**
-
-1. **Compréhension Orale (39 q, 35 min)** : L'enregistrement n'est diffusé qu'une seule fois. Repérez les mots-clés de la question avant le début de l'audio.
-2. **Compréhension Écrite (39 q, 60 min)** : Gérez bien le temps (env. 1 min 30 s par document). Les textes 1 à 20 sont plus simples, gardez du temps pour les textes argumentatifs 21 à 39.
-
-Souhaitez-vous faire une simulation pratique ciblée ?`;
-    }
-
-    // 3. Expressions (Écrite & Orale)
-    if (lower.includes("rédaction") || lower.includes("texte") || lower.includes("tâche") || lower.includes("expression")) {
-      return `✍️ **Évaluation de l'Expression Écrite / Orale :**
-
-• **Tâche 1** : Message court/courriel informel (60–120 mots)
-• **Tâche 2** : Article/Lettre formelle décrivant une expérience (120–150 mots)
-• **Tâche 3** : Prise de position argumentée (120–180 mots)
-
-Les évaluateurs TCF vérifient 4 critères : le respect de la consigne, la cohérence/connecteurs logiques, la richesse du vocabulaire et la précision grammaticale.`;
-    }
-
-    if (lower.includes("bonjour") || lower.includes("salut") || lower.includes("coucou")) {
-      return `Bonjour ! Je suis votre assistant pédagogique TCF Canada. Posez-moi vos questions sur le barème, les épreuves ou vos résultats d'entraînement !`;
-    }
-
-    if (lower.includes("merci") || lower.includes("super") || lower.includes("d'accord")) {
-      return `Avec grand plaisir ! Continuez ainsi votre préparation. Je reste disponible si vous avez d'autres questions.`;
-    }
-
-    return `J'ai bien analysé votre question concernant "${userMsg}". Pour cette situation, référez-vous à la grille officielle TCF Canada : chaque bonne réponse en QCM vous crédite de points ajustés selon la difficulté de la question (A1 à C2). Avez-vous besoin d'un calcul spécifique sur un résultat d'examen ?`;
+    return generateStructuredAssistantReply({
+      userQuery: userMsg,
+      userPack: pack,
+      coachName: selectedConv.name
+    });
   };
 
   const handleSendMessage = () => {
