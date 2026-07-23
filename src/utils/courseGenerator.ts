@@ -120,36 +120,71 @@ export function generateLessonsForPack(
       }
     ];
 
+    // Utilitaires de rotation locaux (uniquement pour les options déjà cohérentes)
+    function rotatePos(lessonId: number, qIndex: number): number {
+      return (lessonId * 11 + qIndex * 17 + 3) % 4;
+    }
+    function swapToPos(opts: string[], newPos: number, oldPos: number): string[] {
+      if (newPos === oldPos || newPos >= opts.length) return opts;
+      const out = [...opts];
+      const tmp = out[newPos]; out[newPos] = out[oldPos]; out[oldPos] = tmp;
+      return out;
+    }
+
     const normalizedQuestions = rawQuestions.map((q: any, qIdx: number) => {
       const qText = q.q || q.question || `Question #${qIdx + 1} : Quelle est l'idée principale abordée dans ce document ?`;
-      const baseOpts: string[] | null = (q.options && q.options.length === 4 &&
-        !q.options[0]?.includes("Option A") && !q.options[0]?.includes("Proposition correcte")
-      ) ? q.options : null;
       const baseCorr = typeof q.answer === "number" ? q.answer : typeof q.correct === "number" ? q.correct : 0;
 
-      const unique = QcmUniqueBankEngine.generateUniqueQcm({
-        id: idx + 1,
-        questionId: qIdx + 1,
-        level: l.level || "B2",
-        skill: type === "listening" ? "listening" : type === "reading" ? "reading" : "course",
-        topic: l.title || `Leçon ${idx + 1}`,
-        baseQuestionText: qText,
-        baseOptions: baseOpts || undefined,
-        baseCorrect: baseCorr,
-        baseExplanation: q.explanation || q.detailedCorrection || undefined
-      });
+      // Détecter si les options sont authentiques (cohérentes avec la question) ou des placeholders
+      const hasAuthenticOptions = q.options &&
+        Array.isArray(q.options) &&
+        q.options.length === 4 &&
+        q.options.every((o: string) => typeof o === "string" && o.length > 5) &&
+        !q.options[0]?.includes("Option A") &&
+        !q.options[0]?.includes("Proposition correcte") &&
+        !q.options[0]?.includes("Hors sujet D");
 
-      return {
-        q: unique.question,
-        question: unique.question,
-        options: unique.options,
-        answer: unique.answer,
-        correct: unique.correct,
-        explanation: unique.detailedCorrection,
-        detailedCorrection: unique.detailedCorrection,
-        errorAnalysis: unique.errorAnalysis,
-        cecrEvaluation: unique.cecrEvaluation
-      };
+      if (hasAuthenticOptions) {
+        // CONSERVER les options originales cohérentes avec la question
+        // Appliquer seulement la rotation de position de la bonne réponse
+        const newPos = rotatePos(idx + 1, qIdx + 1);
+        const rotatedOpts = swapToPos(q.options, newPos, baseCorr);
+        return {
+          q: qText,
+          question: qText,
+          options: rotatedOpts,
+          answer: newPos,
+          correct: newPos,
+          explanation: q.explanation || q.detailedCorrection || "Reportez-vous au texte ou dialogue pour identifier la bonne réponse.",
+          detailedCorrection: q.detailedCorrection || q.explanation || "Reportez-vous au texte ou dialogue pour identifier la bonne réponse.",
+          errorAnalysis: q.errorAnalysis || "Comparez chaque option avec le contenu précis du document.",
+          cecrEvaluation: q.cecrEvaluation || `Niveau ${l.level || "B2"} — TCF Canada.`
+        };
+      } else {
+        // Générer dynamiquement UNIQUEMENT pour les placeholders sans contenu réel
+        const unique = QcmUniqueBankEngine.generateUniqueQcm({
+          id: idx + 1,
+          questionId: qIdx + 1,
+          level: l.level || "B2",
+          skill: type === "listening" ? "listening" : type === "reading" ? "reading" : "course",
+          topic: l.title || `Leçon ${idx + 1}`,
+          baseQuestionText: qText,
+          baseOptions: undefined,
+          baseCorrect: baseCorr,
+          baseExplanation: undefined
+        });
+        return {
+          q: unique.question,
+          question: unique.question,
+          options: unique.options,
+          answer: unique.answer,
+          correct: unique.correct,
+          explanation: unique.detailedCorrection,
+          detailedCorrection: unique.detailedCorrection,
+          errorAnalysis: unique.errorAnalysis,
+          cecrEvaluation: unique.cecrEvaluation
+        };
+      }
     });
 
     return {
@@ -205,28 +240,59 @@ export function generateExamQuestionsForPack(
   return selectedScenarios.map((sc, idx) => {
     const rawQItem = sc.questions[0] || null;
 
-    // Génération d'une banque QCM 100% unique pour chaque scénario audio
-    const uniqueQcm = QcmUniqueBankEngine.generateUniqueQcm({
-      id: typeof sc.id === "number" ? sc.id : (parseInt(String(sc.id), 10) || idx + 1),
-      questionId: 1,
-      level: sc.cecrLevel || "B2",
-      skill: "listening",
-      topic: sc.theme || `Dialogue TCF Canada #${idx + 1}`,
-      baseQuestionText: rawQItem?.question || undefined,
-      baseOptions: rawQItem?.options || undefined,
-      baseCorrect: rawQItem?.correct || undefined,
-      baseExplanation: rawQItem?.detailedCorrection || undefined
-    });
+    // Vérifier si le scénario a déjà une question cohérente avec son dialogue
+    const hasAuthenticCoQuestion = rawQItem &&
+      rawQItem.options &&
+      Array.isArray(rawQItem.options) &&
+      rawQItem.options.length === 4 &&
+      rawQItem.options.every((o: string) => typeof o === "string" && o.length > 8) &&
+      !rawQItem.options[0]?.includes("Option A") &&
+      !rawQItem.options[0]?.includes("Proposition correcte");
 
-    const qItem = {
-      id: idx + 1,
-      question: uniqueQcm.question,
-      options: uniqueQcm.options,
-      correct: uniqueQcm.correct,
-      detailedCorrection: uniqueQcm.detailedCorrection,
-      errorAnalysis: uniqueQcm.errorAnalysis,
-      cecrEvaluation: uniqueQcm.cecrEvaluation
-    };
+    let qItem: any;
+
+    if (hasAuthenticCoQuestion) {
+      // CONSERVER les options originales du dialogue audio (elles sont cohérentes avec le script)
+      const origCorrect = typeof rawQItem.correct === "number" ? rawQItem.correct : 0;
+      const scIdNum = typeof sc.id === "number" ? sc.id : (parseInt(String(sc.id), 10) || idx + 1);
+      const newPos = (scIdNum * 11 + 1 * 17 + 3) % 4;
+      const rotOpts = [...rawQItem.options];
+      if (newPos !== origCorrect) {
+        const tmp = rotOpts[newPos]; rotOpts[newPos] = rotOpts[origCorrect]; rotOpts[origCorrect] = tmp;
+      }
+      qItem = {
+        id: idx + 1,
+        question: rawQItem.question,
+        options: rotOpts,
+        correct: newPos,
+        detailedCorrection: rawQItem.detailedCorrection || "Reportez-vous au dialogue audio pour justifier la réponse.",
+        errorAnalysis: rawQItem.errorAnalysis || "Écoutez attentivement le dialogue et comparez chaque option.",
+        cecrEvaluation: rawQItem.cecrEvaluation || `Niveau ${sc.cecrLevel} — NCLC TCF Canada.`
+      };
+    } else {
+      // Générer dynamiquement UNIQUEMENT si aucune question cohérente n'existe
+      const scIdNum = typeof sc.id === "number" ? sc.id : (parseInt(String(sc.id), 10) || idx + 1);
+      const uniqueQcm = QcmUniqueBankEngine.generateUniqueQcm({
+        id: scIdNum,
+        questionId: 1,
+        level: sc.cecrLevel || "B2",
+        skill: "listening",
+        topic: sc.theme || `Dialogue TCF Canada #${idx + 1}`,
+        baseQuestionText: rawQItem?.question || undefined,
+        baseOptions: undefined,
+        baseCorrect: undefined,
+        baseExplanation: undefined
+      });
+      qItem = {
+        id: idx + 1,
+        question: uniqueQcm.question,
+        options: uniqueQcm.options,
+        correct: uniqueQcm.correct,
+        detailedCorrection: uniqueQcm.detailedCorrection,
+        errorAnalysis: uniqueQcm.errorAnalysis,
+        cecrEvaluation: uniqueQcm.cecrEvaluation
+      };
+    }
 
     return {
       id: idx + 1,
@@ -300,35 +366,61 @@ export function generateExamPassagesForPack(
     content: p.content || p.text || "Contenu du document de lecture...",
     questions: (p.questions || []).map((q: any, qIdx: number) => {
       const textStr = q.text || q.question || `Question #${qIdx + 1}`;
-      const baseOpts: string[] | null = (q.options && q.options.length === 4 &&
-        !q.options[0]?.includes("Option A") && !q.options[0]?.includes("Proposition correcte")
-      ) ? q.options : null;
       const baseCorr = typeof q.correct === "number" ? q.correct : typeof q.answer === "number" ? q.answer : 0;
 
-      const unique = QcmUniqueBankEngine.generateUniqueQcm({
-        id: (p.id || idx + 1),
-        questionId: qIdx + 1,
-        level: q.cecrLevel || p.level || "B2",
-        skill: "reading",
-        topic: p.title || `Passage #${idx + 1}`,
-        baseQuestionText: textStr,
-        baseOptions: baseOpts || undefined,
-        baseCorrect: baseCorr,
-        baseExplanation: q.detailedCorrection || undefined
-      });
+      // Vérifier si les options sont authentiques et cohérentes avec le passage
+      const hasRealOptions = q.options &&
+        Array.isArray(q.options) &&
+        q.options.length === 4 &&
+        q.options.every((o: string) => typeof o === "string" && o.length > 8) &&
+        !q.options[0]?.includes("Option A") &&
+        !q.options[0]?.includes("Proposition correcte");
 
-      return {
-        ...q,
-        id: q.id || qIdx + 1,
-        text: unique.question,
-        question: unique.question,
-        options: unique.options,
-        correct: unique.correct,
-        answer: unique.correct,
-        detailedCorrection: unique.detailedCorrection,
-        errorAnalysis: unique.errorAnalysis,
-        cecrLevel: q.cecrLevel || "B2"
-      };
+      if (hasRealOptions) {
+        // CONSERVER les options originales du passage, seulement rotation de position
+        const newPos = ((p.id || idx + 1) * 11 + (qIdx + 1) * 17 + 3) % 4;
+        const rotOpts = [...q.options];
+        if (newPos !== baseCorr) {
+          const tmp = rotOpts[newPos]; rotOpts[newPos] = rotOpts[baseCorr]; rotOpts[baseCorr] = tmp;
+        }
+        return {
+          ...q,
+          id: q.id || qIdx + 1,
+          text: textStr,
+          question: textStr,
+          options: rotOpts,
+          correct: newPos,
+          answer: newPos,
+          detailedCorrection: q.detailedCorrection || "Reportez-vous au texte pour justifier la réponse.",
+          errorAnalysis: q.errorAnalysis || "Relisez le passage et comparez chaque option avec le texte.",
+          cecrLevel: q.cecrLevel || "B2"
+        };
+      } else {
+        // Générer dynamiquement seulement pour les placeholders
+        const unique = QcmUniqueBankEngine.generateUniqueQcm({
+          id: (p.id || idx + 1),
+          questionId: qIdx + 1,
+          level: q.cecrLevel || p.level || "B2",
+          skill: "reading",
+          topic: p.title || `Passage #${idx + 1}`,
+          baseQuestionText: textStr,
+          baseOptions: undefined,
+          baseCorrect: baseCorr,
+          baseExplanation: undefined
+        });
+        return {
+          ...q,
+          id: q.id || qIdx + 1,
+          text: unique.question,
+          question: unique.question,
+          options: unique.options,
+          correct: unique.correct,
+          answer: unique.correct,
+          detailedCorrection: unique.detailedCorrection,
+          errorAnalysis: unique.errorAnalysis,
+          cecrLevel: q.cecrLevel || "B2"
+        };
+      }
     })
   }));
 }
