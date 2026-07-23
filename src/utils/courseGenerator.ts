@@ -70,7 +70,45 @@ export function generateLessonsForPack(
 
   // Normalisation rigoureuse de toutes les propriétés pour garantir une compatibilité universelle avec les interfaces UI
   return progressiveLessons.slice(0, targetCount).map((l: any, idx: number) => {
-    const rawQuestions = l.questions || l.quiz || l.exercises || [
+    const isBaseLesson = baseLessons && idx < baseLessons.length;
+    let audioMetadata: any = {};
+
+    if (type === "listening") {
+      if (isBaseLesson) {
+        const vProfile1 = VOICE_PROFILES[idx % VOICE_PROFILES.length];
+        const vProfile2 = VOICE_PROFILES[(idx + 1) % VOICE_PROFILES.length];
+        audioMetadata = {
+          voiceProfiles: [vProfile1, vProfile2],
+          audioText: l.audioText || l.text,
+          text: l.text || l.audioText
+        };
+      } else {
+        let audioSc: any;
+        const scenarioIdx = idx - (baseLessons ? baseLessons.length : 0);
+        if (scenarioIdx < AUDIO_SCENARIO_DATABASE.length) {
+          audioSc = AUDIO_SCENARIO_DATABASE[scenarioIdx];
+        } else {
+          const vProfile1 = VOICE_PROFILES[idx % VOICE_PROFILES.length];
+          const vProfile2 = VOICE_PROFILES[(idx + 5) % VOICE_PROFILES.length];
+          audioSc = TCFProceduralLibrary.generateListeningAudioScenario(idx + 1000, idx + 1, l.level || "B2", vProfile1, vProfile2);
+        }
+        audioMetadata = {
+          audioUrl: audioSc.audioUrl,
+          voiceProfiles: audioSc.voiceProfiles,
+          dialogueMetadata: audioSc.dialogueMetadata,
+          structuredDialogue: audioSc.structuredDialogue,
+          pedagogicalObjective: audioSc.pedagogicalObjective,
+          vocabularyTags: audioSc.vocabularyTags,
+          audioText: audioSc.script || l.audioText || l.text,
+          text: audioSc.script || l.text || l.audioText,
+          questions: audioSc.questions || l.questions,
+          quiz: audioSc.questions || l.quiz || l.questions,
+          exercises: audioSc.questions || l.exercises || l.questions
+        };
+      }
+    }
+
+    const rawQuestions = audioMetadata.questions || l.questions || l.quiz || l.exercises || [
       {
         q: `Question d'évaluation #${idx + 1}`,
         options: ["Proposition correcte A", "Distracteur B", "Proposition inexacte C", "Hors sujet D"],
@@ -85,35 +123,8 @@ export function generateLessonsForPack(
       options: q.options || ["Option A", "Option B", "Option C", "Option D"],
       answer: typeof q.answer === "number" ? q.answer : typeof q.correct === "number" ? q.correct : 0,
       correct: typeof q.correct === "number" ? q.correct : typeof q.answer === "number" ? q.answer : 0,
-      explanation: q.explanation || "Explication validée par le comité FLE."
+      explanation: q.explanation || q.detailedCorrection || "Explication validée par le comité FLE."
     }));
-
-    // Si c'est un cours d'écoute (CO), nous associons un scénario de la bibliothèque audio professionnelle
-    // ou nous générons un dialogue multi-locuteurs 100% inédit pour éviter toute répétition en production !
-    let audioMetadata = {};
-    if (type === "listening") {
-      let audioSc: any;
-      if (idx < AUDIO_SCENARIO_DATABASE.length) {
-        audioSc = AUDIO_SCENARIO_DATABASE[idx];
-      } else {
-        const vProfile1 = VOICE_PROFILES[idx % VOICE_PROFILES.length];
-        const vProfile2 = VOICE_PROFILES[(idx + 5) % VOICE_PROFILES.length];
-        audioSc = TCFProceduralLibrary.generateListeningAudioScenario(idx + 1000, idx + 1, l.level || "B2", vProfile1, vProfile2);
-      }
-      audioMetadata = {
-        audioUrl: audioSc.audioUrl,
-        voiceProfiles: audioSc.voiceProfiles,
-        dialogueMetadata: audioSc.dialogueMetadata,
-        structuredDialogue: audioSc.structuredDialogue,
-        pedagogicalObjective: audioSc.pedagogicalObjective,
-        vocabularyTags: audioSc.vocabularyTags,
-        audioText: audioSc.script || l.audioText || l.text,
-        text: audioSc.script || l.text || l.audioText,
-        questions: audioSc.questions || l.questions,
-        quiz: audioSc.questions || l.quiz || l.questions,
-        exercises: audioSc.questions || l.exercises || l.questions
-      };
-    }
 
     return {
       ...l,
@@ -125,7 +136,7 @@ export function generateLessonsForPack(
       instruction: l.instruction || l.intro || l.objective || "Complétez cette leçon en étudiant le développement et les exercices.",
       objective: l.objective || l.intro || "Maîtriser les compétences requises par l'examen TCF Canada.",
       text: l.text || l.audioText || l.instruction || "Contenu pédagogique officiel en cours de chargement pour cette leçon.",
-      audioText: (audioMetadata as any).audioText || l.audioText || l.text || l.instruction || "Bienvenue dans cette leçon d'entraînement officiel pour le TCF Canada.",
+      audioText: audioMetadata.audioText || l.audioText || l.text || l.instruction || "Bienvenue dans cette leçon d'entraînement officiel pour le TCF Canada.",
       intro: l.intro || l.instruction || l.objective || "Introduction aux compétences de cette leçon.",
       promptText: l.promptText || l.instruction || l.text || "Sujet officiel de réflexion et d'argumentation TCF Canada.",
       modelAnswer: l.modelAnswer || l.summary || "Exemple de réponse officielle : introduction claire, arguments avec connecteurs logiques, et conclusion nuancée.",

@@ -17,10 +17,10 @@ import { playMultiSpeakerDialogue, AudioScenario, AudioVoiceProfile } from "@/ut
 const BASE_LESSONS = [
   {
     id: 1, title: "Introduction à la CO TCF", duration: "12:00",
-    audioText: "Bienvenue dans le cours de compréhension orale TCF Canada. Dans cette leçon, vous allez apprendre les stratégies essentielles pour réussir les épreuves d'écoute.",
+    audioText: "Bienvenue dans le cours de compréhension orale TCF Canada. Dans cette leçon, vous allez apprendre les stratégies essentielles pour réussir les épreuves d'écoute. L'épreuve officielle de compréhension orale comporte 4 grandes sections de difficulté progressive : les illustrations, les courtes conversations, les annonces publiques et les conférences radio.",
     questions: [
       { q: "Quel est le thème principal de ce document audio ?", options: ["La cuisine française", "Les stratégies d'écoute TCF", "Les voyages au Canada", "La météo"], answer: 1, explanation: "Le document aborde spécifiquement les stratégies d'écoute pour le TCF Canada." },
-      { q: "Combien de parties comporte l'épreuve de compréhension orale ?", options: ["2", "3", "4", "5"], answer: 1, explanation: "L'épreuve de compréhension orale comprend 3 grandes sections de difficulté progressive." },
+      { q: "Combien de parties comporte l'épreuve de compréhension orale ?", options: ["2", "3", "4", "5"], answer: 2, explanation: "L'épreuve de compréhension orale comprend 4 grandes sections (illustrations, conversations courtes, annonces publiques et conférences) de difficulté progressive." },
     ],
     done: true
   },
