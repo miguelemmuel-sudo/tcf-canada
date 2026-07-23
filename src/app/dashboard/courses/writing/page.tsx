@@ -10,6 +10,7 @@ import { saveSessionState } from "@/utils/sessionManager";
 import { markCourseStarted, markLessonCompleted, addLearningTimeSeconds } from "@/utils/courseTracker";
 import { getCurrentUserPack, PACK_CONFIGS } from "@/utils/subscriptionEngine";
 import { generateLessonsForPack } from "@/utils/courseGenerator";
+import { evaluateUserResponse } from "@/utils/aiEvaluationEngine";
 
 const BASE_LESSONS = [
   {
@@ -139,11 +140,28 @@ export default function WritingCoursePage() {
     if (!text.trim()) return;
     setAiLoading(true);
     setAiFeedback(null);
-    await new Promise(r => setTimeout(r, 2000));
-    setAiFeedback(AI_WRITING_FEEDBACK.join("\n\n"));
-    markLessonCompleted("pe", currentLesson + 1, LESSONS.length);
-    setAiLoading(false);
-  }, [text, currentLesson]);
+    try {
+      const result = await evaluateUserResponse({
+        skill: "writing",
+        userAnswer: text,
+        userLevel: "B1/B2",
+        userPack: pack,
+        questionContext: {
+          title: lesson.title,
+          prompt: lesson.instruction,
+          minWords: lesson.minWords,
+          maxWords: lesson.maxWords
+        }
+      });
+      setAiFeedback(result.formattedMarkdown);
+      markLessonCompleted("pe", currentLesson + 1, LESSONS.length);
+    } catch (err) {
+      console.error("Erreur IA cours écriture:", err);
+      setAiFeedback("⚠️ **Erreur :** Impossible de générer la correction pour le moment.");
+    } finally {
+      setAiLoading(false);
+    }
+  }, [text, pack, lesson, currentLesson, LESSONS.length]);
 
   const reset = () => { setText(""); setAiFeedback(null); setShowModel(false); };
 

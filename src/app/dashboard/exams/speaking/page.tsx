@@ -13,6 +13,7 @@ import { ResumeSessionModal } from "@/components/ui/ResumeSessionModal";
 import { saveSessionState } from "@/utils/sessionManager";
 import { getCurrentUserPack, PACK_CONFIGS } from "@/utils/subscriptionEngine";
 import { generateExamWritingTasksForPack } from "@/utils/courseGenerator";
+import { evaluateUserResponse } from "@/utils/aiEvaluationEngine";
 
 // ─── Tâches orales ────────────────────────────────────────────────────────────
 const BASE_ORAL_TASKS = [
@@ -347,10 +348,31 @@ export default function SpeakingExamPage() {
   const handleAIEval = useCallback(async () => {
     setAiLoading(true);
     setAiFeedback(null);
-    await new Promise((r) => setTimeout(r, 2500));
-    setAiFeedback(AI_ORAL_FEEDBACK.join("\n\n"));
-    setAiLoading(false);
-  }, []);
+    try {
+      const simulatedTranscripts: Record<number, string> = {
+        0: "Bonjour, je m'appelle Jean-Dupont. Je suis ingénieur et je vis actuellement au France. J'ai de expérience depuis 5 ans dans mon domaine. Je veux immigrer en Canada pour trouver une bonne opportunité professionnelle dans une grande entreprise.",
+        1: "Bonjour monsieur. Je vous appelle parce que j'ai vu votre annonce pour la location du studio à Québec. J'aimerais savoir le montant exact du loyer et si le chauffage est inclus ? Est-ce que il y a un arrêt de bus pour aller au centre-ville ?",
+        2: "À mon avis, le télétravail est une très bonne chose pour les employés au Canada. En effet, il permet de réduire le stress des transports en hiver et de avoir une conciliation entre vie professionnelle et vie personnelle. Cependant, il est important de garder le contact avec l'équipe."
+      };
+      const result = await evaluateUserResponse({
+        skill: "speaking",
+        userAnswer: simulatedTranscripts[currentTask] || "Bonjour, je me présente pour l'épreuve d'expression orale du TCF Canada.",
+        userLevel: "B2/C1",
+        userPack: pack,
+        questionContext: {
+          title: task.title,
+          prompt: task.prompt || task.title,
+          durationSeconds: task.speakTime
+        }
+      });
+      setAiFeedback(result.formattedMarkdown);
+    } catch (err) {
+      console.error("Erreur IA oral:", err);
+      setAiFeedback("⚠️ **Erreur :** Impossible de générer l'évaluation orale.");
+    } finally {
+      setAiLoading(false);
+    }
+  }, [currentTask, pack, task]);
 
   const resetTask = () => {
     clearInterval(timerRef.current!);

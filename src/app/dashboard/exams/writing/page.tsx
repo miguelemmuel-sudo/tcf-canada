@@ -10,6 +10,7 @@ import { ResumeSessionModal } from "@/components/ui/ResumeSessionModal";
 import { saveSessionState } from "@/utils/sessionManager";
 import { getCurrentUserPack, PACK_CONFIGS } from "@/utils/subscriptionEngine";
 import { generateExamWritingTasksForPack } from "@/utils/courseGenerator";
+import { evaluateUserResponse } from "@/utils/aiEvaluationEngine";
 
 // ─── Tâches d'Expression Écrite ──────────────────────────────────────────────
 const BASE_TASKS = [
@@ -178,17 +179,35 @@ export default function WritingExamPage() {
     return () => clearInterval(timerRef.current!);
   }, [submitted, showResumeModal]);
 
+  const task = TASKS[currentTask];
+
   const handleAICorrection = useCallback(async () => {
     if (!texts[currentTask].trim()) return;
     setAiLoading(true);
     setAiFeedback(null);
-    // Simulation appel IA (en production : appel API OpenAI)
-    await new Promise((r) => setTimeout(r, 2000));
-    setAiFeedback(AI_FEEDBACK.join("\n\n"));
-    setAiLoading(false);
-  }, [texts, currentTask]);
+    try {
+      const result = await evaluateUserResponse({
+        skill: "writing",
+        userAnswer: texts[currentTask],
+        userLevel: "B2/C1",
+        userPack: pack,
+        questionContext: {
+          title: task.title,
+          prompt: task.instructions,
+          minWords: task.minWords,
+          maxWords: task.maxWords,
+          durationSeconds: task.timeMinutes * 60
+        }
+      });
+      setAiFeedback(result.formattedMarkdown);
+    } catch (err) {
+      console.error("Erreur IA evaluation:", err);
+      setAiFeedback("⚠️ **Erreur lors de l'analyse :** Impossible d'évaluer votre texte pour le moment.");
+    } finally {
+      setAiLoading(false);
+    }
+  }, [texts, currentTask, pack, task]);
 
-  const task = TASKS[currentTask];
   const wordCount = countWords(texts[currentTask]);
   const wordStatus = wordCount < task.minWords ? "under" : wordCount > task.maxWords ? "over" : "ok";
 

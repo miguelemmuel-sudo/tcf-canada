@@ -11,6 +11,7 @@ import { saveSessionState } from "@/utils/sessionManager";
 import { markCourseStarted, markLessonCompleted, addLearningTimeSeconds } from "@/utils/courseTracker";
 import { getCurrentUserPack, PACK_CONFIGS } from "@/utils/subscriptionEngine";
 import { generateLessonsForPack } from "@/utils/courseGenerator";
+import { evaluateUserResponse } from "@/utils/aiEvaluationEngine";
 
 const BASE_LESSONS = [
   {
@@ -148,10 +149,25 @@ export default function SpeakingCoursePage() {
   const handleAIEval = async () => {
     setAiLoading(true);
     setAiFeedback(null);
-    await new Promise(r => setTimeout(r, 2000));
-    setAiFeedback(AI_ORAL_FEEDBACK.join("\n\n"));
-    markLessonCompleted("po", currentLesson + 1, LESSONS.length);
-    setAiLoading(false);
+    try {
+      const result = await evaluateUserResponse({
+        skill: "speaking",
+        userAnswer: "Bonjour, pour me présenter : je suis ingénieur et je vis actuellement au France. J'ai de expérience dans mon domaine depuis 4 ans. Je veux immigrer en Canada pour perfectionner mon anglais et français.",
+        userLevel: "B1/B2",
+        userPack: pack,
+        questionContext: {
+          title: lesson.title,
+          prompt: lesson.promptText
+        }
+      });
+      setAiFeedback(result.formattedMarkdown);
+      markLessonCompleted("po", currentLesson + 1, LESSONS.length);
+    } catch (err) {
+      console.error("Erreur IA cours oral:", err);
+      setAiFeedback("⚠️ **Erreur :** Impossible de générer la correction pour le moment.");
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   const reset = () => {
