@@ -108,7 +108,10 @@ export function generateLessonsForPack(
         pedagogicalObjective: audioSc.pedagogicalObjective,
         vocabularyTags: audioSc.vocabularyTags,
         audioText: audioSc.script || l.audioText || l.text,
-        text: audioSc.script || l.text || l.audioText
+        text: audioSc.script || l.text || l.audioText,
+        questions: audioSc.questions || l.questions,
+        quiz: audioSc.questions || l.quiz || l.questions,
+        exercises: audioSc.questions || l.exercises || l.questions
       };
     }
 
