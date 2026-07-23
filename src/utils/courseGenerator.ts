@@ -8,6 +8,7 @@ import { listeningCourses, readingCourses, writingCourses, speakingCourses } fro
 import { listeningQuestions, readingPassages, writingTasks, speakingTasks } from "../data/realExams";
 import { THEMATIC_BANK, UniquenessValidator, generateUniqueLesson, CECRLevel, SkillType, TCFProceduralLibrary } from "./tcfContentEngine";
 import { AudioRotationEngine, AUDIO_SCENARIO_DATABASE, VOICE_PROFILES } from "./audioContentEngine";
+import { QcmUniqueBankEngine } from "./qcmUniqueBankEngine";
 
 /**
  * Filtre stérile et rigoureux du cahier des charges par Pack :
@@ -113,20 +114,43 @@ export function generateLessonsForPack(
     const rawQuestions = audioMetadata.questions || l.questions || l.quiz || l.exercises || [
       {
         q: `Question d'évaluation #${idx + 1}`,
-        options: ["Proposition correcte A", "Distracteur B", "Proposition inexacte C", "Hors sujet D"],
+        options: null, // forcer la génération unique
         answer: 0,
-        explanation: "Explication officielle : Le niveau requis pour cette question s'appuie sur la syntaxe et le lexique du texte."
+        explanation: null
       }
     ];
 
-    const normalizedQuestions = rawQuestions.map((q: any, qIdx: number) => ({
-      q: q.q || q.question || `Question #${qIdx + 1}`,
-      question: q.question || q.q || `Question #${qIdx + 1}`,
-      options: q.options || ["Option A", "Option B", "Option C", "Option D"],
-      answer: typeof q.answer === "number" ? q.answer : typeof q.correct === "number" ? q.correct : 0,
-      correct: typeof q.correct === "number" ? q.correct : typeof q.answer === "number" ? q.answer : 0,
-      explanation: q.explanation || q.detailedCorrection || "Explication validée par le comité FLE."
-    }));
+    const normalizedQuestions = rawQuestions.map((q: any, qIdx: number) => {
+      const qText = q.q || q.question || `Question #${qIdx + 1} : Quelle est l'idée principale abordée dans ce document ?`;
+      const baseOpts: string[] | null = (q.options && q.options.length === 4 &&
+        !q.options[0]?.includes("Option A") && !q.options[0]?.includes("Proposition correcte")
+      ) ? q.options : null;
+      const baseCorr = typeof q.answer === "number" ? q.answer : typeof q.correct === "number" ? q.correct : 0;
+
+      const unique = QcmUniqueBankEngine.generateUniqueQcm({
+        id: idx + 1,
+        questionId: qIdx + 1,
+        level: l.level || "B2",
+        skill: type === "listening" ? "listening" : type === "reading" ? "reading" : "course",
+        topic: l.title || `Leçon ${idx + 1}`,
+        baseQuestionText: qText,
+        baseOptions: baseOpts || undefined,
+        baseCorrect: baseCorr,
+        baseExplanation: q.explanation || q.detailedCorrection || undefined
+      });
+
+      return {
+        q: unique.question,
+        question: unique.question,
+        options: unique.options,
+        answer: unique.answer,
+        correct: unique.correct,
+        explanation: unique.detailedCorrection,
+        detailedCorrection: unique.detailedCorrection,
+        errorAnalysis: unique.errorAnalysis,
+        cecrEvaluation: unique.cecrEvaluation
+      };
+    });
 
     return {
       ...l,
@@ -179,19 +203,29 @@ export function generateExamQuestionsForPack(
   const selectedScenarios = AudioRotationEngine.selectUniqueAudioScenarios(targetCount, allowedLevels);
 
   return selectedScenarios.map((sc, idx) => {
-    const qItem = sc.questions[0] || {
+    const rawQItem = sc.questions[0] || null;
+
+    // Génération d'une banque QCM 100% unique pour chaque scénario audio
+    const uniqueQcm = QcmUniqueBankEngine.generateUniqueQcm({
+      id: typeof sc.id === "number" ? sc.id : (parseInt(String(sc.id), 10) || idx + 1),
+      questionId: 1,
+      level: sc.cecrLevel || "B2",
+      skill: "listening",
+      topic: sc.theme || `Dialogue TCF Canada #${idx + 1}`,
+      baseQuestionText: rawQItem?.question || undefined,
+      baseOptions: rawQItem?.options || undefined,
+      baseCorrect: rawQItem?.correct || undefined,
+      baseExplanation: rawQItem?.detailedCorrection || undefined
+    });
+
+    const qItem = {
       id: idx + 1,
-      question: `Question TCF Canada (${sc.cecrLevel}) : Quelle est l'idée principale du dialogue ?`,
-      options: [
-        `Une explication précise concernant ${sc.theme.toLowerCase()}.`,
-        "Une annulation définitive des procédures provinciales.",
-        "Une demande de report sans justificatif médical.",
-        "Un refus catégorique de négocier les conditions."
-      ],
-      correct: 0,
-      detailedCorrection: `La bonne réponse s'appuie sur le lexique et la situation de communication abordés en ${sc.cecrLevel}.`,
-      errorAnalysis: "Ne pas se laisser tromper par les mots isolés qui apparaissent dans les distracteurs.",
-      cecrEvaluation: `Niveau visé : ${sc.cecrLevel} (NCLC 6 à 10).`
+      question: uniqueQcm.question,
+      options: uniqueQcm.options,
+      correct: uniqueQcm.correct,
+      detailedCorrection: uniqueQcm.detailedCorrection,
+      errorAnalysis: uniqueQcm.errorAnalysis,
+      cecrEvaluation: uniqueQcm.cecrEvaluation
     };
 
     return {
@@ -266,17 +300,33 @@ export function generateExamPassagesForPack(
     content: p.content || p.text || "Contenu du document de lecture...",
     questions: (p.questions || []).map((q: any, qIdx: number) => {
       const textStr = q.text || q.question || `Question #${qIdx + 1}`;
-      const ansNum = typeof q.correct === "number" ? q.correct : typeof q.answer === "number" ? q.answer : 0;
+      const baseOpts: string[] | null = (q.options && q.options.length === 4 &&
+        !q.options[0]?.includes("Option A") && !q.options[0]?.includes("Proposition correcte")
+      ) ? q.options : null;
+      const baseCorr = typeof q.correct === "number" ? q.correct : typeof q.answer === "number" ? q.answer : 0;
+
+      const unique = QcmUniqueBankEngine.generateUniqueQcm({
+        id: (p.id || idx + 1),
+        questionId: qIdx + 1,
+        level: q.cecrLevel || p.level || "B2",
+        skill: "reading",
+        topic: p.title || `Passage #${idx + 1}`,
+        baseQuestionText: textStr,
+        baseOptions: baseOpts || undefined,
+        baseCorrect: baseCorr,
+        baseExplanation: q.detailedCorrection || undefined
+      });
+
       return {
         ...q,
         id: q.id || qIdx + 1,
-        text: textStr,
-        question: q.question || textStr,
-        options: q.options || ["Option A", "Option B", "Option C", "Option D"],
-        correct: ansNum,
-        answer: ansNum,
-        detailedCorrection: q.detailedCorrection || "Correction détaillée.",
-        errorAnalysis: q.errorAnalysis || "Analyse de l'erreur.",
+        text: unique.question,
+        question: unique.question,
+        options: unique.options,
+        correct: unique.correct,
+        answer: unique.correct,
+        detailedCorrection: unique.detailedCorrection,
+        errorAnalysis: unique.errorAnalysis,
         cecrLevel: q.cecrLevel || "B2"
       };
     })

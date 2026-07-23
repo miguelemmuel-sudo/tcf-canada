@@ -5,6 +5,19 @@
 export type CECRLevel = "A1" | "A2" | "B1" | "B2" | "C1" | "C2" | "Transversal";
 export type SkillType = "listening" | "reading" | "writing" | "speaking";
 
+// Rotation déterministe de la bonne réponse : évite que correct soit toujours à la même position A/B/C/D
+function rotateCorrect(id: number, qIndex: number): number {
+  return (id * 11 + qIndex * 17 + 3) % 4;
+}
+function permuteOptions(opts: string[], newIdx: number, oldIdx: number): string[] {
+  if (newIdx === oldIdx) return opts;
+  const out = [...opts];
+  const tmp = out[newIdx];
+  out[newIdx] = out[oldIdx];
+  out[oldIdx] = tmp;
+  return out;
+}
+
 // ─── BANQUE THÉMATIQUE OFFICIELLE DES 17 THÈMES TCF CANADA ────────────────────
 export interface ThemePool {
   id: string;
@@ -885,27 +898,29 @@ export class TCFProceduralLibrary {
     for (let i = 0; i < targetQuestions; i++) {
       const qId = (id * 10) + i + 1;
       if (i === 0) {
+        const c0 = rotateCorrect(id, i);
         questions.push({
           id: qId,
           text: `Question #${qId} (${level}) : ${tpl.q1}`,
           question: `Question #${qId} (${level}) : ${tpl.q1}`,
-          options: tpl.opt1,
-          correct: 0,
-          answer: 0,
-          detailedCorrection: tpl.exp1,
-          errorAnalysis: "Distracteur éliminatoire : Vérifiez attentivement les mots-clés dans le paragraphe correspondant sans extrapoler.",
+          options: permuteOptions(tpl.opt1, c0, 0),
+          correct: c0,
+          answer: c0,
+          detailedCorrection: `${tpl.exp1} [Réponse correcte : proposition ${["A","B","C","D"][c0]} — Document #${id}]`,
+          errorAnalysis: `Distracteur éliminatoire (Item #${qId}) : Identifiez le verbe d'action principal dans le document « ${tpl.title.split(":")[1]?.trim() || "ce texte"} ».`,
           cecrLevel: level
         });
       } else {
+        const c1 = rotateCorrect(id, i);
         questions.push({
           id: qId,
           text: `Question #${qId} (${level}) : ${tpl.q2}`,
           question: `Question #${qId} (${level}) : ${tpl.q2}`,
-          options: tpl.opt2,
-          correct: 1,
-          answer: 1,
-          detailedCorrection: tpl.exp2,
-          errorAnalysis: "Piège de nuance : Ne pas confondre une mesure restrictive hypothétique avec l'objectif de fluidité énoncé par le document.",
+          options: permuteOptions(tpl.opt2, c1, 1),
+          correct: c1,
+          answer: c1,
+          detailedCorrection: `${tpl.exp2} [Réponse correcte : proposition ${["A","B","C","D"][c1]} — Document #${id}]`,
+          errorAnalysis: `Piège de nuance (Item #${qId}) : Les distracteurs paraphrasent le texte de manière trompeuse. Localisez l'adverbe ou qualificatif exact.`,
           cecrLevel: level
         });
       }
@@ -1248,6 +1263,13 @@ export function generateUniqueLesson(id: number, moduleId: number, cecrLevel: st
       answer: 0,
       explanation: `L'expert affirme clairement en fin d'enregistrement : « comprendre ces mécanismes vous fait gagner un temps précieux et sécurise votre statut ».`
     };
+    // Rotation déterministe de la bonne réponse CO (évite correct:0 systématique)
+    const coC = rotateCorrect(id, 2);
+    if (coC !== 0) {
+      const coOpts = [...questionObj.options];
+      const tmp = coOpts[coC]; coOpts[coC] = coOpts[0]; coOpts[0] = tmp;
+      questionObj = { ...questionObj, options: coOpts, answer: coC };
+    }
   }
 
   const lessonObj = {
