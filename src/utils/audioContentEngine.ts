@@ -880,8 +880,8 @@ export class AudioRotationEngine {
       const lvl = lvls[synthCounter % lvls.length];
       
       const proceduralSc = TCFProceduralLibrary.generateListeningAudioScenario(
-        Date.now() + synthCounter,
-        result.length + 1,
+        result.length + 100 + (synthCounter * 7),
+        synthCounter,
         lvl,
         vProfile1,
         vProfile2

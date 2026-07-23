@@ -89,10 +89,17 @@ export function generateLessonsForPack(
     }));
 
     // Si c'est un cours d'écoute (CO), nous associons un scénario de la bibliothèque audio professionnelle
-    // afin que le cours bénéficie aussi des dialogues multi-locuteurs, des accents et des profils vocaux !
+    // ou nous générons un dialogue multi-locuteurs 100% inédit pour éviter toute répétition en production !
     let audioMetadata = {};
     if (type === "listening") {
-      const audioSc = AUDIO_SCENARIO_DATABASE[idx % AUDIO_SCENARIO_DATABASE.length];
+      let audioSc: any;
+      if (idx < AUDIO_SCENARIO_DATABASE.length) {
+        audioSc = AUDIO_SCENARIO_DATABASE[idx];
+      } else {
+        const vProfile1 = VOICE_PROFILES[idx % VOICE_PROFILES.length];
+        const vProfile2 = VOICE_PROFILES[(idx + 5) % VOICE_PROFILES.length];
+        audioSc = TCFProceduralLibrary.generateListeningAudioScenario(idx + 1000, idx + 1, l.level || "B2", vProfile1, vProfile2);
+      }
       audioMetadata = {
         audioUrl: audioSc.audioUrl,
         voiceProfiles: audioSc.voiceProfiles,
@@ -100,7 +107,8 @@ export function generateLessonsForPack(
         structuredDialogue: audioSc.structuredDialogue,
         pedagogicalObjective: audioSc.pedagogicalObjective,
         vocabularyTags: audioSc.vocabularyTags,
-        audioText: audioSc.script || l.audioText || l.text
+        audioText: audioSc.script || l.audioText || l.text,
+        text: audioSc.script || l.text || l.audioText
       };
     }
 

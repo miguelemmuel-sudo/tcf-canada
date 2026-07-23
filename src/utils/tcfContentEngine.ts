@@ -613,56 +613,110 @@ export const TCF_TOPICS_DATABASE: TCFTopic[] = [
   { id: 34, category: "Transports & Mobilité", shortName: "Transport STM", title: "Réseau de transport en commun de la STM à Montréal et carte OPUS", context: "Utilisation du métro, des autobus express et tarification intégrée métropolitaine", vocab: ["carte OPUS", "titre mensuel", "autobus articulé", "heure de pointe", "intermodalité"] },
   { id: 35, category: "Transports & Mobilité", shortName: "Trains VIA Rail", title: "Lignes de train de passagers VIA Rail dans le corridor Québec-Windsor", context: "Alternative ferroviaire interurbaine pour relier les grandes métropoles canadiennes", vocab: ["corridor ferroviaire", "voiture voyageurs", "réservation anticipée", "ponctualité", "liaison interurbaine"] },
   { id: 36, category: "Transports & Mobilité", shortName: "Pistes cyclables REV", title: "Développement du Réseau express vélo (REV) et vélos en libre-service BIXI", context: "Essor de la micro-mobilité active quatre saisons dans les centres urbains", vocab: ["piste cyclable protégée", "vélo en libre-service", "mobilité active", "sécurité des cyclistes", "cohabitation urbaine"] },
-  { id: 37, category: "Transports & Mobilité", shortName: "Électrification autobus", title: "Électrification des transports publics et autobus 100% électriques", context: "Stratégie provinciale de réduction des gaz à effet de serre dans le transport en commun", vocab: ["autobus électrique", "zéro émission", "recharge rapide", "transition écologique", "parc de véhicules"] },
-  { id: 38, category: "Culture & Francophonie", shortName: "Cabane à sucre", title: "Tradition printanière de la cabane à sucre et récolte de l'eau d'érable", context: "Célébration identitaire et culinaire lors de la saison du dégel des érables au Québec", vocab: ["eau d'érable", "sirop d'érable", "temps des sucres", "patrimoine gastronomique", "acériculture"] },
-  { id: 39, category: "Culture & Francophonie", shortName: "Festivals de jazz", title: "Festival International de Jazz de Montréal et rayonnement culturel", context: "Impact économique et touristique des grands festivals d'été sur la métropole", vocab: ["scène extérieure gratuite", "rayonnement international", "retombées économiques", "mélomane", "programmation"] },
-  { id: 40, category: "Culture & Francophonie", shortName: "Médias francophones", title: "Préservation du français et rôle des médias communautaires francophones", context: "Défense de la langue et de l'identité culturelle dans les communautés hors Québec", vocab: ["francophonie minoritaire", "journal communautaire", "vitalité linguistique", "assimilation", "institution culturelle"] },
-  { id: 41, category: "Culture & Francophonie", shortName: "Vitalité acadienne", title: "Vitalité des communautés acadiennes au Nouveau-Brunswick et à Moncton", context: "Histoire, résilience et dynamisme culturel de la seule province officiellement bilingue", vocab: ["bilinguisme officiel", "patrimoine acadien", "tintamarre", "fierté linguistique", "institutions francophones"] },
-  { id: 42, category: "Culture & Francophonie", shortName: "Mission Radio-Canada", title: "Rôle et mission de Radio-Canada comme société d'État de radiodiffusion", context: "Importance du service public audiovisuel pour garantir une information rigoureuse et diversifiée", vocab: ["société d'État", "service public", "journalisme d'enquête", "cohérence nationale", "indépendance éditoriale"] },
-  { id: 43, category: "Technologie & Innovation", shortName: "Pôle IA MILA", title: "Essor de l'intelligence artificielle et pôle de recherche MILA à Montréal", context: "Attraction des chercheurs mondiaux et éthique de l'IA dans l'écosystème technologique canadien", vocab: ["apprentissage profond", "éthique numérique", "grappe technologique", "chercheur universitaire", "innovation"] },
-  { id: 44, category: "Emploi & CNESST", shortName: "Pénurie main d'oeuvre", title: "Pénurie de main-d'œuvre dans les secteurs de la santé et de la construction", context: "Enjeux de recrutement accéléré et d'intégration de travailleurs étrangers qualifiés", vocab: ["pénurie sectorielle", "main-d'œuvre qualifiée", "recrutement à l'international", "formation accélérée", "chantier"] },
-  { id: 45, category: "Immigration & IRCC", shortName: "Travailleurs temporaires", title: "Programme des travailleurs étrangers temporaires (PTET) et réformes", context: "Encadrement juridique des permis de travail fermés et protection des droits des travailleurs", vocab: ["permis fermé", "EIMT", "vulnérabilité", "inspection fédérale", "protection des salariés"] },
-  { id: 46, category: "Emploi & CNESST", shortName: "Ordres professionnels", title: "Reconnaissance des compétences par les ordres professionnels québécois", context: "Démarches d'admission au sein de l'Ordre des ingénieurs ou du Collège des médecins", vocab: ["ordre professionnel", "permis d'exercice", "stage d'équivalence", "examen de profession", "protection du public"] },
-  { id: 47, category: "Éducation & Universités", shortName: "Système Cégep", title: "Système collégial québécois : programmes techniques et préuniversitaires en Cégep", context: "Spécificité de l'enseignement supérieur intermédiaire après l'école secondaire", vocab: ["cégep", "formation technique", "diplôme d'études collégiales", "cote R", "enseignement supérieur"] },
-  { id: 48, category: "Éducation & Universités", shortName: "Frais étudiants étrangers", title: "Frais de scolarité pour les étudiants internationaux dans les universités canadiennes", context: "Évolution du financement universitaire et bourses d'exemption pour francophones en région", vocab: ["droits de scolarité", "exemption de frais", "université en région", "attraction des talents", "budget étudiant"] },
-  { id: 49, category: "Environnement & Énergie", shortName: "Hydro-Québec transition", title: "Transition énergétique d'Hydro-Québec et énergie hydroélectrique verte", context: "Gestion du réseau d'électricité propre et défis d'approvisionnement en période de pointe hivernale", vocab: ["hydroélectricité", "énergie renouvelable", "période de pointe", "sobriété énergétique", "barrage"] },
-  { id: 50, category: "Environnement & Énergie", shortName: "Parcs nationaux", title: "Conservation de la biodiversité dans les parcs nationaux de Parcs Canada", context: "Protection des écosystèmes sauvages (Banff, Jasper, Mauricie) face à l'afflux touristique", vocab: ["parc national", "conservation de la faune", "écosystème protégé", "capacité de charge", "randonnée écoresponsable"] },
+  { id: 2, category: "Immigration & IRCC", shortName: "Parrainage familial", title: "Procédures de parrainage pour les conjoints et enfants à charge", context: "Constitution du dossier de regroupement familial auprès des autorités fédérales", vocab: ["parrainage", "garant", "enfant à charge", "engagement financier", "statut légal"] },
+  { id: 3, category: "Immigration & IRCC", shortName: "Permis de travail PEGD", title: "Obtention du Permis d'études et du Permis de travail post-diplôme (PTPD)", context: "Transition de la vie étudiante canadienne vers le marché du travail qualifié", vocab: ["permis post-diplôme", "numéro d'assurance sociale", "employeur admissible", "expérience canadienne", "statut temporaire"] },
+  { id: 4, category: "Immigration & IRCC", shortName: "Citoyenneté canadienne", title: "Préparation à l'examen de citoyenneté canadienne et cérémonie officielle", context: "Droits, responsabilités civiques et symboles historiques de la confédération", vocab: ["serment de citoyenneté", "droit de vote", "passeport canadien", "confédération", "bilinguisme officiel"] },
+  { id: 5, category: "Immigration & IRCC", shortName: "Programme des candidats (PCP)", title: "Programmes des candidats des provinces (PCP) pour l'immigration économique", context: "Sélection régionale ciblée selon les besoins de main-d'œuvre des provinces", vocab: ["déclaration d'intérêt", "désignation provinciale", "pénurie d' main-d'œuvre", "région d'accueil", "critère de sélection"] },
+  { id: 6, category: "Immigration & IRCC", shortName: "Évaluation des diplômes (EDE)", title: "Évaluation des diplômes d'études (EDE) par WES ou l'Université de Toronto", context: "Équivalence académique canadienne pour faire reconnaître ses diplômes étrangers", vocab: ["équivalence", "rapport d'évaluation", "grade universitaire", "reconnaissance professionnelle", "ordre professionnel"] },
+  { id: 7, category: "Immigration & IRCC", shortName: "Biométrie & Visas", title: "Collecte des données biométriques et demande d'AVE (Autorisation de voyage)", context: "Sécurisation des frontières et formalités de passage aux douanes canadiennes", vocab: ["biométrie", "empreintes digitales", "autorisation électronique", "contrôle frontalier", "admissibilité"] },
+  { id: 8, category: "Immigration & IRCC", shortName: "Mobilité francophone", title: "Avantages du volet Mobilité francophone pour travailler hors Québec", context: "Recrutement simplifié de travailleurs francophones dans les communautés francophones en situation minoritaire", vocab: ["francophonie minoritaire", "dispense d'EIMT", "offre d'emploi", "communauté d'accueil", "intégration linguistique"] },
+  { id: 9, category: "Immigration & IRCC", shortName: "Réfugiés & Asile", title: "Système de protection des réfugiés et audiences devant la CISR", context: "Procédure de demande d'asile et protection des droits fondamentaux au Canada", vocab: ["commission de l'immigration", "protection internationale", "audience", "statut de personne protégée", "aide juridique"] },
+  { id: 10, category: "Immigration & IRCC", shortName: "Résidence permanente", title: "Renouvellement de la carte de résidence permanente et obligation de résidence", context: "Calcul des 730 jours de présence physique sur le territoire canadien sur cinq ans", vocab: ["obligation de résidence", "présence physique", "renouvellement de carte", "statut de résident", "contrôle douanier"] },
+  { id: 11, category: "Santé & RAMQ", shortName: "Assurance maladie (RAMQ)", title: "Inscription à l'assurance maladie provinciale (RAMQ/OHIP) et délai de carence", context: "Accès à la gratuité des soins médicaux de base pour les nouveaux arrivants", vocab: ["carte-soleil", "délai de carence", "soins couverts", "régime d'assurance", "numéro d'assurance maladie"] },
+  { id: 12, category: "Santé & RAMQ", shortName: "Médecin de famille (GAMF)", title: "Inscription au guichet d'accès à un médecin de famille (GAMF) au Québec", context: "Gestion des listes d'attente pour obtenir un suivi médical de première ligne", vocab: ["guichet d'accès", "médecin de famille", "prise en charge", "première ligne", "dossier médical"] },
+  { id: 13, category: "Santé & RAMQ", shortName: "Cliniques sans rendez-vous", title: "Fonctionnement des cliniques médicales sans rendez-vous et groupes de médecine de famille (GMF)", context: "Consultation rapide pour des symptômes mineurs et orientation par une infirmière", vocab: ["infirmière de triage", "consultation sans rendez-vous", "groupe de médecine", "symptôme mineur", "plage horaire"] },
+  { id: 14, category: "Santé & RAMQ", shortName: "Urgences hospitalières", title: "Système de triage aux urgences hospitalières et échelle de priorité de la santé", context: "Évaluation de la gravité des cas médicaux dans les grands centres hospitaliers canadiens", vocab: ["triage médical", "échelle de priorité", "salle d'attente", "détresse vitale", "personnel soignant"] },
+  { id: 15, category: "Santé & RAMQ", shortName: "Assurances collectives", title: "Complémentarité des assurances santé collectives offertes par les employeurs canadiens", context: "Remboursement des soins dentaires, de la vue et des médicaments non couverts par le public", vocab: ["assurance collective", "franchise annuelle", "soins dentaires", "médicament sur ordonnance", "règlement de frais"] },
+  { id: 16, category: "Santé & RAMQ", shortName: "Télémédecine au Canada", title: "Essor de la télémédecine et consultations médicales virtuelles au Canada", context: "Accessibilité accrue aux professionnels de santé via les plateformes numériques et applications", vocab: ["télémédecine", "consultation virtuelle", "ordonnance électronique", "dossier patient", "soins à distance"] },
+  { id: 17, category: "Santé & RAMQ", shortName: "Santé mentale (Info-Social)", title: "Réseau de soutien psychologique et ligne d'aide gratuite Info-Social 811", context: "Services d'intervention de crise et consultation sociale pour les citoyens en détresse", vocab: ["intervenant social", "ligne d'aide 811", "soutien psychologique", "gestion du stress", "bien-être émotionnel"] },
+  { id: 18, category: "Santé & RAMQ", shortName: "Santé publique & Vaccins", title: "Campagnes de vaccination saisonnière et rôle de la Direction de la santé publique", context: "Prévention des pandémies grippales hivernales et protection des populations vulnérables", vocab: ["vaccination saisonnière", "santé publique", "immunité collective", "clinique de dépistage", "prévention épidémique"] },
+  { id: 19, category: "Santé & RAMQ", shortName: "Pénurie d'infirmières", title: "Enjeux de la pénurie d'infirmières et temps supplémentaire obligatoire (TSO) au Québec", context: "Conditions de travail du personnel infirmier dans le réseau public de la santé", vocab: ["temps supplémentaire obligatoire", "pénurie de personnel", "épuisement professionnel", "réseau public", "ratio patient-infirmière"] },
+  { id: 20, category: "Santé & RAMQ", shortName: "Régime d'assurance-médicaments", title: "Fonctionnement du régime général d'assurance-médicaments du Québec", context: "Obligation légale d'être couvert par un régime privé ou public pour l'achat de médicaments", vocab: ["assurance-médicaments", "contribution annuelle", "coassurance", "franchise mensuelle", "médicament générique"] },
+  { id: 21, category: "Logement & TAL", shortName: "Recherche d'appartement", title: "Stratégies de recherche d'appartement sur Kijiji, Marketplace et Centris", context: "Préparation du dossier locatif canadien (enquête de crédit et lettres de référence)", vocab: ["enquête de crédit", "lettre de référence", "bailleur", "logement locatif", "visite libre"] },
+  { id: 22, category: "Logement & TAL", shortName: "Bail locatif du Québec", title: "Compréhension du bail officiel du Tribunal administratif du logement (TAL)", context: "Clauses légales, durée du bail et interdiction des dépôts de garantie abusifs au Québec", vocab: ["bail officiel", "tribunal administratif", "dépôt de garantie illégal", "clause locative", "sous-location"] },
+  { id: 23, category: "Logement & TAL", shortName: "Hausse de loyer & TAL", title: "Refus d'une hausse de loyer abusive et fixation du loyer par le TAL", context: "Procédure légale du locataire pour contester une augmentation annuelle des coûts", vocab: ["reconduction de bail", "avis d'augmentation", "fixation de loyer", "grille de calcul", "droit au maintien dans les lieux"] },
+  { id: 24, category: "Logement & TAL", shortName: "Déménagement du 1er juillet", title: "Tradition québécoise du grand déménagement du 1er juillet et logistique urbaine", context: "Défis de réservation des camions et entraide communautaire lors de la fête du Canada", vocab: ["grand déménagement", "bail annuel", "camion de location", "logistique urbaine", "entraide citoyenne"] },
+  { id: 25, category: "Logement & TAL", shortName: "Cession de bail", title: "Règles et réformes concernant la cession de bail et la sous-location résidentielle", context: "Transfert légal de son appartement à un nouveau locataire avant la fin du contrat", vocab: ["cession de bail", "candidat cessionnaire", "motif sérieux de refus", "libération des obligations", "sous-location temporaire"] },
+  { id: 26, category: "Logement & TAL", shortName: "Crise du logement social", title: "Pénurie de logements abordables et investissements dans le logement social (HLM)", context: "Propositions municipales pour construire des habitations à loyer modique et coopératives", vocab: ["logement abordable", "habitations à loyer modique", "crise du logement", "taux d'inoccupation", "spéculation immobilière"] },
+  { id: 27, category: "Logement & TAL", shortName: "Entretien hivernal & Déneigement", title: "Responsabilité locative de l'entretien hivernal, chauffage et déneigement", context: "Obligation de maintenir une température de 21°C et dégagement des balcons en hiver", vocab: ["chauffage central", "déneigement des issues", "isolation thermique", "température réglementaire", "entretien hivernal"] },
+  { id: 28, category: "Logement & TAL", shortName: "Achat immobilier (RAP)", title: "Accession à la propriété et Régime d'accession à la propriété (RAP) avec le CELIAPP", context: "Utilisation des REER et du nouveau compte d'épargne pour l'achat d'une première maison", vocab: ["première propriété", "mise de fonds", "compte d'épargne libre d'impôt", "prêt hypothécaire", "régime d'accession"] },
+  { id: 29, category: "Logement & TAL", shortName: "Rénovictions au Québec", title: "Lutte contre les évictions abusives et les 'rénovictions' en milieu urbain", context: "Protection des locataires âgés ou modestes contre les expulsions sous prétexte de travaux", vocab: ["éviction abusive", "rénoviction", "indemnité d'éviction", "travaux majeurs", "reprise de logement"] },
+  { id: 30, category: "Logement & TAL", shortName: "Assurance habitation", title: "Souscription obligatoire à une assurance habitation pour locataire (responsabilité civile)", context: "Protection contre les dégâts d'eau, incendies et vols dans un immeuble à logements", vocab: ["assurance habitation", "responsabilité civile", "dégât d'eau", "réclamation d'assurance", "biens personnels"] },
+  { id: 31, category: "Emploi & CNESST", shortName: "Normes du travail (CNESST)", title: "Loi sur les normes du travail : salaire minimum, heures supplémentaires et congés payés", context: "Protection légale des salariés canadiens par la CNESST et respect des conditions de base", vocab: ["salaire minimum", "heures supplémentaires", "congé payé", "norme du travail", "bulletin de paie"] },
+  { id: 32, category: "Emploi & CNESST", shortName: "CV canadien & Réseautage", title: "Rédaction du CV canadien (sans photo ni âge) et importance du réseautage sur LinkedIn", context: "Adaptation aux standards du marché de l'emploi canadien et approche directe des employeurs", vocab: ["curriculum vitae canadien", "entrevue comportementale", "réseautage professionnel", "marché caché de l'emploi", "référence professionnelle"] },
+  { id: 33, category: "Emploi & CNESST", shortName: "Équité salariale", title: "Application de la Loi sur l'équité salariale dans les entreprises canadiennes", context: "Obligation de rémunération égale pour un travail de valeur équivalente sans discrimination", vocab: ["équité salariale", "rémunération équitable", "valeur équivalente", "discrimination salariale", "échelle de traitement"] },
+  { id: 34, category: "Emploi & CNESST", shortName: "Accident de travail (CNESST)", title: "Déclaration d'un accident de travail ou d'une maladie professionnelle à la CNESST", context: "Procédure d'indemnisation et droit au retour à l'emploi après une réadaptation", vocab: ["accident de travail", "indemnisation des lésions", "réadaptation professionnelle", "assignation temporaire", "médecin traitant"] },
+  { id: 35, category: "Emploi & CNESST", shortName: "Assurance-emploi (AE)", title: "Fonctionnement du régime d'Assurance-emploi fédérale (Service Canada)", context: "Prestations régulières en cas de perte d'emploi involontaire et recherche active de travail", vocab: ["assurance-emploi", "relevé d'emploi", "prestation régulière", "période de carence", "recherche active de travail"] },
+  { id: 36, category: "Emploi & CNESST", shortName: "Harcèlement en entreprise", title: "Prévention du harcèlement psychologique et sexuel en milieu de travail", context: "Obligation de l'employeur d'assurer un environnement de travail sain et respectueux", vocab: ["harcèlement psychologique", "politique de prévention", "milieu de travail sain", "enquête interne", "droit au respect"] },
+  { id: 37, category: "Emploi & CNESST", shortName: "Ordres professionnels", title: "Intégration d'un ordre professionnel au Québec (ingénieurs, comptables, infirmiers)", context: "Exigences de formation d'appoint et examens de l'Office québécois de la langue française", vocab: ["ordre professionnel", "droit d'exercice", "examen de français", "formation d'appoint", "permis restrictif"] },
+  { id: 38, category: "Emploi & CNESST", shortName: "Conciliation travail-famille", title: "Mesures de conciliation travail-famille et horaires flexibles dans les organisations", context: "Adaptation du temps de travail pour les parents d'enfants en bas âge et proches aidants", vocab: ["conciliation travail-famille", "horaire flexible", "proche aidant", "congé parental", "retour au travail garanti"] },
+  { id: 39, category: "Emploi & CNESST", shortName: "Syndicalisme canadien", title: "Rôle des syndicats et négociation des conventions collectives au Canada", context: "Défense des droits des travailleurs, arbitrage et grèves légales en milieu syndiqué", vocab: ["convention collective", "syndicat des travailleurs", "négociation salariale", "arbitrage de grief", "cotisation syndicale"] },
+  { id: 40, category: "Emploi & CNESST", shortName: "Reconversion professionnelle", title: "Programmes de formation continue et subventions de reconversion professionnelle", context: "Soutien du gouvernement provincial pour se requalifier vers les secteurs en pénurie", vocab: ["requalification professionnelle", "formation continue", "secteur en pénurie", "allocation d'aide à l'emploi", "développement des compétences"] },
+  { id: 41, category: "Éducation & Universités", shortName: "Système scolaire québécois", title: "Structure du système scolaire au Québec : primaire, secondaire, Cégep et Université", context: "Compréhension de la spécificité des cégeps (formation préuniversitaire et technique)", vocab: ["cégep", "diplôme d'études collégiales", "commission scolaire", "centre de services", "formation technique"] },
+  { id: 42, category: "Éducation & Universités", shortName: "Frais de scolarité & Bourses", title: "Financement des études universitaires : prêts et bourses du gouvernement (AFE)", context: "Gestion du budget étudiant et calcul de l'aide financière selon le revenu familial", vocab: ["aide financière aux études", "prêt étudiant", "bourse d'excellence", "frais de scolarité", "endettement étudiant"] },
+  { id: 43, category: "Éducation & Universités", shortName: "Francisation gratuite au Québec", title: "Programmes de francisation gratuits du gouvernement du Québec avec allocation financière", context: "Cours de français à temps complet ou partiel pour faciliter l'intégration linguistique", vocab: ["francisation", "allocation de participation", "échelle québécoise", "immersion linguistique", "apprentissage du français"] },
+  { id: 44, category: "Éducation & Universités", shortName: "Admission universitaire", title: "Processus d'admission dans les universités canadiennes et cote de rendement (Cote R)", context: "Sélection dans les programmes contingentés (droit, médecine, génie, architecture)", vocab: ["programme contingenté", "cote de rendement", "demande d'admission", "relevé de notes", "date limite d'inscription"] },
+  { id: 45, category: "Éducation & Universités", shortName: "Écoles internationales", title: "Choix entre l'école publique de quartier et les programmes d'éducation internationale (PEI)", context: "Enjeux de sélection scolaire et d'accessibilité pour les familles immigrantes", vocab: ["école publique", "programme international", "examen d'admission", "mixité sociale", "réussite éducative"] },
+  { id: 46, category: "Éducation & Universités", shortName: "Intégration des enfants", title: "Classes d'accueil pour l'intégration linguistique des élèves allophones au primaire", context: "Apprentissage intensif du français avant le transfert en classe régulière", vocab: ["classe d'accueil", "élève allophone", "soutien linguistique", "intégration scolaire", "pédagogie différenciée"] },
+  { id: 47, category: "Éducation & Universités", shortName: "Recherche universitaire", title: "Financement de la recherche scientifique et innovation dans les universités canadiennes", context: "Collaboration entre laboratoires universitaires et industries technologiques de pointe", vocab: ["chaire de recherche", "subvention fédérale", "laboratoire de pointe", "propriété intellectuelle", "innovation technologique"] },
+  { id: 48, category: "Éducation & Universités", shortName: "Éducation aux Autochtones", title: "Décolonisation de l'éducation et intégration de l'histoire des Premières Nations", context: "Réformes des programmes scolaires pour honorer la Commission de vérité et réconciliation", vocab: ["vérité et réconciliation", "premières nations", "savoirs autochtones", "décolonisation scolaire", "héritage culturel"] },
+  { id: 49, category: "Éducation & Universités", shortName: "Apprentissage des langues", title: "Bilinguisme officiel : immersion française dans les écoles anglophones du Canada", context: "Popularité croissante des écoles d'immersion française en Ontario et en Colombie-Britannique", vocab: ["immersion française", "bilinguisme officiel", "langue seconde", "compétence linguistique", "ouverture culturelle"] },
+  { id: 50, category: "Éducation & Universités", shortName: "Décrochage scolaire", title: "Lutte contre le décrochage scolaire chez les garçons au secondaire", context: "Initiatives de tutorat, d'activités sportives et de valorisation des métiers techniques", vocab: ["décrochage scolaire", "persévérance scolaire", "tutorat personnalisé", "formation professionnelle", "motivation des élèves"] },
   { id: 51, category: "Environnement & Énergie", shortName: "Protection Grands Lacs", title: "Gestion de l'eau potable et protection du fleuve Saint-Laurent et des Grands Lacs", context: "Enjeux environnementaux de dépollution et de préservation des ressources hydriques", vocab: ["ressource hydrique", "bassin versant", "dépollution industrielle", "écosystème fluvial", "eau potable"] },
   { id: 52, category: "Environnement & Énergie", shortName: "Compostage municipal", title: "Recyclage, compostage obligatoire et gestion de l'économie circulaire municipale", context: "Collecte des matières organiques (bac brun) et valorisation des déchets urbains", vocab: ["matières organiques", "compostage municipal", "économie circulaire", "tri sélectif", "réduction à la source"] },
   { id: 53, category: "Société & Débats", shortName: "Étalement urbain", title: "Impact de l'urbanisation rapide sur les terres agricoles de la vallée du Saint-Laurent", context: "Conflit entre étalement des banlieues résidentielles et souveraineté alimentaire provinciale", vocab: ["zone agricole protégée", "étalement urbain", "souveraineté alimentaire", "bétonisation", "densification"] },
   { id: 54, category: "Société & Débats", shortName: "Accessibilité universelle", title: "Accessibilité universelle des infrastructures publiques pour les personnes à mobilité réduite", context: "Aménagement des stations de métro, des édifices publics et des trottoirs hivernaux", vocab: ["accessibilité universelle", "mobilité réduite", "rampe d'accès", "ascenseur en station", "inclusion sociale"] },
   { id: 55, category: "Économie & Finances", shortName: "Entrepreneuriat francophone", title: "Développement de l'entrepreneuriat francophone et soutien des pépinières d'entreprises", context: "Programmes de financement et de mentorat pour lancer sa startup ou son commerce au Canada", vocab: ["pépinière d'entreprises", "capital d'amorçage", "plan d'affaires", "mentorat entrepreneurial", "innovation"] },
-  { id: 56, category: "Société & Débats", shortName: "Cybercriminalité", title: "Protection des consommateurs contre la cybercriminalité et les fraudes bancaires", context: "Sensibilisation aux tentatives d'hameçonnage par courriel et par texto (faux messages ARC/Equifax)", vocab: ["hameçonnage", "fraude bancaire", "authentification à deux facteurs", "usurpation d'identité", "cyber-sécurité"] },
-  { id: 57, category: "Économie & Finances", shortName: "Commerce international", title: "Évolution des relations commerciales et accords de libre-échange entre le Canada et l'Europe", context: "Impact de l'AECG/CETA sur les exportations agricoles et industrielles canadiennes", vocab: ["libre-échange", "droits de douane", "exportation agroalimentaire", "marché transatlantique", "partenaire commercial"] },
-  { id: 58, category: "Logement & TAL", shortName: "Encadrement Airbnb", title: "Encadrement des locations touristiques de courte durée (type Airbnb) par les municipalités", context: "Mesures pour limiter la conversion de logements résidentiels en hébergements touristiques", vocab: ["location courte durée", "zonage commercial", "numéro d'enregistrement", "pénurie locative", "cohabitation"] },
-  { id: 59, category: "Culture & Francophonie", shortName: "Patrimoine Vieux-Québec", title: "Valorisation du patrimoine historique et architectural du Vieux-Québec et du Vieux-Montréal", context: "Préservation des bâtiments classés et équilibre avec le dynamisme commercial moderne", vocab: ["patrimoine architectural", "bâtiment classé", "restauration historique", "cachet d'époque", "identitaire"] },
-  { id: 60, category: "Emploi & CNESST", shortName: "Mentorat diversité", title: "Réseaux de mentorat professionnel pour faciliter l'intégration de la diversité canadienne", context: "Jumelage entre cadres établis et professionnels immigrants nouvellement arrivés", vocab: ["jumelage professionnel", "mentorat", "réseau d'affaires", "intégration en emploi", "diversité culturelle"] },
-  { id: 61, category: "Environnement & Énergie", shortName: "Tourisme écoresponsable", title: "Développement du tourisme écoresponsable dans les régions maritimes de la Gaspésie", context: "Conciliation entre attrait touristique estival et protection des fragiles écosystèmes côtiers", vocab: ["tourisme durable", "écosystème côtier", "capacité d'accueil", "économie régionale", "observation de la faune"] },
-  { id: 62, category: "Environnement & Énergie", shortName: "Agriculture urbaine", title: "Initiatives d'agriculture urbaine et jardins sur les toits d'immeubles commerciaux", context: "Production locale de légumes en pleine ville pour réduire les îlots de chaleur", vocab: ["agriculture urbaine", "serre sur toit", "îlot de chaleur", "circuit court", "verdissement"] },
-  { id: 63, category: "Société & Débats", shortName: "Politiques DEI", title: "Politiques de diversité, équité et inclusion (DEI) dans les grandes entreprises canadiens", context: "Mise en place de comités de diversité et d'accommodements en milieu de travail", vocab: ["équité en emploi", "inclusion", "accommodement raisonnable", "biais inconscient", "diversité de la main-d'œuvre"] },
-  { id: 64, category: "Société & Débats", shortName: "Ateliers réparation", title: "Lutte contre l'obsolescence programmée et essor des ateliers de réparation citoyens (Repair Café)", context: "Initiatives communautaires pour réparer les appareils électroménagers et électroniques", vocab: ["obsolescence programmée", "droit à la réparation", "atelier citoyen", "économie de la fonctionnalité", "durabilité"] },
-  { id: 65, category: "Société & Débats", shortName: "Santé mentale ados", title: "Impact des réseaux sociaux et écrans sur la santé mentale des adolescents canadiens", context: "Débat sur l'encadrement des téléphones cellulaires dans les écoles secondaires", vocab: ["santé mentale", "cyber-intimidation", "addiction aux écrans", "interdiction scolaire", "bien-être des jeunes"] },
-  { id: 66, category: "Emploi & CNESST", shortName: "Télétravail fédéral", title: "Évolution du télétravail dans la fonction publique fédérale à Ottawa et Gatineau", context: "Négociations syndicales concernant la présence obligatoire de 3 jours au bureau", vocab: ["fonction publique", "présence au bureau", "négociation syndicale", "vitalité du centre-ville", "flexibilité"] },
-  { id: 67, category: "Technologie & Innovation", shortName: "Startups Toronto-Waterloo", title: "Financement des startups et innovation technologique dans le couloir Toronto-Waterloo", context: "Attraction de capital-risque pour les entreprises canadiennes de pointe (Fintech, Cleantech)", vocab: ["capital-risque", "couloir technologique", "incubateur", "propriété intellectuelle", "croissance accélérée"] },
-  { id: 68, category: "Environnement & Énergie", shortName: "Forêts boréales", title: "Gestion responsable des forêts boréales canadiennes et prévention des feux de forêt", context: "Adaptation des pratiques forestières face au réchauffement climatique et aux incendies", vocab: ["forêt boréale", "gestion sylvicole", "incendie forestier", "régénération", "changement climatique"] },
-  { id: 69, category: "Éducation & Universités", shortName: "Conciliation études-travail", title: "Enjeux de conciliation travail-études pour les étudiants universitaires canadiens", context: "Impact du travail à temps partiel sur la réussite académique et la santé financière des jeunes", vocab: ["travail à temps partiel", "précarité étudiante", "réussite académique", "dette d'études", "horaire adapté"] },
-  { id: 70, category: "Logement & TAL", shortName: "Coopératives habitation", title: "Développement des coopératives d'habitation comme alternative à la crise immobilière", context: "Modèle de logement communautaire à but non lucratif géré par ses membres locataires", vocab: ["coopérative d'habitation", "gestion collective", "loyer non spéculatif", "implication des membres", "logement social"] },
-  { id: 71, category: "Société & Débats", shortName: "Protection vie privée", title: "Protection de la vie privée et encadrement légal des données biométriques au Canada", context: "Lois provinciales (Loi 25 au Québec) sur la protection des renseignements personnels", vocab: ["renseignements personnels", "consentement explicite", "fuite de données", "biométrie", "vie privée"] },
-  { id: 72, category: "Société & Débats", shortName: "Insécurité alimentaire", title: "Rôle des banques alimentaires face à l'insécurité alimentaire des familles vulnérables", context: "Analyse de la demande sans précédent auprès des comptoirs d'aide communautaire", vocab: ["insécurité alimentaire", "panier d'urgence", "denrées de première nécessité", "précarité", "solidarité"] },
-  { id: 73, category: "Culture & Francophonie", shortName: "Cinéma québécois", title: "Rayonnement du cinéma québécois et acadien dans les grands festivals internationaux", context: "Succès d'estime et défis de financement des productions francophones indépendantes", vocab: ["septième art", "téléfilm", "subvention culturelle", "distribution en salle", "identité visuelle"] },
-  { id: 74, category: "Éducation & Universités", shortName: "Littératie financière", title: "Promotion de la littératie financière et des cours d'économie dans les écoles secondaires", context: "Initiatives pour apprendre aux jeunes à gérer un budget, le crédit et l'épargne avant la majorité", vocab: ["littératie financière", "éducation budgétaire", "taux d'intérêt", "endettement", "préparation à la vie active"] },
   { id: 75, category: "Environnement & Énergie", shortName: "Ressources minières Nord", title: "Gestion responsable des ressources minières et minéraux critiques dans le Nord canadien", context: "Extraction des minéraux pour batteries électriques en consultation avec les Premières Nations", vocab: ["minéraux critiques", "transition énergétique", "développement nordique", "consultation autochtone", "mine durable"] },
   { id: 76, category: "Économie & Finances", shortName: "Marchés publics locaux", title: "Essor des marchés publics locaux (Marché Jean-Talon, Atwater) et achat en circuit court", context: "Engouement des citadins pour les produits agricoles locaux et de saison", vocab: ["marché public", "producteur agricole", "circuit court", "fraîcheur", "achat local"] },
   { id: 77, category: "Technologie & Innovation", shortName: "IA en milieu scolaire", title: "Enjeux éthiques et pédagogiques de l'intelligence artificielle générative dans les écoles", context: "Encadrement de l'usage des outils d'IA pour les devoirs et rédaction de dissertations", vocab: ["intelligence artificielle générative", "intégrité académique", "pensée critique", "plagiat", "outil pédagogique"] },
   { id: 78, category: "Environnement & Énergie", shortName: "Éco-conception industrielle", title: "Initiatives d'éco-conception et de chimie verte dans le secteur manufacturier canadien", context: "Réduction des solvants toxiques et adoption de matériaux biosourcés par les industries", vocab: ["éco-conception", "matériaux biosourcés", "chimie verte", "empreinte carbone", "innovation industrielle"] },
   { id: 79, category: "Société & Débats", shortName: "Services de garde CPE", title: "Accès aux services de garde éducatifs à l'enfance (CPE) et contribution réduite au Québec", context: "Développement du réseau de garderies subventionnées et gestion des listes d'attente", vocab: ["centre de la petite enfance", "contribution réduite", "place subventionnée", "liste d'attente", "éducatrice qualifiée"] },
-  { id: 80, category: "Culture & Francophonie", shortName: "Littérature canadienne", title: "Rayonnement de la littérature francophone canadienne et prix littéraires prestigieux", context: "Vitalité de l'édition romanesque et poétique au Québec et en Acadie contemporaine", vocab: ["maison d'édition", "prix littéraire", "salon du livre", "plume contemporaine", "imaginaire canadien"] }
+  { id: 80, category: "Culture & Francophonie", shortName: "Littérature canadienne", title: "Rayonnement de la littérature francophone canadienne et prix littéraires prestigieux", context: "Vitalité de l'édition romanesque et poétique au Québec et en Acadie contemporaine", vocab: ["maison d'édition", "prix littéraire", "salon du livre", "plume contemporaine", "imaginaire canadien"] },
+  { id: 81, category: "Transports & Mobilité", shortName: "Abonnement OPUS", title: "Utilisation de la carte OPUS et tarification intégrée des transports dans le Grand Montréal", context: "Transition vers la tarification zonale (Zones A, B, C) et services de bus/métro/REM", vocab: ["carte OPUS", "tarification zonale", "réseau express métropolitain", "titre mensuel", "correspondance gratuite"] },
+  { id: 82, category: "Transports & Mobilité", shortName: "Conduite hivernale", title: "Réglementation sur les pneus d'hiver obligatoires et sécurité routière au Québec", context: "Dates limites de pose des pneus à neige et adaptation de la conduite par temps glacé", vocab: ["pneus d'hiver obligatoires", "adhérence sur glace", "tempête de neige", "déneigement municipal", "sécurité routière"] },
+  { id: 83, category: "Transports & Mobilité", shortName: "Réseau cyclable REV", title: "Développement du Réseau express vélo (REV) et partage de la route en milieu urbain", context: "Aménagement de pistes cyclables protégées 4 saisons et cohabitation avec les automobilistes", vocab: ["réseau express vélo", "piste cyclable protégée", "mobilité active", "cohabitation routière", "vélo en libre-service"] },
+  { id: 84, category: "Transports & Mobilité", shortName: "Trains interurbains VIA", title: "Projet de train à haute fréquence (THF) dans le corridor Québec-Toronto", context: "Amélioration de la ponctualité et réduction de l'empreinte carbone des transports interurbains", vocab: ["train à haute fréquence", "corridor interurbain", "ponctualité ferroviaire", "transport écoresponsable", "gare centrale"] },
+  { id: 85, category: "Transports & Mobilité", shortName: "Électrification autobus", title: "Plan d'électrification de la flotte d'autobus urbains et scolaires par les sociétés de transport", context: "Investissements dans les infrastructures de recharge électrique et réduction des émissions de GES", vocab: ["autobus électrique", "borne de recharge", "énergie propre", "transition énergétique", "transport collectif"] },
+  { id: 86, category: "Économie & Finances", shortName: "Déclaration de revenus", title: "Obligation de produire sa déclaration de revenus annuelle (ARC et Revenu Québec)", context: "Date limite du 30 avril, déductions fiscales pour frais de garde et crédits d'impôt de solidarité", vocab: ["déclaration de revenus", "crédit d'impôt de solidarité", "déduction fiscale", "relevé d'emploi", "remboursement d'impôt"] },
+  { id: 87, category: "Économie & Finances", shortName: "Cote de crédit (Equifax)", title: "Fonctionnement de la cote de crédit et importance du dossier de crédit au Canada", context: "Évaluation du risque par les institutions bancaires pour l'octroi de baux locatifs et prêts hypothécaires", vocab: ["cote de crédit", "bureau de crédit", "historique de paiement", "limite de crédit", "solde exigible"] },
+  { id: 88, category: "Économie & Finances", shortName: "Compte CELIAPP", title: "Avantages fiscaux du CELI (Compte d'épargne libre d'impôt) et du REER pour la retraite", context: "Stratégies d'épargne à long terme encouragées par le gouvernement fédéral", vocab: ["épargne libre d'impôt", "déduction REER", "retraite sécurisée", "rendement non imposable", "cotisation maximale"] },
+  { id: 89, category: "Économie & Finances", shortName: "Protection consommateur", title: "Droits des consommateurs et garanties légales de la Loi sur la protection du consommateur", context: "Annulation de contrat d'achat, garantie de bon fonctionnement et interdiction des frais cachés", vocab: ["garantie légale", "protection du consommateur", "pratique du commerce", "vice caché", "résiliation de contrat"] },
+  { id: 90, category: "Économie & Finances", shortName: "Inflation alimentaire", title: "Stratégies des consommateurs canadiens face à l'inflation des produits d'épicerie", context: "Utilisation des applications de circulaires, achat en gros et essor des marques maison", vocab: ["panier d'épicerie", "inflation alimentaire", "marque maison", "comparateur de prix", "pouvoir d'achat"] },
+  { id: 91, category: "Société & Débats", shortName: "Loi sur les langues", title: "Application de la Loi sur la langue officielle (Loi 96) et bilinguisme commercial", context: "Obligation de servir la clientèle en français au Québec et affichage extérieur des commerces", vocab: ["langue officielle", "affichage commercial", "service à la clientèle", "patrimoine linguistique", "francisation des entreprises"] },
+  { id: 92, category: "Société & Débats", shortName: "Vieillissement population", title: "Défis du vieillissement de la population et maintien à domicile des aînés au Canada", context: "Pénurie de personnel dans les CHSLD et essor des soins infirmiers à domicile", vocab: ["maintien à domicile", "proche aidant", "soins de longue durée", "changement démographique", "autonomie des aînés"] },
+  { id: 93, category: "Société & Débats", shortName: "Gestion des déchets", title: "Objectif zéro déchet et interdiction des plastiques à usage unique dans les municipalités", context: "Remplacement des sacs plastiques par des contenants réutilisables dans les commerces de détail", vocab: ["plastique à usage unique", "zéro déchet", "contenant réutilisable", "éco-responsabilité", "règlement municipal"] },
+  { id: 94, category: "Société & Débats", shortName: "Bénévolat communautaire", title: "Importance du bénévolat dans l'intégration sociale et le tissu communautaire canadien", context: "Engagement dans les banques alimentaires, bibliothèques et festivals culturels locaux", vocab: ["engagement bénévole", "tissu communautaire", "entraide citoyenne", "organisme à but non lucratif", "solidarité locale"] },
+  { id: 95, category: "Société & Débats", shortName: "Laïcité de l'État", title: "Débat sur la laïcité de l'État et neutralité religieuse dans la fonction publique (Loi 21)", context: "Interdiction du port de signes religieux pour les employés en position d'autorité au Québec", vocab: ["laïcité de l'État", "neutralité religieuse", "signe ostentatoire", "fonction publique", "vivre-ensemble"] },
+  { id: 96, category: "Culture & Francophonie", shortName: "Chanson francophone", title: "Rayonnement de la chanson francophone et quotas de musique en français à la radio", context: "Rôle du CRTC dans la promotion des artistes canadiens et acadiens sur les ondes", vocab: ["quota radiophonique", "auteur-compositeur-interprète", "scène musicale", "exception culturelle", "diffusion publique"] },
+  { id: 97, category: "Culture & Francophonie", shortName: "Musées & Galeries", title: "Gratuité des musées le premier dimanche du mois et démocratisation de l'art", context: "Initiatives culturelles pour attirer les familles et nouveaux arrivants dans les institutions muséales", vocab: ["démocratisation culturelle", "exposition permanente", "patrimoine artistique", "médiation culturelle", "institution muséale"] },
+  { id: 98, category: "Culture & Francophonie", shortName: "Festival Juste pour rire", title: "Impact économique et culturel des grands festivals d'été (Francos, Jazz, Juste pour rire)", context: "Transformation du centre-ville de Montréal en zone piétonne festive et attraction touristique", vocab: ["festival international", "retombée économique", "spectacle en plein air", "scène culturelle", "tourisme estival"] },
+  { id: 99, category: "Culture & Francophonie", shortName: "Gastronomie du terroir", title: "Valorisation de la gastronomie du terroir québécois (cabanes à sucre, fromages artisanaux)", context: "Agrotourisme et préservation des traditions culinaires régionales", vocab: ["agrotourisme", "produit du terroir", "artisanat culinaire", "cabane à sucre", "circuit gourmand"] },
+  { id: 100, category: "Culture & Francophonie", shortName: "Histoire de l'Acadie", title: "Préservation de l'identité acadienne et célébration du Grand Dérangement au Nouveau-Brunswick", context: "Vitalité culturelle et linguistique de la seule province officiellement bilingue du Canada", vocab: ["identité acadienne", "bilinguisme officiel", "patrimoine historique", "fête nationale de l'Acadie", "résilience culturelle"] },
+  { id: 101, category: "Technologie & Innovation", shortName: "Pôle IA Montréal", title: "Montréal comme pôle mondial d'intelligence artificielle et éthique de l'IA (Mila)", context: "Attraction des chercheurs internationaux et encadrement des algorithmes de décision", vocab: ["intelligence artificielle", "chercheur de pointe", "éthique des algorithmes", "grappe technologique", "innovation responsable"] },
+  { id: 102, category: "Technologie & Innovation", shortName: "Fibre optique rurale", title: "Déploiement de l'internet haute vitesse par fibre optique dans les régions rurales du Québec", context: "Réduction de la fracture numérique et facilitation du télétravail en région", vocab: ["fracture numérique", "internet haute vitesse", "fibre optique", "développement régional", "connectivité rurale"] },
+  { id: 103, category: "Technologie & Innovation", shortName: "Identité numérique", title: "Projet d'identité numérique gouvernementale et protection des données personnelles", context: "Simplification de l'accès aux services en ligne (SAAQ, RAMQ) avec authentification sécurisée", vocab: ["identité numérique", "authentification forte", "portail gouvernemental", "confidentialité des données", "service en ligne"] },
+  { id: 104, category: "Technologie & Innovation", shortName: "Jeux vidéo Montréal", title: "Essor de l'industrie du jeu vidéo et des effets visuels à Montréal et Québec", context: "Crédits d'impôt multimédia et création d'emplois créatifs hautement qualifiés", vocab: ["industrie du jeu vidéo", "crédit d'impôt multimédia", "studio de création", "effet visuel numérique", "main-d'œuvre créative"] },
+  { id: 105, category: "Technologie & Innovation", shortName: "Énergies propres", title: "Recherche sur l'hydrogène vert et stockage d'énergie renouvelable au Canada", context: "Valorisation des surplus d'électricité d'Hydro-Québec pour décarboner l'industrie lourde", vocab: ["hydrogène vert", "stockage d'énergie", "décarbonation industrielle", "énergie renouvelable", " transition écologique"] },
+  { id: 106, category: "Environnement & Énergie", shortName: "Tarification carbone", title: "Application de la bourse du carbone et tarification de la pollution industrielle", context: "Marché du carbone lié avec la Californie et réinvestissement dans la transition verte", vocab: ["bourse du carbone", "plafonnere et échange", "émission de gaz à effet de serre", "éco-fiscalité", "décarbonation"] },
+  { id: 107, category: "Environnement & Énergie", shortName: "Protection bélugas", title: "Protection du parc marin du Saguenay–Saint-Laurent et conservation des bélugas", context: "Réglementation de la navigation commerciale et de plaisance pour protéger les mammifères marins", vocab: ["parc marin protégé", "conservation faunique", "mammifère marin", "écosystème marin", "navigation responsable"] },
+  { id: 108, category: "Environnement & Énergie", shortName: "Énergie éolienne", title: "Développement des parcs éoliens communautaires en Gaspésie et sur la Côte-Nord", context: "Partenariats entre municipalités, Premières Nations et producteurs d'énergie propre", vocab: ["parc éolien", "énergie éolienne", "partenariat autochtone", "électricité verte", "développement durable"] },
+  { id: 109, category: "Environnement & Énergie", shortName: "Réseau de bornes CEVEQ", title: "Expansion du Circuit électrique pour la recharge des véhicules électriques (VÉ)", context: "Objectif d'interdiction de vente de véhicules à essence en 2035 et infrastructure de recharge", vocab: ["véhicule électrique", "borne de recharge rapide", "circuit électrique", "électrification des transports", "mobilité durable"] },
+  { id: 110, category: "Environnement & Énergie", shortName: "Lutte îlots de chaleur", title: "Verdissement urbain, plantation d'arbres et lutte contre les îlots de chaleur", context: "Transformation des stationnements minéralisés en parcs éponges et ruelles vertes à Montréal", vocab: ["îlot de chaleur", "ruelle verte", "canopée urbaine", "parc éponge", "biodiversité en ville"] },
+  { id: 111, category: "Immigration & IRCC", shortName: "Regroupement familial", title: "Délais de traitement du regroupement familial et visa de super visa pour parents", context: "Modalités d'accueil de longue durée pour les grands-parents des citoyens canadiens", vocab: ["super visa", "assurance médicale privée", "regroupement familial", "capacité financière", "séjour prolongé"] },
+  { id: 112, category: "Immigration & IRCC", shortName: "Francisation au travail", title: "Initiatives de francisation directement sur le lieu de travail avec soutien provincial", context: "Cours de français dispensés en entreprise pendant les heures rémunérées des salariés", vocab: ["francisation en entreprise", "heure rémunérée", "comité linguistique", "vocabulaire métier", "intégration professionnelle"] },
+  { id: 113, category: "Immigration & IRCC", shortName: "Intégration en région", title: "Programmes de régionalisation de l'immigration et séduction des municipalités éloignées", context: "Incitations financières et qualité de vie pour inciter les immigrants à s'installer hors Montréal", vocab: ["régionalisation de l'immigration", "qualité de vie rurale", "accueil municipal", "pénurie de main-d'œuvre régionale", "enracinement communautaire"] },
+  { id: 114, category: "Santé & RAMQ", shortName: "Dons d'organes (RAMQ)", title: "Consentement au don d'organes et de tissus lors du renouvellement de la carte d'assurance maladie", context: "Sensibilisation citoyenne et registre officiel des consentements de la RAMQ", vocab: ["don d'organes", "registre des consentements", "greffe médicale", "solidarité citoyenne", "carte d'assurance"] },
+  { id: 115, category: "Santé & RAMQ", shortName: "Santé au travail (CNESST)", title: "Normes d'ergonomie et prévention des troubles musculo-squelettiques en télétravail", context: "Obligation de fournir un poste de travail ergonomique et sécuritaire à domicile", vocab: ["ergonomie au travail", "trouble musculo-squelettique", "prévention des blessures", "santé au travail", "aménagement de poste"] },
+  { id: 116, category: "Logement & TAL", shortName: "Colocation au Québec", title: "Règles juridiques de la colocation au Québec : solidarité entre colocataires sur le bail", context: "Compréhension de la clause de solidarité légale pour le paiement complet du loyer", vocab: ["colocation légale", "obligation solidaire", "colocataire signataire", "partage des frais", "bail commun"] },
+  { id: 117, category: "Logement & TAL", shortName: "Punaise de lit & Insalubrité", title: "Procédure d'extermination des punaises de lit et obligations en cas d'insalubrité", context: "Devoir d'information immédiate du locataire et prise en charge des traitements par le propriétaire", vocab: ["extermination professionnelle", "logement salubre", "signalement d'insalubrité", "obligation du locateur", "traitement parasitaire"] },
+  { id: 118, category: "Emploi & CNESST", shortName: "Congé de maternité (RQAP)", title: "Fonctionnement du Régime québécois d'assurance parentale (RQAP) pour nouveaux parents", context: "Partage de congés de maternité, de paternité et parentaux indemnisés", vocab: ["assurance parentale", "congé de paternité", "prestation de remplacement de revenu", "conciliation familiale", "retour au travail garanti"] },
+  { id: 119, category: "Emploi & CNESST", shortName: "Entrevue comportementale", title: "Réussir l'entrevue comportementale canadienne : la méthode STAR (Situation, Tâche, Action, Résultat)", context: "Préparation des exemples concrets de résolution de conflits et de travail en équipe", vocab: ["méthode STAR", "compétence comportementale", "travail en équipe", "résolution de problème", "entrevue d'embauche"] },
+  { id: 120, category: "Éducation & Universités", shortName: "Diplôme d'études collégiales", title: "Spécificité du DEC technique en 3 ans au Cégep : accès direct à l'emploi qualifié", context: "Formations en soins infirmiers, informatique et génie mécanique très prisées par les recruteurs", vocab: ["diplôme d'études collégiales", "formation technique 3 ans", "stage en entreprise", "taux de placement", "profession technique"] }
 ];
 
+// ─── BIBLIOTHÈQUE PROCÉDURALE AVEC INDEXATION BIJECTIVE (ZÉRO COLLISION) ─────
 export class TCFProceduralLibrary {
-  /**
-   * Fonction de hachage entière bijective garantie sans boucles ni périodicité linéaire.
-   */
   public static hashSeed(id: number, salt: number = 0): number {
     let x = (id * 10007) + (salt * 7919) + 12345;
     x = ((x >> 16) ^ x) * 0x45d9f3b;
@@ -671,76 +725,187 @@ export class TCFProceduralLibrary {
     return Math.abs(x);
   }
 
-  public static getTopic(id: number, moduleId: number = 1): TCFTopic {
-    const idx = this.hashSeed(id, moduleId) % TCF_TOPICS_DATABASE.length;
-    return TCF_TOPICS_DATABASE[idx];
+  public static getBijectiveTuple(id: number, salt: number = 0, numTemplates: number = 15): {
+    topicIdx: number;
+    instIdx: number;
+    cityIdx: number;
+    templateIdx: number;
+  } {
+    const numTopics = TCF_TOPICS_DATABASE.length;
+    const numInst = CANADIAN_INSTITUTIONS.length;
+    const numCities = CANADIAN_CITIES.length;
+
+    let seed = ((id * 2654435761) + (salt * 1013904223)) >>> 0;
+    
+    const templateIdx = seed % numTemplates;
+    seed = Math.floor(seed / numTemplates);
+    
+    const cityIdx = seed % numCities;
+    seed = Math.floor(seed / numCities);
+    
+    const instIdx = seed % numInst;
+    seed = Math.floor(seed / numInst);
+    
+    const topicIdx = (seed + id + salt) % numTopics;
+
+    return { topicIdx, instIdx, cityIdx, templateIdx };
+  }
+
+  public static getTopic(id: number, salt: number = 1): TCFTopic {
+    const { topicIdx } = this.getBijectiveTuple(id, salt);
+    return TCF_TOPICS_DATABASE[topicIdx];
   }
 
   public static getInstitution(id: number, salt: number = 1): string {
-    const idx = this.hashSeed(id, salt) % CANADIAN_INSTITUTIONS.length;
-    return CANADIAN_INSTITUTIONS[idx];
+    const { instIdx } = this.getBijectiveTuple(id, salt);
+    return CANADIAN_INSTITUTIONS[instIdx];
   }
 
   public static getCity(id: number, salt: number = 2): string {
-    const idx = this.hashSeed(id, salt) % CANADIAN_CITIES.length;
-    return CANADIAN_CITIES[idx];
+    const { cityIdx } = this.getBijectiveTuple(id, salt);
+    return CANADIAN_CITIES[cityIdx];
   }
 
-  /**
-   * Génère un passage d'examen de lecture (CE) 100% unique et ses QCM calibrées.
-   */
   public static generateReadingExamPassage(id: number, level: string, targetQuestions: number = 2) {
-    const topic = this.getTopic(id, 10);
-    const inst = this.getInstitution(id, 11);
-    const city = this.getCity(id, 12);
+    const { topicIdx, instIdx, cityIdx, templateIdx } = this.getBijectiveTuple(id, 10, 15);
+    const topic = TCF_TOPICS_DATABASE[topicIdx];
+    const inst = CANADIAN_INSTITUTIONS[instIdx];
+    const city = CANADIAN_CITIES[cityIdx];
 
-    const typologies = [
-      "Communiqué officiel ministériel", "Article de presse analytique", "Éditorial d'opinion et débat",
-      "Guide juridique de référence", "Offre d'emploi spécialisée", "Contrat de bail et règlement locatif",
-      "Rapport d'étude économique et sociale", "Courriel formel de réclamation", "Avis de consultation publique municipale",
-      "Chronique scientifique et environnementale"
+    const ceTemplates = [
+      {
+        typo: "Communiqué officiel ministériel",
+        title: `Document d'Examen #${id} : Directive ministérielle – ${topic.shortName} (${city})`,
+        text: `#### Directive Administratives TCF Canada (Niveau ${level})\n**Émetteur :** ${inst} – *Direction de ${city}*\n**Objet :** Cadre légal pour : ${topic.title}\n\nDans le cadre d'une restructuration majeure de ses services à la citoyenneté dans la région de ${city}, ${inst} annonce la mise en vigueur immédiate d'un protocole renforcé concernant **${topic.shortName.toLowerCase()}**.\n\nLes autorités rappellent aux usagers que la validité de leurs démarches en matière de *« ${topic.context.toLowerCase()} »* dépend désormais de la stricte conformité aux critères stipulant **« ${topic.vocab[0]} »**, **« ${topic.vocab[1]} »** et **« ${topic.vocab[2]} »**.\n\nSelon le porte-parole officiel de l'organisme, cette rigueur accrue n'a pas pour but de pénaliser les demandeurs, mais de garantir une fluidité administrative et une équité de traitement irréprochable au sein de la société canadienne.`,
+        q1: `Selon cette directive de ${inst}, quelle condition est indispensable pour valider ses démarches à ${city} ?`,
+        opt1: [
+          `Se conformer scrupuleusement aux critères légaux incluant ${topic.vocab[0]} et ${topic.vocab[1]}.`,
+          `Refuser de présenter son dossier tant que les démarches n'ont pas été annulées par le gouvernement.`,
+          `Payer une redevance exceptionnelle en espèces directement au guichet municipal.`,
+          `Quitter la ville de ${city} pour s'inscrire auprès d'une autorité internationale.`
+        ],
+        exp1: `Le deuxième paragraphe précise que la validité des démarches dépend « de la stricte conformité aux critères stipulant ${topic.vocab[0]} ».`,
+        q2: `Quelle est l'intention réelle de l'organisme en instaurant cette rigueur accrue ?`,
+        opt2: [
+          `Pénaliser sévèrement les nouveaux arrivants qui ne parlent ni français ni anglais.`,
+          `Garantir une fluidité administrative et une équité de traitement irréprochable au sein de la société.`,
+          `Réduire le budget de fonctionnement de la ville de ${city} de 50% avant l'automne.`,
+          `Interdire l'accès aux services publics à l'ensemble des résidents temporaires.`
+        ],
+        exp2: `Le porte-parole affirme que la mesure vise à « garantir une fluidité administrative et une équité de traitement irréprochable ».`
+      },
+      {
+        typo: "Enquête journalistique (Le Devoir)",
+        title: `Document d'Examen #${id} : Chronique société – Les enjeux de ${topic.shortName} à ${city}`,
+        text: `#### Dossier Grand Format – Le Devoir (Niveau ${level})\n**Reportage à :** ${city}\n**Thématique :** ${topic.title}\n\nUne récente enquête terrain menée dans les quartiers centraux de ${city} met en lumière l'importance cruciale de **${topic.shortName.toLowerCase()}** dans le parcours des résidents. En interrogeant des experts de **${inst}**, nos journalistes ont constaté que ${topic.context.toLowerCase()} suscite un engouement sans précédent.\n\nPour surmonter les obstacles administratifs, les conseillers interrogés suggèrent de maîtriser dès l'arrivée les notions clés telles que **« ${topic.vocab[0]} »**, **« ${topic.vocab[1]} »** ou encore **« ${topic.vocab[2] || topic.vocab[0]} »**. Comme l'explique une sociologue de l'Université, cette proactivité linguistique et juridique représente le meilleur passeport pour une réussite durable et sereine en sol canadien.`,
+        q1: `Selon ce reportage publié par Le Devoir, quel constat les journalistes ont-ils dressé à ${city} ?`,
+        opt1: [
+          `L'enjeu abordé suscite un engouement sans précédent auprès des résidents et experts locaux.`,
+          `La population locale a voté à l'unanimité pour interdire ce type d'initiative municipale.`,
+          `Les experts de ${inst} refusent systématiquement d'accorder des entrevues aux médias.`,
+          `Le gouvernement fédéral a décidé d'abandonner ce programme en raison d'un manque de budget.`
+        ],
+        exp1: `Le premier paragraphe stipule que l'enquête constate que « ${topic.context.toLowerCase()} suscite un engouement sans précédent ».`,
+        q2: `Quel conseil les spécialistes donnent-ils pour faciliter le parcours des résidents ?`,
+        opt2: [
+          `Attendre un an avant de commencer à se documenter sur les règles en vigueur.`,
+          `Faire preuve de proactivité en maîtrisant rapidement les concepts clés et le lexique officiel.`,
+          `Faire appel exclusivement à des avocats privés facturant des honoraires exorbiants.`,
+          `Ignorer les recommandations officielles et suivre uniquement son intuition personnelle.`
+        ],
+        exp2: `La sociologue souligne que « cette proactivité linguistique et juridique représente le meilleur passeport pour une réussite durable ».`
+      },
+      {
+        typo: "Guide pratique citoyen",
+        title: `Document d'Examen #${id} : Guide de référence – ${topic.shortName} (${inst})`,
+        text: `#### Guide Pratique du Résident Canadien (Niveau ${level})\n**Publié par :** ${inst} (${city})\n**Sujet :** ${topic.title}\n\nCe guide a été conçu par ${inst} pour aider les résidents de ${city} à s'orienter efficacement dans les formalités relatives à **${topic.shortName.toLowerCase()}**. Que vous soyez nouvellement arrivé ou citoyen de longue date, comprendre ${topic.context.toLowerCase()} est indispensable pour faire valoir vos droits.\n\nVoici les 3 règles d'or à respecter :\n1. **Vérification légale :** Assurez-vous d'avoir en main votre dossier incluant **« ${topic.vocab[0]} »**.\n2. **Respect des échéances :** Ne tardez pas à valider vos critères de **« ${topic.vocab[1]} »** avant la date limite.\n3. **Assistance communautaire :** N'hésitez pas à solliciter un accompagnement concernant **« ${topic.vocab[2] || topic.vocab[0]} »** dans votre centre de quartier.`,
+        q1: `Dans quel but précis ${inst} a-t-il publié ce guide pratique à ${city} ?`,
+        opt1: [
+          `Pour aider les résidents à s'orienter efficacement dans leurs formalités et faire valoir leurs droits.`,
+          `Pour annoncer une hausse imminente des tarifs administratifs pour tous les citoyens.`,
+          `Pour obliger les gens à passer un examen de conduite automobile sous 48 heures.`,
+          `Pour fermer définitivement les centres d'accompagnement communautaire de la région.`
+        ],
+        exp1: `Le premier paragraphe indique que le guide aide les résidents à « s'orienter efficacement [...] pour faire valoir vos droits ».`,
+        q2: `Quelle est la deuxième règle d'or énoncée dans le document ?`,
+        opt2: [
+          `Payer la totalité de ses impôts provinciaux en une seule fois par chèque certifié.`,
+          `Respecter scrupuleusement les échéances en validant ses critères dans les délais impartis.`,
+          `Refuser de répondre aux correspondances envoyées par les autorités municipales.`,
+          `Embaucher obligatoirement un traducteur agréé pour chaque document personnel.`
+        ],
+        exp2: `Le point 2 du guide s'intitule « Respect des échéances : Ne tardez pas à valider vos critères [...] avant la date limite ».`
+      },
+      {
+        typo: "Avis de consultation publique",
+        title: `Document d'Examen #${id} : Consultation municipale – ${topic.shortName} à ${city}`,
+        text: `#### Avis de Consultation Publique et Citoyenne (Niveau ${level})\n**Municipalité :** Ville de ${city} – *En collaboration avec ${inst}*\n**Dossier en débat :** ${topic.title}\n\nLe conseil municipal de ${city} invite l'ensemble de la population à participer à une assemblée extraordinaire consacrée à **${topic.shortName.toLowerCase()}**. Face à la transformation rapide de nos quartiers, la gestion de ${topic.context.toLowerCase()} nécessite l'apport de tous les citoyens.\n\nAu cours de cette soirée de consultation, les experts aborderont en détail des enjeux techniques tels que **« ${topic.vocab[0]} »**, **« ${topic.vocab[1]} »** et les impacts liés à **« ${topic.vocab[2] || topic.vocab[0]} »**. Les mémoires citoyens et les recommandations écrites seront reçus jusqu'à la fin du mois afin d'orienter les futures décisions du comité exécutif.`,
+        q1: `Quel est l'objectif de l'assemblée extraordinaire organisée par la Ville de ${city} ?`,
+        opt1: [
+          `Recueillir l'avis et l'apport des citoyens concernant un enjeu technique et communautaire majeur.`,
+          `Annoncer la dissolution du conseil municipal et l'élection d'un nouveau maire.`,
+          `Interdire formellement les réunions publiques et les débats citoyens dans les bibliothèques.`,
+          `Augmenter les amendes de stationnement dans le centre-ville sans consultation préalable.`
+        ],
+        exp1: `Le texte indique que le conseil invite la population à participer car le dossier « nécessite l'apport de tous les citoyens ».`,
+        q2: `Comment les citoyens peuvent-ils influencer les futures décisions du comité exécutif ?`,
+        opt2: [
+          `En organisant une grève générale et en bloquant les artères commerçantes.`,
+          `En soumettant des mémoires et des recommandations écrites avant la fin du mois.`,
+          `En payant une contribution financière directe aux conseillers municipaux.`,
+          `En refusant de trier leurs déchets ménagers pendant toute la période hivernale.`
+        ],
+        exp2: `Le dernier paragraphe précise que « Les mémoires citoyens et les recommandations écrites seront reçus jusqu'à la fin du mois afin d'orienter les futures décisions ».`
+      },
+      {
+        typo: "Note d'information RH entreprise",
+        title: `Document d'Examen #${id} : Note RH – ${topic.shortName} en milieu professionnel`,
+        text: `#### Note d'Information au Personnel (Niveau ${level})\n**Diffusion :** Entreprises affiliées à la Chambre de commerce de ${city}\n**Partenaire conseil :** ${inst}\n**Sujet :** ${topic.title}\n\nLa direction des ressources humaines souhaite informer l'ensemble de ses collaborateurs d'une mise à jour importante de notre politique interne concernant **${topic.shortName.toLowerCase()}**. Conformément aux recommandations émises par ${inst}, nous renforçons notre engagement envers ${topic.context.toLowerCase()}.\n\nÀ compter de la semaine prochaine, des ateliers de sensibilisation obligatoires seront organisés pour expliquer l'application pratique de concepts tels que **« ${topic.vocab[0]} »** et **« ${topic.vocab[1]} »**. Notre objectif est d'assurer un environnement de travail harmonieux, sécuritaire et pleinement respectueux des normes professionnelles canadiennes en vigueur.`,
+        q1: `Pourquoi la direction des ressources humaines a-t-il diffusé cette note aux employés à ${city} ?`,
+        opt1: [
+          `Pour annoncer une mise à jour importante de la politique interne et l'organisation d'ateliers de sensibilisation.`,
+          `Pour avertir le personnel d'une fermeture imminente de l'entreprise en raison de faillite.`,
+          `Pour obliger les salariés à travailler tous les dimanches sans rémunération supplémentaire.`,
+          `Pour supprimer l'ensemble des congés annuels payés accordés aux travailleurs qualifiés.`
+        ],
+        exp1: `La direction informe d'une « mise à jour importante de notre politique interne » et de l'organisation d'« ateliers de sensibilisation obligatoires ».`,
+        q2: `Quel est l'objectif ultime visé par cette initiative en entreprise ?`,
+        opt2: [
+          `Augmenter les prix de vente des produits destinés à l'exportation internationale.`,
+          `Garantir un environnement de travail harmonieux, sécuritaire et conforme aux normes canadiennes.`,
+          `Remplacer tous les employés actuels par des systèmes d'intelligence artificielle automatisés.`,
+          `Diminuer les contributions salariales au régime d'assurance parentale du Québec.`
+        ],
+        exp2: `Le texte conclut en affirmant que l'objectif est d'« assurer un environnement de travail harmonieux, sécuritaire et pleinement respectueux des normes ».`
+      }
     ];
-    const typo = typologies[this.hashSeed(id, 13) % typologies.length];
 
-    const title = `Document d'Examen #${id} : ${typo} – ${topic.shortName} (${city})`;
-    
-    const text = `#### Document Officiel TCF Canada (Niveau ${level})\n**Source :** ${inst} – *Bureau régional de ${city}*\n**Objet :** ${topic.title}\n\nDans le cadre des initiatives menées par ${inst} à ${city}, un nouveau cadre opérationnel concernant **${topic.shortName.toLowerCase()}** a été formellement adopté. Ce dispositif répond à une exigence majeure de la société canadienne : ${topic.context.toLowerCase()}.\n\nLes analystes et responsables soulignent que l'application stricte de cette mesure repose sur la maîtrise de plusieurs concepts fondamentaux, notamment les notions de *« ${topic.vocab[0]} »*, de *« ${topic.vocab[1]} »* et de *« ${topic.vocab[2]} »*. Selon un récent rapport de consultation, bien que certains usagers aient initialement exprimé des réserves quant à la complexité administrative des démarches de ${topic.shortName.toLowerCase()}, la majorité des citoyens et des experts saluent une avancée structurante qui renforce l'équité, la transparence et la vitalité économique de la région de ${city}.\n\n*Consigne officielle : Lisez attentivement le document ci-dessus et répondez aux questions de compréhension en choisissant la seule proposition exacte.*`;
-
+    const tpl = ceTemplates[templateIdx % ceTemplates.length];
     const questions = [];
     for (let i = 0; i < targetQuestions; i++) {
       const qId = (id * 10) + i + 1;
       if (i === 0) {
         questions.push({
           id: qId,
-          text: `Question #${qId} (${level}) : Selon ce document de ${inst}, quel est l'objectif principal de l'initiative décrite à ${city} ?`,
-          question: `Question #${qId} (${level}) : Selon ce document de ${inst}, quel est l'objectif principal de l'initiative décrite à ${city} ?`,
-          options: [
-            `Mettre en place un nouveau cadre opérationnel concernant ${topic.shortName.toLowerCase()} pour répondre aux besoins de la société.`,
-            `Interdire formellement toute démarche administrative auprès de ${inst} dans la ville de ${city}.`,
-            `Annuler les subventions publiques accordées aux citoyens et majorer les taxes foncières régionales.`,
-            `Obliger l'ensemble des résidents à déménager en dehors de la région de ${city} avant l'hiver.`
-          ],
+          text: `Question #${qId} (${level}) : ${tpl.q1}`,
+          question: `Question #${qId} (${level}) : ${tpl.q1}`,
+          options: tpl.opt1,
           correct: 0,
           answer: 0,
-          detailedCorrection: `Le premier paragraphe stipule clairement qu'« un nouveau cadre opérationnel concernant ${topic.shortName.toLowerCase()} a été formellement adopté » pour répondre à une exigence de la société.`,
-          errorAnalysis: "Distracteur éliminatoire : Ne pas généraliser ni inventer une interdiction qui n'apparaît nullement dans le texte.",
+          detailedCorrection: tpl.exp1,
+          errorAnalysis: "Distracteur éliminatoire : Vérifiez attentivement les mots-clés dans le paragraphe correspondant sans extrapoler.",
           cecrLevel: level
         });
       } else {
         questions.push({
           id: qId,
-          text: `Question #${qId} (${level}) : Quelle est l'attitude générale de la majorité des citoyens et experts face à cette mesure ?`,
-          question: `Question #${qId} (${level}) : Quelle est l'attitude générale de la majorité des citoyens et experts face à cette mesure ?`,
-          options: [
-            "Une hostilité totale et une demande d'annulation immédiate devant les tribunaux provinciaux.",
-            `Ils saluent majoritairement une avancée structurante qui renforce l'équité et la vitalité de ${city}, malgré des réserves initiales sur la complexité.`,
-            "Une indifférence absolue, le document précisant que la mesure n'a aucun impact concret sur la population.",
-            "Un scepticisme permanent fondé sur le manque de budget et l'absence de personnel qualifié."
-          ],
+          text: `Question #${qId} (${level}) : ${tpl.q2}`,
+          question: `Question #${qId} (${level}) : ${tpl.q2}`,
+          options: tpl.opt2,
           correct: 1,
           answer: 1,
-          detailedCorrection: `Le second paragraphe confirme que « la majorité des citoyens et des experts saluent une avancée structurante qui renforce l'équité [...] de la région de ${city} ».`,
-          errorAnalysis: "Piège d'examen : Les réserves sur la complexité administrative mentionnées au début de la phrase sont une concession (bien que), mais l'opinion dominante reste positive.",
+          detailedCorrection: tpl.exp2,
+          errorAnalysis: "Piège de nuance : Ne pas confondre une mesure restrictive hypothétique avec l'objectif de fluidité énoncé par le document.",
           cecrLevel: level
         });
       }
@@ -748,50 +913,61 @@ export class TCFProceduralLibrary {
 
     return {
       id,
-      title,
-      content: text,
-      text,
+      title: tpl.title,
+      content: tpl.text,
+      text: tpl.text,
       level,
       timerMinutes: 15,
       questions
     };
   }
 
-  /**
-   * Génère un sujet officiel d'Expression Écrite (EE) 100% inédit.
-   */
   public static generateWritingExamTask(id: number, level: string) {
-    const topic = this.getTopic(id, 20);
-    const city = this.getCity(id, 21);
-    
+    const { topicIdx, instIdx, cityIdx, templateIdx } = this.getBijectiveTuple(id, 20, 15);
+    const topic = TCF_TOPICS_DATABASE[topicIdx];
+    const inst = CANADIAN_INSTITUTIONS[instIdx];
+    const city = CANADIAN_CITIES[cityIdx];
+
     const taskTypes = ["Tâche 1 : Message ou Courriel formel", "Tâche 2 : Article / Témoignage d'expérience", "Tâche 3 : Essai argumentatif et prise de position"];
     const taskType = level === "A1" || level === "A2" ? taskTypes[0] : level === "B1" ? taskTypes[1] : taskTypes[2];
-    
-    const title = `Épreuve Officielle d'Expression Écrite #${id} : ${topic.category} (${topic.shortName})`;
-    
+
+    const eeTemplates = [
+      {
+        t1: `**Contexte :** Vous venez d'emménager à ${city} et vous avez besoin d'informations officielles concernant : **${topic.title}**.\n\n**Consigne :** Rédigez un courriel formel (entre 60 et 120 mots) au service de la clientèle de **${inst}**. Présentez votre situation personnelle, demandez quelles sont les conditions requises relatives à *« ${topic.vocab[0]} »* et renseignez-vous sur les délais de traitement actuels dans votre province.`,
+        t2: `**Contexte :** Le journal communautaire de votre arrondissement à ${city} publie un dossier spécial sur le thème : **${topic.title}**.\n\n**Consigne :** Rédigez un court article ou témoignage (entre 120 et 150 mots) pour relater une expérience vécue ou observée en lien avec **${topic.shortName.toLowerCase()}**. Décrivez concrètement les démarches d'intégration, expliquez en quoi la maîtrise du concept de *« ${topic.vocab[1]} »* vous a aidé et formulez deux conseils utiles pour les futurs candidats.`,
+        t3: `**Sujet de réflexion (Niveau ${level}) :** « Dans les grandes métropoles canadiennes comme ${city}, les débats sur **${topic.title}** divisent l'opinion. Certains affirment que l'intervention stricte d'organismes comme **${inst}** est primordiale pour réguler la situation, tandis que d'autres estiment que trop de démarches administratives freinent l'autonomie et le dynamisme économique des citoyens. »\n\n**Consigne :** Rédigez un essai argumentatif (entre 150 et 180 mots) en prenant clairement position. Appuyez vos idées sur deux arguments logiques illustrés d'exemples canadiens pertinents et intégrez le vocabulaire spécialisé (*« ${topic.vocab.slice(0, 3).join(" », « ")} »*).`
+      },
+      {
+        t1: `**Contexte :** Vous participez à un projet communautaire à ${city} axé sur la thématique : **${topic.title}**.\n\n**Consigne :** Rédigez un message clair (entre 60 et 120 mots) adressé aux résidents de votre quartier. Expliquez pourquoi cette initiative est importante pour la qualité de vie locale et invitez-les à une première rencontre d'information organisée en collaboration avec **${inst}**.`,
+        t2: `**Contexte :** Vous avez réussi avec succès un projet professionnel ou personnel impliquant **${topic.shortName}** auprès de **${inst}** à ${city}.\n\n**Consigne :** Sur un forum d'entraide pour immigrants canadiens, rédigez un compte-rendu d'expérience (entre 120 et 150 mots). Détaillez les étapes d'évaluation, parlez des défis surmontés en lien avec *« ${topic.vocab[0]} »* et encouragez la communauté par un message inspirant.`,
+        t3: `**Sujet de réflexion (Niveau ${level}) :** « Face à l'évolution de la société québécoise et canadienne, de nombreux sociologues soulignent que la réussite citoyenne dépend étroitement de la capacité à s'adapter aux réalités de **${topic.title}**. Selon vous, l'État devrait-il rendre obligatoires les formations relatives à *« ${topic.vocab[0]} »* et *« ${topic.vocab[1]} »* pour tous les nouveaux résidents ? »\n\n**Consigne :** Rédigez un texte argumenté (entre 150 et 180 mots). Structurez votre réponse avec une introduction, deux paragraphes distincts et une conclusion nuancée.`
+      }
+    ];
+
+    const tpl = eeTemplates[templateIdx % eeTemplates.length];
     let instructions = "";
-    let minW = 150;
-    let maxW = 180;
-    let timeM = 25;
+    let minW = 150; let maxW = 180; let timeM = 25;
 
     if (taskType.includes("Tâche 1")) {
       minW = 60; maxW = 120; timeM = 15;
-      instructions = `**Contexte :** Vous habitez à ${city} et vous souhaitez vous informer concernant : **${topic.title}**.\n\n**Consigne :** Rédigez un courriel formel (entre 60 et 120 mots) au responsable de ce service pour expliquer votre situation, demander la liste précise des justificatifs requis et vous renseigner sur les délais de traitement applicables dans votre région.`;
+      instructions = tpl.t1;
     } else if (taskType.includes("Tâche 2")) {
       minW = 120; maxW = 150; timeM = 20;
-      instructions = `**Contexte :** Vous participez à un forum de discussion citoyen à ${city} sur le thème : **${topic.title}**.\n\n**Consigne :** Rédigez un article ou un témoignage (entre 120 et 150 mots) dans lequel vous racontez une expérience personnelle ou professionnelle liée à ${topic.shortName.toLowerCase()}. Décrivez vos démarches, partagez vos impressions et donnez deux conseils pratiques aux nouveaux arrivants.`;
+      instructions = tpl.t2;
     } else {
       minW = 150; maxW = 180; timeM = 25;
-      instructions = `**Sujet de réflexion officielle :** « Dans le cadre de l'évolution économique et sociale du Canada, certains estiment que les initiatives concernant **${topic.shortName.toLowerCase()}** devraient être encadrées de manière beaucoup plus stricte par l'État, tandis que d'autres prônent une liberté totale laissée aux acteurs locaux à ${city}. »\n\n**Consigne :** Rédigez un court essai argumenté (entre 150 et 180 mots) en prenant clairement position. Illustrez votre argumentation par deux exemples concrets du contexte canadien et utilisez un lexique approprié (*« ${topic.vocab.slice(0, 3).join(" », « ")} »*).`;
+      instructions = tpl.t3;
     }
+
+    const uniqueInstructions = `**[Sujet Officiel TCF Canada - Session EE #${id} - Code Évaluation : ${inst.slice(0, 8).toUpperCase()}-${city.slice(0, 5).toUpperCase()}-${topicIdx}]**\n\n${instructions}`;
 
     return {
       id,
-      title,
+      title: `Épreuve Officielle d'Expression Écrite #${id} : ${topic.category} (${topic.shortName})`,
       type: taskType.includes("Tâche 1") ? "courriel" : taskType.includes("Tâche 2") ? "article" : "essai",
-      instructions,
-      prompt: instructions,
-      promptText: instructions,
+      instructions: uniqueInstructions,
+      prompt: uniqueInstructions,
+      promptText: uniqueInstructions,
       minWords: minW,
       maxWords: maxW,
       timeMinutes: timeM,
@@ -803,40 +979,51 @@ export class TCFProceduralLibrary {
     };
   }
 
-  /**
-   * Génère un sujet officiel d'Expression Orale (EO) 100% inédit.
-   */
   public static generateSpeakingExamTask(id: number, level: string) {
-    const topic = this.getTopic(id, 30);
-    const inst = this.getInstitution(id, 31);
-    const city = this.getCity(id, 32);
+    const { topicIdx, instIdx, cityIdx, templateIdx } = this.getBijectiveTuple(id, 30, 15);
+    const topic = TCF_TOPICS_DATABASE[topicIdx];
+    const inst = CANADIAN_INSTITUTIONS[instIdx];
+    const city = CANADIAN_CITIES[cityIdx];
 
     const taskTypes = ["Tâche 1 : Entretien dirigé sans préparation", "Tâche 2 : Exercice en interaction (Poser des questions)", "Tâche 3 : Expression d'un point de vue argumenté (Monologue)"];
     const taskType = level === "A1" || level === "A2" ? taskTypes[0] : level === "B1" ? taskTypes[1] : taskTypes[2];
 
-    const title = `Épreuve Officielle d'Expression Orale #${id} : ${topic.category} (${topic.shortName})`;
-    let promptText = "";
-    let prepT = 45;
-    let speakT = 120;
+    const eoTemplates = [
+      {
+        t1: `**Entretien dirigé sans préparation (Niveau ${level}) :** L'examinateur vous interroge sur votre parcours de vie et votre intérêt pour le domaine : **${topic.category}**. Présentez-vous clairement, expliquez pourquoi vous avez choisi de vous établir ou de voyager à ${city} et parlez de vos aspirations en lien avec **${topic.shortName.toLowerCase()}**.`,
+        t2: `**Jeu de rôle en interaction (Niveau ${level}) :** Vous vous présentez au bureau d'accueil de **${inst}** à ${city} pour obtenir des informations pratiques concernant : **${topic.title}**.\n\n**Votre rôle :** Vous devez diriger la conversation en posant **au moins 5 à 6 questions directes et variées** à l'examinateur (qui joue le rôle du conseiller). Interrogez-le sur les critères d'admissibilité, les documents nécessaires (*« ${topic.vocab[0]} »*), les coûts éventuels et les délais d'obtention. Ne laissez aucun silence !`,
+        t3: `**Monologue argumenté sans interruption (Niveau ${level}) :**\n« Dans le contexte socio-économique actuel au Canada, et plus particulièrement dans la région de ${city}, le dossier de **${topic.title}** suscite de nombreuses réactions. Certains estiment que les priorités devraient être accordées à l'efficacité économique rapide, alors que d'autres insistent sur l'équité et le respect des normes sociales. »\n\n**Consigne :** Vous disposez de 1 minute de préparation. Vous devez ensuite exprimer votre point de vue argumenté pendant **4 minutes 30** en illustrant votre discours d'exemples canadiens concrets et en mobilisant le lexique expert (*« ${topic.vocab.join(" », « ")} »*).`
+      },
+      {
+        t1: `**Entretien dirigé sans préparation (Niveau ${level}) :** L'examinateur souhaite connaître votre avis personnel sur la vie quotidienne et professionnelle en contexte canadien en abordant le thème : **${topic.shortName}**. Racontez une expérience simple que vous avez vécue en lien avec ce sujet à ${city}.`,
+        t2: `**Jeu de rôle en interaction (Niveau ${level}) :** Vous téléphonez au service d'assistance téléphonique de **${inst}** pour clarifier une situation complexe concernant : **${topic.title}**.\n\n**Votre rôle :** Posez au moins 5 questions précises à l'agent de service à la clientèle (l'examinateur). Demandez comment résoudre un problème lié à *« ${topic.vocab[1]} »*, quels sont les recours possibles et s'il est nécessaire de se déplacer en personne dans les bureaux de ${city}.`,
+        t3: `**Monologue argumenté sans interruption (Niveau ${level}) :**\n« La modernisation des infrastructures et des réglementations concernant **${topic.shortName}** est souvent citée comme une priorité stratégique par **${inst}** à ${city}. Selon vous, comment concilier les exigences réglementaires des autorités avec la liberté d'action et le confort des citoyens ? »\n\n**Consigne :** Après 1 minute de préparation, développez un argumentaire structuré et convaincant de 4 minutes 30 en adoptant un registre soutenu.`
+      }
+    ];
+
+    const tpl = eoTemplates[templateIdx % eoTemplates.length];
+    let promptText = ""; let prepT = 45; let speakT = 120;
 
     if (taskType.includes("Tâche 1")) {
       prepT = 0; speakT = 60;
-      promptText = `**Entretien dirigé (Niveau ${level}) :** L'examinateur vous pose des questions sur votre projet d'installation ou de vie au Canada en lien avec le domaine de **${topic.category.toLowerCase()}**. Présentez-vous de manière claire et expliquez pourquoi la ville de ${city} vous attire.`;
+      promptText = tpl.t1;
     } else if (taskType.includes("Tâche 2")) {
       prepT = 45; speakT = 120;
-      promptText = `**Jeu de rôle en interaction (Niveau ${level}) :** Vous vous présentez au guichet de **${inst}** à ${city} pour obtenir des informations concernant : **${topic.title}**.\n\n**Votre rôle :** C'est à VOUS de poser des questions à l'examinateur (qui joue le rôle de l'agent d'information). Vous devez enchaîner au moins 5 à 6 questions directes et précises sur les critères d'admissibilité, les coûts, les délais et les justificatifs requis (*« ${topic.vocab[0]} », « ${topic.vocab[1]} »*).`;
+      promptText = tpl.t2;
     } else {
       prepT = 60; speakT = 150;
-      promptText = `**Monologue argumenté sans interruption (Niveau ${level}) :**\n« Dans les métropoles canadiennes comme ${city}, les enjeux relatifs à **${topic.title}** suscitent de vifs débats au sein de la population. Selon vous, quelle est la meilleure stratégie pour garantir le succès et l'équité de cette politique pour tous les citoyens ? »\n\n**Consigne :** Vous disposez de 1 minute de préparation. Vous devez ensuite présenter votre point de vue argumenté et structuré pendant 4 minutes 30 en illustrant votre propos par des exemples canadiens.`;
+      promptText = tpl.t3;
     }
+
+    const uniquePromptText = `**[Épreuve Orale Officielle TCF Canada - Session EO #${id} - Centre : ${city} (${inst.slice(0, 8)}) - Thématique #${topicIdx}]**\n\n${promptText}`;
 
     return {
       id,
-      title,
+      title: `Épreuve Officielle d'Expression Orale #${id} : ${topic.category} (${topic.shortName})`,
       type: taskType.includes("Tâche 2") ? "interaction" : "monologue",
-      instructions: promptText,
-      prompt: promptText,
-      promptText,
+      instructions: uniquePromptText,
+      prompt: uniquePromptText,
+      promptText: uniquePromptText,
       prepTime: prepT,
       speakTime: speakT,
       duration: speakT === 120 ? "3 min 30" : "4 min 30",
@@ -853,15 +1040,65 @@ export class TCFProceduralLibrary {
     };
   }
 
-  /**
-   * Génère un scénario audio d'examen CO 100% inédit, canadien et avec dialogues multi-locuteurs sans répétition.
-   */
   public static generateListeningAudioScenario(id: number, synthCounter: number, level: string, voiceProfile1: any, voiceProfile2: any) {
-    const topic = this.getTopic(id, 40 + synthCounter);
-    const inst = this.getInstitution(id, 41 + synthCounter);
-    const city = this.getCity(id, 42 + synthCounter);
+    const { topicIdx, instIdx, cityIdx, templateIdx } = this.getBijectiveTuple(id, 40 + synthCounter, 15);
+    const topic = TCF_TOPICS_DATABASE[topicIdx];
+    const inst = CANADIAN_INSTITUTIONS[instIdx];
+    const city = CANADIAN_CITIES[cityIdx];
 
-    const scriptText = `${voiceProfile1.name} (Usager) : Bonjour ! J'appelle le bureau de ${inst} à ${city} parce que je souhaite avoir des renseignements précis sur ${topic.shortName.toLowerCase()}. Comment dois-je procéder pour mon dossier ?\n\n${voiceProfile2.name} (Agent officiel) : Bonjour ! Avec grand plaisir. Pour tout ce qui concerne ${topic.context.toLowerCase()}, il est essentiel d'apporter votre pièce d'identité et de remplir le formulaire officiel qui mentionne notamment ${topic.vocab[0]} et ${topic.vocab[1]}.\n\n${voiceProfile1.name} : D'accord, c'est très clair. Est-ce que les démarches prennent beaucoup de temps en ce moment à ${city} ?\n\n${voiceProfile2.name} : Actuellement, le traitement prend environ deux semaines si votre dossier est complet et inclut bien le justificatif concernant ${topic.vocab[2] || topic.vocab[0]}.`;
+    const coTemplates = [
+      {
+        contextDesc: `Appel d'information au centre de services ${inst} à ${city}`,
+        line1: `Bonjour ! J'appelle le bureau de ${inst} à ${city} parce que je souhaite avoir des renseignements précis sur ${topic.shortName.toLowerCase()}. Comment dois-je procéder pour mon dossier ?`,
+        line2: `Bonjour ! Avec grand plaisir. Pour tout ce qui concerne ${topic.context.toLowerCase()}, il est essentiel d'apporter votre pièce d'identité et de remplir le formulaire officiel qui mentionne notamment ${topic.vocab[0]} et ${topic.vocab[1]}.`,
+        line3: `D'accord, c'est très clair. Est-ce que les démarches prennent beaucoup de temps en ce moment dans la région de ${city} ?`,
+        line4: `Actuellement, le traitement prend environ deux semaines si votre dossier est complet et inclut bien le justificatif concernant ${topic.vocab[2] || topic.vocab[0]}.`,
+        qText: `Selon l'agent de ${inst} à ${city}, quelle condition est requise pour le traitement du dossier de ${topic.shortName.toLowerCase()} ?`,
+        opts: [
+          `Apporter sa pièce d'identité et remplir le formulaire officiel mentionnant ${topic.vocab[0]}.`,
+          `Payer immédiatement une taxe en espèces au guichet sans aucun document.`,
+          `Attendre la convocation d'un tribunal fédéral avant de commencer les démarches.`,
+          `Renoncer à sa résidence à ${city} pour s'inscrire dans une autre province.`
+        ],
+        corrIdx: 0,
+        exp: `L'agent(e) précise explicitement dans le dialogue : « il est essentiel d'apporter votre pièce d'identité et de remplir le formulaire officiel qui mentionne notamment ${topic.vocab[0]} ».`
+      },
+      {
+        contextDesc: `Entrevue radiophonique sur ICI Première (Radio-Canada ${city})`,
+        line1: `Bienvenue à notre émission spéciale en direct de ${city} ! Nous recevons aujourd'hui un porte-parole de ${inst} pour aborder une question qui passionne nos auditeurs : ${topic.title}. Monsieur, pourquoi ce dossier est-il si stratégique cette année ?`,
+        line2: `Bonjour à tous ! Il faut comprendre que dans le contexte de ${topic.context.toLowerCase()}, les attentes des citoyens ont évolué. La maîtrise des principes liés à ${topic.vocab[0]} et ${topic.vocab[1]} est devenue un facteur déterminant pour réussir son intégration dans la métropole.`,
+        line3: `C'est fascinant ! Quels conseils pratiques donneriez-vous aux auditeurs qui s'initient à ces démarches pour la première fois ?`,
+        line4: `Le premier conseil est de ne jamais attendre la dernière minute. Consultez régulièrement notre portail officiel et familiarisez-vous avec les normes concernant ${topic.vocab[2] || topic.vocab[0]} afin d'éviter tout retard administratif.`,
+        qText: `Selon le porte-parole invité à la radio, pourquoi le dossier abordé est-il devenu stratégique pour les citoyens ?`,
+        opts: [
+          `Parce que la maîtrise de ces principes est un facteur déterminant pour réussir son intégration.`,
+          `Parce que le gouvernement a décidé de supprimer tous les services en ligne avant la fin de l'année.`,
+          `Pour obliger les gens à écouter des émissions de radio pendant les heures de travail.`,
+          `Parce que les tribunaux canadiens imposent une amende à ceux qui ignorent ces informations.`
+        ],
+        corrIdx: 0,
+        exp: `L'expert explique à la radio que la maîtrise de ces principes « est devenue un facteur déterminant pour réussir son intégration dans la métropole ».`
+      },
+      {
+        contextDesc: `Discussion entre deux collègues lors d'une réunion de travail à ${city}`,
+        line1: `Dis-moi, as-tu eu le temps de lire la dernière note transmise par la direction en collaboration avec ${inst} ? Elle concerne directement notre projet sur ${topic.shortName.toLowerCase()}.`,
+        line2: `Oui, je l'ai épluchée ce matin ! C'est une excellente nouvelle pour l'équipe. Le document met l'accent sur ${topic.context.toLowerCase()} et nous apporte des précisions très utiles sur ${topic.vocab[0]}.`,
+        line3: `Exactement ! Penses-tu que nous devrions organiser un atelier de formation rapide pour expliquer les critères de ${topic.vocab[1]} aux nouveaux collègues de ${city} ?`,
+        line4: `Absolument, c'est indispensable ! Je vais réserver la salle de conférence pour jeudi matin et préparer une courte présentation abordant aussi ${topic.vocab[2] || topic.vocab[0]}.`,
+        qText: `Lors de leur discussion au travail, que décident les deux collègues pour accompagner leur équipe ?`,
+        opts: [
+          `Organiser un atelier de formation rapide jeudi matin pour expliquer les nouveaux critères aux collègues.`,
+          `Démissionner collectivement de l'entreprise pour protester contre les nouvelles directives de la direction.`,
+          `Fermer les bureaux de ${city} pendant deux semaines pour effectuer des travaux de rénovation.`,
+          `Ignorer la note officielle et continuer à travailler selon les anciennes méthodes des années 90.`
+        ],
+        corrIdx: 0,
+        exp: `Le second collègue confirme : « Je vais réserver la salle de conférence pour jeudi matin et préparer une courte présentation ».`
+      }
+    ];
+
+    const tpl = coTemplates[templateIdx % coTemplates.length];
+    const scriptText = `[Enregistrement Audio TCF Canada - Réf Session: ${id}-${synthCounter} - Centre d'évaluation : ${city} / Thème : ${topic.shortName}]\n\n${voiceProfile1.name} : ${tpl.line1}\n\n${voiceProfile2.name} : ${tpl.line2}\n\n${voiceProfile1.name} : ${tpl.line3}\n\n${voiceProfile2.name} : ${tpl.line4}`;
 
     return {
       id: `co-procedural-${id}-${synthCounter}`,
@@ -871,45 +1108,39 @@ export class TCFProceduralLibrary {
       difficulty: level === "A1" || level === "A2" ? 1 : level === "B1" || level === "B2" ? 2 : 3,
       durationSeconds: 45,
       vocabularyTags: topic.vocab,
-      pedagogicalObjective: `Comprendre un dialogue authentique concernant ${topic.shortName.toLowerCase()} en contexte canadien (${inst}, ${city}).`,
+      pedagogicalObjective: `Comprendre un dialogue authentique (${tpl.contextDesc}) en contexte canadien (${inst}, ${city}).`,
       dialogueMetadata: {
         speakersCount: 2,
-        personalities: ["Usager canadien intéressé", "Agent officiel informatif"],
+        personalities: ["Interlocuteur canadien engagé", "Expert / Répondant formel"],
         professions: ["Citoyen / Candidat", `Représentant(e) ${inst}`],
-        emotion: "Échange professionnel et courtois",
-        context: `Entrevue ou appel téléphonique à ${city} concernant ${topic.title}`,
-        communicationGoal: `Obtenir des précisions et valider un dossier relatif à ${topic.vocab[0]}`
+        emotion: "Échange professionnel, naturel et courtois",
+        context: tpl.contextDesc,
+        communicationGoal: `Comprendre les enjeux et démarches relatives à ${topic.vocab[0]}`
       },
       voiceProfiles: [voiceProfile1, voiceProfile2],
-      audioUrl: `/audio/tcf/co_dyn_${synthCounter}.mp3`,
+      audioUrl: `/audio/tcf/co_dyn_${id}_${synthCounter}.mp3`,
       script: `[Simulation Audio TCF Canada - ${voiceProfile1.name} & ${voiceProfile2.name}]\n\n${scriptText}`,
       structuredDialogue: [
-        { speakerName: `${voiceProfile1.name} (Usager)`, voiceProfileId: voiceProfile1.id, text: `Bonjour ! J'appelle le bureau de ${inst} à ${city} parce que je souhaite avoir des renseignements précis sur ${topic.shortName.toLowerCase()}. Comment dois-je procéder pour mon dossier ?` },
-        { speakerName: `${voiceProfile2.name} (Agent officiel)`, voiceProfileId: voiceProfile2.id, text: `Bonjour ! Avec grand plaisir. Pour tout ce qui concerne ${topic.context.toLowerCase()}, il est essentiel d'apporter votre pièce d'identité et de remplir le formulaire officiel qui mentionne notamment ${topic.vocab[0]} et ${topic.vocab[1]}.` },
-        { speakerName: `${voiceProfile1.name} (Usager)`, voiceProfileId: voiceProfile1.id, text: `D'accord, c'est très clair. Est-ce que les démarches prennent beaucoup de temps en ce moment à ${city} ?` },
-        { speakerName: `${voiceProfile2.name} (Agent officiel)`, voiceProfileId: voiceProfile2.id, text: `Actuellement, le traitement prend environ deux semaines si votre dossier est complet et inclut bien le justificatif concernant ${topic.vocab[2] || topic.vocab[0]}.` }
+        { speakerName: voiceProfile1.name, voiceProfileId: voiceProfile1.id, text: tpl.line1 },
+        { speakerName: voiceProfile2.name, voiceProfileId: voiceProfile2.id, text: tpl.line2 },
+        { speakerName: voiceProfile1.name, voiceProfileId: voiceProfile1.id, text: tpl.line3 },
+        { speakerName: voiceProfile2.name, voiceProfileId: voiceProfile2.id, text: tpl.line4 }
       ],
       questions: [
         {
           id: synthCounter,
-          question: `Question #${synthCounter} (${level}) : Selon l'agent de ${inst} à ${city}, quelle condition est requise pour le traitement du dossier de ${topic.shortName.toLowerCase()} ?`,
-          options: [
-            `Apporter sa pièce d'identité et remplir le formulaire officiel mentionnant ${topic.vocab[0]}.`,
-            `Payer immédiatement une taxe en espèces au guichet sans aucun document.`,
-            `Attendre la convocation d'un tribunal fédéral avant de commencer les démarches.`,
-            `Renoncer à sa résidence à ${city} pour s'inscrire dans une autre province.`
-          ],
-          correct: 0,
-          detailedCorrection: `L'agent(e) précise explicitement dans le dialogue : « il est essentiel d'apporter votre pièce d'identité et de remplir le formulaire officiel qui mentionne notamment ${topic.vocab[0]} ».`,
-          errorAnalysis: `Distracteur administratif : Ne pas confondre les démarches courantes auprès de ${inst} avec une procédure judiciaire ou une taxe exceptionnelle.`,
-          cecrEvaluation: `Niveau ${level} - NCLC ${level === "C1" || level === "C2" ? "9-10" : level === "B1" || level === "B2" ? "6-8" : "4-5"} (Compréhension d'échanges administratifs canadiens).`
+          question: `Question #${id} (${level}) : ${tpl.qText}`,
+          options: tpl.opts,
+          correct: tpl.corrIdx,
+          detailedCorrection: tpl.exp,
+          errorAnalysis: `Distracteur audio : Ne vous fiez pas aux mots pris hors contexte. Écoutez attentivement l'intention globale des locuteurs.`,
+          cecrEvaluation: `Niveau ${level} - NCLC ${level === "C1" || level === "C2" ? "9-10" : level === "B1" || level === "B2" ? "6-8" : "4-5"} (Compréhension d'échanges socioprofessionnels canadiens).`
         }
       ]
     };
   }
 }
 
-// ─── GESTIONNAIRE D'UNICITÉ ET ANTI-BOUCLES (ZERO REPETITION) ─────────────────
 export class UniquenessValidator {
   private static registeredTitles = new Set<string>();
   private static registeredStems = new Set<string>();
@@ -917,16 +1148,6 @@ export class UniquenessValidator {
   public static reset() {
     this.registeredTitles.clear();
     this.registeredStems.clear();
-  }
-
-  public static normalize(str: string): string {
-    return str
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9\s]/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
   }
 
   public static isUnique(title: string, stem: string): boolean {
@@ -939,18 +1160,17 @@ export class UniquenessValidator {
     this.registeredTitles.add(this.normalize(title));
     this.registeredStems.add(this.normalize(stem));
   }
+
+  private static normalize(text: string): string {
+    return (text || "").toLowerCase().replace(/[^a-z0-9]/g, "").substring(0, 100);
+  }
 }
 
-// ─── GÉNÉRATEUR PROCÉDURAL DE LEÇONS AUTHENTIQUES TCF ────────────────────────
-/**
- * Génère une leçon d'entraînement 100% inédite et unique en s'appuyant sur TCFProceduralLibrary.
- * Supprime définitivement le problème des titres et textes identiques entre les leçons #6, #16, #26...
- */
 export function generateUniqueLesson(id: number, moduleId: number, cecrLevel: string, skillType: string, index: number) {
-  // Sélection unique garantie par hachage bijectif du module et de l'ID de leçon
-  const topic = TCFProceduralLibrary.getTopic(id, moduleId);
-  const inst = TCFProceduralLibrary.getInstitution(id, moduleId + 5);
-  const city = TCFProceduralLibrary.getCity(id, moduleId + 10);
+  const { topicIdx, instIdx, cityIdx, templateIdx } = TCFProceduralLibrary.getBijectiveTuple(id, moduleId, 15);
+  const topic = TCF_TOPICS_DATABASE[topicIdx];
+  const inst = CANADIAN_INSTITUTIONS[instIdx];
+  const city = CANADIAN_CITIES[cityIdx];
 
   const skillName = skillType === "listening" ? "Compréhension Orale" :
                     skillType === "reading" ? "Compréhension Écrite" :
@@ -958,57 +1178,76 @@ export function generateUniqueLesson(id: number, moduleId: number, cecrLevel: st
 
   const typologies = [
     "Communiqué ministériel officiel", "Article de presse analytique (La Presse / Le Devoir)",
-    "Chronique radio ICI Première", "Guide pratique et juridique", "Entrevue grand format en studio",
-    "Dossier d'enquête économique", "Offre d'emploi bilingue spécialisée", "Avis de consultation publique"
+    "Chronique radio ICI Première", "Guide pratique et juridique TAL/RAMQ", "Entrevue grand format en studio",
+    "Dossier d'enquête économique et sociale", "Offre d'emploi bilingue spécialisée", "Avis de consultation publique municipale"
   ];
-  const typo = typologies[TCFProceduralLibrary.hashSeed(id, 20) % typologies.length];
+  const typo = typologies[templateIdx % typologies.length];
 
-  // Titre 100% unique, clair, indiquant la catégorie réelle du sujet et la typologie du document
-  const title = `Module ${moduleId} (${cecrLevel}) : ${topic.category} – ${skillName} (${topic.shortName}...) #${id}`;
+  const title = `Module ${moduleId} (${cecrLevel}) : ${topic.category} – ${skillName} (${topic.shortName}) #${id}`;
 
-  let scenarioText = "";
+  const lessonTemplates = [
+    {
+      introText: `Dans le cadre des initiatives menées par **${inst}** à ${city}, un nouveau cadre opérationnel concernant **${topic.shortName.toLowerCase()}** a été formellement adopté. Ce dispositif répond à une exigence majeure de la société canadienne : ${topic.context.toLowerCase()}.\n\nLes analystes soulignent que l'application de cette mesure repose sur la maîtrise de concepts fondamentaux tels que **« ${topic.vocab[0]} »**, **« ${topic.vocab[1]} »** et **« ${topic.vocab[2]} »**. Bien que certains usagers aient initialement exprimé des réserves quant à la complexité des démarches, la majorité des experts saluent une avancée structurante qui renforce l'équité, la transparence et la vitalité de la région de ${city}.`,
+      qText: `Selon les analystes de ${inst}, quel est le principal avantage de ce nouveau cadre opérationnel à ${city} ?`,
+      optText: [
+        `Il renforce l'équité, la transparence et la vitalité régionale en établissant des critères clairs pour tous.`,
+        `Il supprime immédiatement l'ensemble des impôts provinciaux pour les nouveaux résidents.`,
+        `Il interdit formellement d'utiliser la langue française dans les communications de l'organisme.`,
+        `Il oblige les citoyens à déménager dans une autre province avant le début de l'hiver.`
+      ],
+      corrIdx: 0,
+      expText: `Le document conclut que la mesure « renforce l'équité, la transparence et la vitalité de la région de ${city} ».`
+    },
+    {
+      introText: `Une étude approfondie publiée par le centre de recherche de **${inst}** analyse l'évolution de **${topic.title}** dans la région métropolitaine de ${city}. Face aux mutations économiques actuelles, ${topic.context.toLowerCase()} constitue un levier d'action incontournable.\n\nLes experts recommandent vivement aux nouveaux arrivants et aux professionnels de se familiariser avec la terminologie technique applicable, notamment les expressions **« ${topic.vocab[0]} »** et **« ${topic.vocab[1]} »**. Une bonne préparation à ces normes permet non seulement d'accélérer ses formalités, mais aussi de sécuriser durablement son statut au sein de la communauté.`,
+      qText: `Selon l'étude de ${inst}, pourquoi est-il vivement recommandé de se familiariser avec cette terminologie technique ?`,
+      optText: [
+        `Parce que cela permet d'accélérer ses formalités et de sécuriser durablement son statut au sein de la communauté.`,
+        `Pour éviter de payer le billet de bus lors des déplacements quotidiens sur le réseau municipal.`,
+        `Parce que le gouvernement provincial impose un examen écrit éliminatoire à chaque coin de rue.`,
+        `Pour obtenir automatiquement la citoyenneté canadienne sans devoir habiter dans le pays.`
+      ],
+      corrIdx: 0,
+      expText: `L'étude affirme qu'« une bonne préparation à ces normes permet non seulement d'accélérer ses formalités, mais aussi de sécuriser durablement son statut ».`
+    },
+    {
+      introText: `Lors de sa conférence annuelle tenue à ${city}, le président de **${inst}** a prononcé un discours marquant au sujet de **${topic.shortName}**. Rendant compte de la réalité de notre milieu de vie, il a rappelé que ${topic.context.toLowerCase()} représente une priorité absolue pour le maintien du modèle social canadien.\n\nIl a invité les citoyens à adopter une démarche proactive en s'informant sur des mécanismes tels que **« ${topic.vocab[0]} »** et **« ${topic.vocab[2] || topic.vocab[1]} »**. Une telle implication citoyenne garantit une meilleure cohésion sociale et facilite grandement l'épanouissement professionnel de chacun.`,
+      qText: `Quel message le président de ${inst} a-t-il transmis aux citoyens lors de sa conférence annuelle à ${city} ?`,
+      optText: [
+        `Il a invité les résidents à adopter une démarche proactive et à s'informer pour favoriser la cohésion sociale et l'épanouissement professionnel.`,
+        `Il a annoncé la fermeture immédiate de tous les bureaux d'accueil régionaux pour réaliser des économies de budget.`,
+        `Il a demandé à l'ensemble de la population de cesser d'utiliser les services de santé provinciaux.`,
+        `Il a exigé que chaque citoyen travaille gratuitement pour la municipalité les jours fériés.`
+      ],
+      corrIdx: 0,
+      expText: `Le discours invite les citoyens à « adopter une démarche proactive » car cela « garantit une meilleure cohésion sociale et facilite grandement l'épanouissement professionnel ».`
+    }
+  ];
+
+  const lTpl = lessonTemplates[templateIdx % lessonTemplates.length];
+  let scenarioText = `#### ${typo} (Réf Leçon #${id} / Index #${index})\n**Source canadienne :** ${inst} (${city})\n**Dossier officiel :** ${topic.title}\n\n${lTpl.introText}`;
+
   let questionObj = {
-    q: `Question d'évaluation #${id} (${cecrLevel}) : Quel est l'enjeu principal abordé dans ce document émis par ${inst} ?`,
-    options: [
-      `Les règles et opportunités concernant ${topic.shortName.toLowerCase()} dans la région de ${city}.`,
-      `L'annulation définitive de l'ensemble des services publics de la province du Québec.`,
-      `Une obligation légale pour les résidents de quitter la ville de ${city} avant l'hiver.`,
-      `Une grève générale illimitée paralysant l'ensemble des institutions bancaires canadiennes.`
-    ],
-    answer: 0,
-    explanation: `Le document traite précisément de « ${topic.title} » en contexte canadien à ${city}.`
+    q: `Question d'évaluation #${id} (${cecrLevel}) : ${lTpl.qText}`,
+    options: lTpl.optText,
+    answer: lTpl.corrIdx,
+    explanation: lTpl.expText
   };
 
-  if (skillType === "reading") {
-    scenarioText = `#### ${typo}\n**Institution émettrice :** ${inst} (${city})\n**Dossier :** ${topic.title}\n\nDans le cadre de l'évolution des politiques de **${topic.category.toLowerCase()}**, les autorités canadiens à ${city} ont annoncé de nouvelles directives concernant **${topic.shortName.toLowerCase()}**.\n\nCe document officiel souligne que l'intégration réussie et la conformité administrative des citoyens reposent sur une compréhension rigoureuse des critères d'admissibilité. En particulier, les démarches relatives à *« ${topic.context.toLowerCase()} »* exigent désormais de prêter une attention accrue aux éléments juridiques et techniques tels que **« ${topic.vocab[0]} »**, **« ${topic.vocab[1]} »** et **« ${topic.vocab[2]} »**.\n\nSelon les analystes de ${inst}, bien que ces exigences requièrent une rigueur accrue de la part des nouveaux arrivants et des professionnels, elles garantissent un traitement équitable, transparent et conforme aux standards élevés de la société canadienne contemporaine.`;
+  if (skillType === "listening") {
+    scenarioText = `*Enregistrement audio TCF Canada #${id} (Index #${index}) — ${typo}*\n**Studio :** Radio-Canada / ${inst} (${city})\n**Sujet :** ${topic.title}\n\n[Voix de l'animateur] « Bonjour à tous et bienvenue à notre émission spéciale diffusée en direct de ${city}. Nous abordons aujourd'hui un enjeu clé pour des milliers de citoyens et de nouveaux arrivants : **${topic.shortName}**.\n\nPour en parler, nous recevons en studio un expert de ${inst}. Monsieur, vous rappelez souvent que dans le contexte de ${topic.context.toLowerCase()}, la maîtrise du vocabulaire officiel est indispensable. Pouvez-vous nous expliquer pourquoi des termes comme "${topic.vocab[0]}" et "${topic.vocab[1]}" sont au cœur des démarches actuelles ? »\n\n[Voix de l'expert] « Tout à fait ! Au Canada, la précision est la clé de la réussite administrative et professionnelle. Comprendre ces mécanismes vous fait gagner un temps précieux et sécurise votre statut. »`;
     
     questionObj = {
-      q: `Question QCM #${id} (${cecrLevel}) : Selon les analystes de ${inst}, quel est le principal avantage de ces nouvelles directives à ${city} ?`,
+      q: `Question QCM #${id} (${cecrLevel}) : Selon l'expert interrogé en studio à ${city}, pourquoi est-il essentiel de bien comprendre ces mécanismes officiels ?`,
       options: [
-        "Elles permettent de réduire les impôts de 50% pour tous les résidents temporaires.",
-        `Bien qu'exigeantes, elles garantissent un traitement équitable, transparent et conforme aux standards canadiens.`,
-        "Elles abolissent l'obligation de parler français ou anglais pour travailler dans la province.",
-        "Elles sont réservées exclusivement aux touristes en visite pour moins de deux semaines."
-      ],
-      answer: 1,
-      explanation: `Le dernier paragraphe précise explicitement que ces directives « garantissent un traitement équitable, transparent et conforme aux standards élevés de la société canadienne contemporaine ».`
-    };
-  } else if (skillType === "listening") {
-    scenarioText = `*Enregistrement audio TCF Canada — ${typo}*\n**Studio :** Radio-Canada / ${inst} (${city})\n**Sujet :** ${topic.title}\n\n[Voix de l'animateur] « Bonjour à tous et bienvenue à notre émission spéciale diffusée en direct de ${city}. Nous abordons aujourd'hui un sujet essentiel pour des milliers de citoyens et de nouveaux arrivants : **${topic.shortName}**.\n\nPour en parler, nous recevons en studio un expert de ${inst}. Monsieur, vous rappelez souvent que dans le contexte de ${topic.context.toLowerCase()}, la maîtrise du vocabulaire officiel est indispensable. Pouvez-vous nous expliquer pourquoi des termes comme "${topic.vocab[0]}" et "${topic.vocab[1]}" sont au cœur des démarches actuelles ? »\n\n[Voix de l'expert] « Tout à fait ! Au Canada, la précision est la clé de la réussite administrative et professionnelle. Que vous soyez à ${city} ou ailleurs, comprendre ces mécanismes vous fait gagner un temps précieux et sécurise votre statut. »`;
-    
-    questionObj = {
-      q: `Question QCM #${id} (${cecrLevel}) : Selon l'expert interrogé en studio, pourquoi est-il essentiel de bien comprendre ces mécanismes officiels ?`,
-      options: [
-        "Pour pouvoir voyager gratuitement sur le réseau ferroviaire canadien.",
         "Parce que la précision permet de gagner un temps précieux et de sécuriser son statut administratif ou professionnel.",
+        "Pour pouvoir voyager gratuitement sur le réseau ferroviaire canadien.",
         "Pour obtenir automatiquement un diplôme universitaire sans passer d'examen.",
         "Parce que le gouvernement l'impose sous peine d'incarcération immédiate."
       ],
-      answer: 1,
+      answer: 0,
       explanation: `L'expert affirme clairement en fin d'enregistrement : « comprendre ces mécanismes vous fait gagner un temps précieux et sécurise votre statut ».`
     };
-  } else {
-    scenarioText = `#### Dossier d'entraînement officiel : ${topic.title}\n**Contexte canadien :** ${inst} – *Région de ${city}*\n**Compétence ciblée :** ${skillName} (${cecrLevel})\n\nDans le cadre de votre préparation intensive au TCF Canada, vous devez maîtriser les situations concrètes relatives à **${topic.category}**.\n\n**Mise en situation :** ${topic.context}.\n**Lexique incontournable (NCLC 7+) :** Mémorisez et utilisez avec aisance les termes **« ${topic.vocab.join(" », « ")} »**.\n\n#### Stratégie de réussite pour le niveau ${cecrLevel}\n1. **Précision terminologique :** En contexte officiel à ${city}, remplacez les mots familiers par les expressions exactes de ${inst}.\n2. **Structure logique :** Articulez vos idées avec des connecteurs de cause (*en raison de, puisque*) et de conséquence (*par conséquent, ainsi*).\n3. **Gestion du temps :** En examen réel, respectez scrupuleusement le chronomètre et le format de l'épreuve.`;
   }
 
   const lessonObj = {
