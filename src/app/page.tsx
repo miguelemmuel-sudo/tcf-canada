@@ -344,6 +344,7 @@ export default function Home() {
                     <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Accès illimité jusqu'à l'examen</li>
                     <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Corrections IA + Formateurs humains</li>
                     <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Simulations réelles illimitées</li>
+                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Messagerie directe avec Coach</li>
                     <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Support personnalisé</li>
                   </ul>
                   <Button className="w-full mt-6 bg-amber-600 hover:bg-amber-700 text-white font-bold" asChild><Link href="/register">Rejoindre le Pack</Link></Button>

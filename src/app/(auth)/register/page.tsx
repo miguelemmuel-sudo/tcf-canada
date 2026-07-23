@@ -36,6 +36,7 @@ const subscriptionPlans = [
       "Accès plateforme 30 jours",
       "Corrections IA + Formateurs humains",
       "Simulations réelles illimitées",
+      "Messagerie directe avec Coach",
       "Support personnalisé 7j/7",
     ],
     badge: "Le plus populaire",

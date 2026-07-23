@@ -107,8 +107,8 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
                     </h4>
                     <p className="text-xs text-slate-500 mt-0.5">
                       {pKey === "standard" && "2 modules • 20 cours • 20 tests d'examens"}
-                      {pKey === "griffon" && "10 modules • 500+ cours • Corrections IA actives"}
-                      {pKey === "vip" && "20 modules • 500+ cours • Coaching 1-on-1 & Messagerie"}
+                      {pKey === "griffon" && "10 modules • 500+ cours • Corrections IA & Messagerie"}
+                      {pKey === "vip" && "20 modules • 500+ cours • Coaching 1-on-1 & Réservations"}
                     </p>
                   </div>
                   <span className="font-black text-base text-amber-600 shrink-0 ml-2">

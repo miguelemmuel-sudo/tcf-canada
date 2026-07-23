@@ -64,7 +64,7 @@ export const PACK_CONFIGS: Record<PackType, PackPermissions> = {
     aiPdfReport: false,
     coachingActive: false,
     reservationsActive: false,
-    messagingActive: false,
+    messagingActive: true,
     upsellBannerText: "Passez au Pack VIP & Coaching pour bénéficier d'un accompagnement personnalisé, de 20 modules (10 000 cours), d'examens de 100 questions et d'un coaching individuel.",
     nextPack: "vip",
     nextPackName: "Pack VIP & Coaching",
