@@ -80,6 +80,8 @@ export function generateLessonsForPack(
         audioMetadata = {
           voiceProfiles: [vProfile1, vProfile2],
           audioText: l.audioText || l.text,
+          script: (l as any).script || l.audioText || l.text,
+          structuredDialogue: (l as any).structuredDialogue,
           text: l.text || l.audioText
         };
       } else {
@@ -198,6 +200,7 @@ export function generateExamQuestionsForPack(
       text: `[Épreuve officielle de Compréhension Orale - Niveau ${sc.cecrLevel}] Thème : ${sc.theme}. Écoute unique.`,
       question: qItem.question,
       audioText: sc.script,
+      script: sc.script,
       audioUrl: sc.audioUrl,
       audio: sc.audioUrl,
       voiceProfiles: sc.voiceProfiles,

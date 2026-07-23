@@ -914,7 +914,17 @@ export function playMultiSpeakerDialogue(
 
   const lines = scenario.structuredDialogue && scenario.structuredDialogue.length > 0
     ? scenario.structuredDialogue
-    : [{ speakerName: "Narrateur TCF", voiceProfileId: "marc-qc-male-adult", text: scenario.script || scenario.audioUrl || "Enregistrement TCF Canada" }];
+    : [{
+        speakerName: "Narrateur TCF",
+        voiceProfileId: "marc-qc-male-adult",
+        text: (() => {
+          let raw = scenario.script || (scenario as any).audioText || (scenario as any).text || (scenario as any).instruction || (scenario as any).promptText || "Épreuve officielle de Compréhension Orale TCF Canada.";
+          if (typeof raw === "string" && (raw.startsWith("/audio") || raw.startsWith("http") || raw.endsWith(".mp3") || raw.trim() === "Enregistrement TCF Canada")) {
+            return (scenario as any).audioText || (scenario as any).text || "Écoutez attentivement le document audio officiel pour répondre aux questions.";
+          }
+          return raw;
+        })()
+      }];
 
   let currentLineIndex = 0;
   let isCancelled = false;

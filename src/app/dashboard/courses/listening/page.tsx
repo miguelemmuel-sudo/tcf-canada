@@ -18,6 +18,10 @@ const BASE_LESSONS = [
   {
     id: 1, title: "Introduction à la CO TCF", duration: "12:00",
     audioText: "Bienvenue dans le cours de compréhension orale TCF Canada. Dans cette leçon, vous allez apprendre les stratégies essentielles pour réussir les épreuves d'écoute. L'épreuve officielle de compréhension orale comporte 4 grandes sections de difficulté progressive : les illustrations, les courtes conversations, les annonces publiques et les conférences radio.",
+    script: "Bienvenue dans le cours de compréhension orale TCF Canada. Dans cette leçon, vous allez apprendre les stratégies essentielles pour réussir les épreuves d'écoute. L'épreuve officielle de compréhension orale comporte 4 grandes sections de difficulté progressive : les illustrations, les courtes conversations, les annonces publiques et les conférences radio.",
+    structuredDialogue: [
+      { speakerName: "Formateur TCF", voiceProfileId: "marc-qc-male-adult", text: "Bienvenue dans le cours de compréhension orale TCF Canada. Dans cette leçon, vous allez apprendre les stratégies essentielles pour réussir les épreuves d'écoute. L'épreuve officielle de compréhension orale comporte quatre grandes sections de difficulté progressive : les illustrations, les courtes conversations, les annonces publiques et les conférences radio." }
+    ],
     questions: [
       { q: "Quel est le thème principal de ce document audio ?", options: ["La cuisine française", "Les stratégies d'écoute TCF", "Les voyages au Canada", "La météo"], answer: 1, explanation: "Le document aborde spécifiquement les stratégies d'écoute pour le TCF Canada." },
       { q: "Combien de parties comporte l'épreuve de compréhension orale ?", options: ["2", "3", "4", "5"], answer: 2, explanation: "L'épreuve de compréhension orale comprend 4 grandes sections (illustrations, conversations courtes, annonces publiques et conférences) de difficulté progressive." },
@@ -27,6 +31,14 @@ const BASE_LESSONS = [
   {
     id: 2, title: "Conversations courtes — niveau A2/B1", duration: "15:00",
     audioText: "Écoutez cette courte conversation entre deux amis qui planifient un voyage à Montréal. Marie dit à Jean qu'elle a réservé un hôtel près du Vieux-Port pour trois nuits.",
+    script: "Narrateur : Écoutez cette courte conversation entre deux amis qui planifient un voyage à Montréal.\n\nMarie : Salut Jean ! J'ai une excellente nouvelle, j'ai enfin réservé notre hôtel pour notre séjour à Montréal !\n\nJean : Génial Marie ! Tu as trouvé quelque chose de bien situé dans le centre-ville ?\n\nMarie : Oui, exactement ! J'ai réservé un superbe hôtel juste à côté du Vieux-Port, et nous y restons pour trois nuits.\n\nJean : Parfait ! Trois nuits près du Vieux-Port, ça va être un voyage magnifique.",
+    structuredDialogue: [
+      { speakerName: "Narrateur", voiceProfileId: "marc-qc-male-adult", text: "Écoutez cette courte conversation entre deux amis qui planifient un voyage à Montréal." },
+      { speakerName: "Marie", voiceProfileId: "claire-west-female-adult", text: "Salut Jean ! J'ai une excellente nouvelle, j'ai enfin réservé notre hôtel pour notre séjour à Montréal !" },
+      { speakerName: "Jean", voiceProfileId: "lucas-qc-male-young", text: "Génial Marie ! Tu as trouvé quelque chose de bien situé dans le centre-ville ?" },
+      { speakerName: "Marie", voiceProfileId: "claire-west-female-adult", text: "Oui, exactement ! J'ai réservé un superbe hôtel juste à côté du Vieux-Port, et nous y restons pour trois nuits." },
+      { speakerName: "Jean", voiceProfileId: "lucas-qc-male-young", text: "Parfait ! Trois nuits près du Vieux-Port, ça va être un voyage magnifique." }
+    ],
     questions: [
       { q: "Où Marie a-t-elle réservé l'hôtel ?", options: ["À Québec", "Près du Vieux-Port", "À Ottawa", "À Toronto"], answer: 1, explanation: "Marie indique explicitement avoir réservé un hôtel près du Vieux-Port à Montréal." },
       { q: "Combien de nuits vont-ils rester ?", options: ["Une nuit", "Deux nuits", "Trois nuits", "Une semaine"], answer: 2, explanation: "Elle a réservé pour trois nuits dans cet établissement." },
@@ -36,6 +48,11 @@ const BASE_LESSONS = [
   {
     id: 3, title: "Annonces publiques et messages radio — B1/B2", duration: "18:00",
     audioText: "Voici une annonce de la gare de train VIA Rail : Le train 63 à destination de Toronto subira un retard d'environ trente minutes en raison de conditions météorologiques défavorables. Nous nous excusons pour ce désagrément.",
+    script: "Annonceur : Votre attention s'il vous plaît. Voici une annonce officielle de la gare VIA Rail.\n\nChef de gare : Nous informons les voyageurs que le train numéro 63 à destination de Toronto subira un retard d'environ trente minutes sur l'horaire prévu. Ce retard est dû à des conditions météorologiques défavorables sur la voie rapide. Nous nous excusons sincèrement pour ce désagrément.",
+    structuredDialogue: [
+      { speakerName: "Annonceur VIA Rail", voiceProfileId: "marc-qc-male-adult", text: "Votre attention s'il vous plaît. Voici une annonce officielle de la gare VIA Rail." },
+      { speakerName: "Chef de gare", voiceProfileId: "valerie-west-female-fast", text: "Nous informons les voyageurs que le train numéro 63 à destination de Toronto subira un retard d'environ trente minutes sur l'horaire prévu. Ce retard est dû à des conditions météorologiques défavorables sur la voie rapide. Nous nous excusons sincèrement pour ce désagrément." }
+    ],
     questions: [
       { q: "Quel est le numéro du train ?", options: ["Train 36", "Train 63", "Train 30", "Train 13"], answer: 1, explanation: "Le numéro communiqué par le chef de gare est le train 63." },
       { q: "Pourquoi le train est-il en retard ?", options: ["Problème technique", "Grève du personnel", "Conditions météorologiques", "Incident sur la voie"], answer: 2, explanation: "Les conditions météorologiques défavorables sont la cause officielle du retard." },
@@ -45,6 +62,11 @@ const BASE_LESSONS = [
   {
     id: 4, title: "Interviews et reportages — B2/C1", duration: "22:00",
     audioText: "Dans notre émission sur l'immigration, nous recevons le directeur du centre d'accueil de Vancouver qui nous explique comment le mentorat professionnel facilite l'intégration économique des nouveaux arrivants francophones.",
+    script: "Animateur : Bienvenue à notre émission spéciale sur l'immigration et l'emploi au Canada. Nous recevons aujourd'hui Monsieur Dupont, directeur du centre d'accueil de Vancouver.\n\nDirecteur Vancouver : Bonjour à tous. Dans notre centre d'accueil à Vancouver, nous avons constaté que le mentorat professionnel est le levier le plus efficace. Il permet de jumeler les nouveaux arrivants francophones avec des experts locaux, ce qui facilite grandement et rapidement leur intégration économique sur le marché du travail.",
+    structuredDialogue: [
+      { speakerName: "Animateur Radio", voiceProfileId: "antoine-qc-male-fast", text: "Bienvenue à notre émission spéciale sur l'immigration et l'emploi au Canada. Nous recevons aujourd'hui Monsieur Dupont, directeur du centre d'accueil de Vancouver." },
+      { speakerName: "Directeur Vancouver", voiceProfileId: "pierre-fr-male-formel", text: "Bonjour à tous. Dans notre centre d'accueil à Vancouver, nous avons constaté que le mentorat professionnel est le levier le plus efficace. Il permet de jumeler les nouveaux arrivants francophones avec des experts locaux, ce qui facilite grandement et rapidement leur intégration économique sur le marché du travail." }
+    ],
     questions: [
       { q: "De quoi traite l'interview ?", options: ["Du tourisme à Vancouver", "Du mentorat professionnel pour immigrants", "Du marché immobilier", "De la politique universitaire"], answer: 1, explanation: "Le reportage met l'accent sur le rôle du mentorat professionnel dans l'intégration économique." },
       { q: "Où se situe le centre d'accueil mentionné ?", options: ["Montréal", "Calgary", "Vancouver", "Moncton"], answer: 2, explanation: "Le directeur invité dirige le centre d'accueil de Vancouver." },
@@ -54,6 +76,11 @@ const BASE_LESSONS = [
   {
     id: 5, title: "Conférences et débats — C1/C2", duration: "25:00",
     audioText: "Lors de son colloque sur l'intelligence artificielle au Canada, le professeur Leroux a souligné que la réglementation doit impérativement évoluer au même rythme que les avancées technologiques afin de protéger les données personnelles des citoyens.",
+    script: "Présentatrice : Nous écoutons maintenant un extrait de la conférence d'ouverture du colloque sur l'intelligence artificielle au Canada, présentée par le professeur Leroux.\n\nProfesseur Leroux : Mesdames et messieurs, face à l'accélération fulgurante de l'intelligence artificielle, notre devoir éthique et juridique est clair : la réglementation gouvernementale doit impérativement évoluer au même rythme que les avancées technologiques. C'est la condition sine qua non pour protéger efficacement et durablement les données personnelles et la vie privée de tous les citoyens canadiens.",
+    structuredDialogue: [
+      { speakerName: "Présentatrice Colloque", voiceProfileId: "elodie-fr-female-adult", text: "Nous écoutons maintenant un extrait de la conférence d'ouverture du colloque sur l'intelligence artificielle au Canada, présentée par le professeur Leroux." },
+      { speakerName: "Professeur Leroux", voiceProfileId: "pierre-fr-male-formel", text: "Mesdames et messieurs, face à l'accélération fulgurante de l'intelligence artificielle, notre devoir éthique et juridique est clair : la réglementation gouvernementale doit impérativement évoluer au même rythme que les avancées technologiques. C'est la condition sine qua non pour protéger efficacement et durablement les données personnelles et la vie privée de tous les citoyens canadiens." }
+    ],
     questions: [
       { q: "Quelle est la recommandation principale du professeur Leroux ?", options: ["Interdire l'IA", "Faire évoluer la réglementation au rythme de la technologie", "Subventionner les startups", "Créer un ministère de l'IA"], answer: 1, explanation: "Le professeur insiste sur la nécessité de synchroniser l'évolution de la réglementation avec celle des technologies." },
       { q: "Quel aspect doit être protégé selon le conférencier ?", options: ["Les données personnelles des citoyens", "Le secret industriel", "Le budget de l'État", "Les emplois dans le secteur manufacturier"], answer: 0, explanation: "La protection des données personnelles est l'objectif ciblé par la réglementation proposée." },
