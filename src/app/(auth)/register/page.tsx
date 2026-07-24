@@ -165,32 +165,7 @@ export default function RegisterPage() {
       });
 
       if (signUpError) {
-        const msg = formatAuthError(signUpError);
-        // En mode test / sandbox Resend (erreur 550 ou erreur vide {} du serveur SMTP),
-        // ou si l'e-mail de confirmation ne peut pas être envoyé par Supabase, on autorise l'inscription locale de secours
-        // pour ne pas bloquer les tests et l'accès à la plateforme en production.
-        if (msg.includes("Resend est actuellement en mode Test") || msg.includes("n'a pas pu envoyer l'e-mail de confirmation") || signUpError.message === "{}" || JSON.stringify(signUpError) === "{}") {
-          console.warn("Inscription de secours (Mode Test SMTP / Resend Supabase):", signUpError);
-          const { clearAllUserLocalData } = await import("@/utils/sessionManager");
-          clearAllUserLocalData();
-
-          const isAdminEmail = ['emmuel.proreseau@gmail.com', 'joumefiomiguel@gmail.com', 'miguelemmuel@gmail.com', 'admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com'].includes(formDataState.email.toLowerCase().trim());
-
-          localStorage.setItem("griffon_user_name", formDataState.name || formDataState.email);
-          localStorage.setItem("griffon_user_email", formDataState.email);
-          localStorage.setItem("griffon_user_plan", isAdminEmail ? "vip" : selectedPlan);
-          localStorage.setItem("griffon_user_new", "true");
-          if (isAdminEmail) {
-            localStorage.setItem("griffon_user_is_admin", "true");
-          } else {
-            localStorage.removeItem("griffon_user_is_admin");
-          }
-
-          router.push("/dashboard");
-          return;
-        }
-
-        setError(msg);
+        setError(formatAuthError(signUpError));
         setLoading(false);
         return;
       }
@@ -218,11 +193,40 @@ export default function RegisterPage() {
       localStorage.setItem("griffon_user_new", "true");
       if (isAdminEmail) {
         localStorage.setItem("griffon_user_is_admin", "true");
+        router.push("/dashboard");
+        return;
       } else {
         localStorage.removeItem("griffon_user_is_admin");
       }
 
-      router.push("/dashboard");
+      // En environnement productif, rediriger immédiatement le candidat vers l'agrégateur Fapshi pour le paiement du pack choisi
+      try {
+        const res = await fetch("/api/fapshi/initiate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            pack: selectedPlan,
+            redirectUrl: `${window.location.origin}/dashboard/payments?status=check&pack=${selectedPlan}`,
+            userId: data?.user?.id,
+            email: formDataState.email
+          })
+        });
+
+        const fapshiData = await res.json();
+
+        if (res.ok && fapshiData.link) {
+          window.location.href = fapshiData.link;
+          return;
+        } else {
+          console.error("Erreur initialisation Fapshi lors de l'inscription:", fapshiData.error);
+          router.push(`/dashboard/payments?pack=${selectedPlan}&initiate=true`);
+          return;
+        }
+      } catch (fapshiErr: any) {
+        console.error("Erreur réseau Fapshi lors de l'inscription:", fapshiErr);
+        router.push(`/dashboard/payments?pack=${selectedPlan}&initiate=true`);
+        return;
+      }
     } catch (err: any) {
       setError(formatAuthError(err));
       setLoading(false);

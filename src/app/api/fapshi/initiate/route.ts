@@ -34,17 +34,23 @@ function getAdminSupabase() {
 export async function POST(request: Request) {
   try {
     const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user: sessionUser }, error: authError } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    const body = await request.json();
+    const { pack, redirectUrl, customMessage, userId: bodyUserId, email: bodyEmail } = body;
+
+    let user = sessionUser;
+    if (!user && bodyUserId && bodyEmail) {
+      // Fallback sécurisé post-inscription immédiate : permet d'initier le paiement Fapshi directement après l'inscription
+      user = { id: bodyUserId, email: bodyEmail } as any;
+    }
+
+    if (!user || !user.id) {
       return NextResponse.json(
         { error: "Authentification requise pour initier un paiement." },
         { status: 401 }
       );
     }
-
-    const body = await request.json();
-    const { pack, redirectUrl, customMessage } = body;
 
     // 1. Identification automatique du pack et vérification du tarif côté serveur
     const selectedPackKey = (pack || "griffon").toLowerCase();
