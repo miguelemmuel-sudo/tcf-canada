@@ -152,34 +152,50 @@ export default function RegisterPage() {
     setError(null);
 
     try {
-      const supabase = createClient();
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: formDataState.email,
-        password: formDataState.password,
-        options: {
-          data: {
-            full_name: formDataState.name,
-            subscription_type: selectedPlan,
-          },
-        },
+      // 1. Inscription serveur avec auto-confirmation (email_confirm: true via API Admin)
+      // Contourne définitivement l'envoi d'e-mail par Resend/SMTP et l'erreur 550
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formDataState.email,
+          password: formDataState.password,
+          name: formDataState.name,
+          subscription_type: selectedPlan,
+        }),
       });
 
-      if (signUpError) {
-        setError(formatAuthError(signUpError));
+      const result = await res.json();
+
+      if (!res.ok || result.error) {
+        setError(formatAuthError(result.error || "Erreur lors de l'inscription."));
         setLoading(false);
         return;
       }
 
+      // 2. Connecter immédiatement l'utilisateur côté client pour établir la session et les cookies SSR
+      const supabase = createClient();
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: formDataState.email,
+        password: formDataState.password,
+      });
+
+      if (signInError) {
+        console.warn("Avertissement connexion auto post-inscription:", signInError);
+      }
+
+      const user = signInData?.user || result.user;
+
       const isAdminEmail = ['emmuel.proreseau@gmail.com', 'joumefiomiguel@gmail.com', 'miguelemmuel@gmail.com', 'admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com'].includes(formDataState.email.toLowerCase().trim());
 
-      if (data?.user) {
+      if (user) {
         const { clearAllUserLocalData } = await import("@/utils/sessionManager");
         clearAllUserLocalData();
 
         await supabase
           .from("profiles")
           .upsert({ 
-            id: data.user.id, 
+            id: user.id, 
             subscription_type: isAdminEmail ? "vip" : selectedPlan, 
             full_name: formDataState.name,
             is_admin: isAdminEmail,
@@ -207,7 +223,7 @@ export default function RegisterPage() {
           body: JSON.stringify({
             pack: selectedPlan,
             redirectUrl: `${window.location.origin}/dashboard/payments?status=check&pack=${selectedPlan}`,
-            userId: data?.user?.id,
+            userId: user?.id,
             email: formDataState.email
           })
         });
