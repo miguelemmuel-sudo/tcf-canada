@@ -1,4 +1,5 @@
 import { PackType } from "./subscriptionEngine";
+import { aiCacheQueueEngine } from "./aiCacheQueueEngine";
 
 export interface AIEvaluationRequest {
   skill: "listening" | "reading" | "writing" | "speaking";
@@ -190,6 +191,23 @@ export async function evaluateUserResponse(request: AIEvaluationRequest): Promis
       personalizedAdvice: ["Veuillez saisir votre texte ou sélectionner une option avant de solliciter l'évaluation IA."],
       formattedMarkdown: `### ⚠️ Analyse IA Impossible\n\nAucune donnée n'a été reçue par le moteur d'évaluation. Veuillez compléter l'exercice avant de demander la correction.`
     };
+  }
+
+  // INTERCEPTION IA : Cache local instantané et gestion hors connexion pour EE et EO
+  if (typeof userAnswer === "string" && (skill === "writing" || skill === "speaking")) {
+    const promptRef = questionContext.prompt || questionContext.title || "tcf_task";
+    const interception = await aiCacheQueueEngine.interceptOrQueueAiRequest(
+      skill === "writing" ? "writing" : "speaking",
+      userLevel,
+      promptRef,
+      userAnswer
+    );
+    if (interception.fromCache && interception.evaluation) {
+      return interception.evaluation as AIEvaluationResult;
+    }
+    if (interception.isQueued && interception.evaluation) {
+      return interception.evaluation as AIEvaluationResult;
+    }
   }
 
   // Simulation d'un traitement asynchrone réaliste
@@ -454,7 +472,7 @@ export async function evaluateUserResponse(request: AIEvaluationRequest): Promis
     md += `3. **Accompagnement humain :** Votre abonnement VIP vous donne droit à des sessions 1-on-1. Réservez votre créneau avec un évaluateur officiel dans l'onglet **Réservations & Coaching** !\n`;
   }
 
-  return {
+  const finalResult: AIEvaluationResult = {
     score: scoreStr,
     generalEvaluation: generalEval,
     strengths,
@@ -470,4 +488,13 @@ export async function evaluateUserResponse(request: AIEvaluationRequest): Promis
     } : undefined,
     formattedMarkdown: md
   };
+
+  // Enregistrement dans le cache IA pour déduplication instantanée (< 5ms) au prochain passage
+  if (typeof userAnswer === "string" && (skill === "writing" || skill === "speaking")) {
+    const promptRef = questionContext.prompt || questionContext.title || "tcf_task";
+    const hashKey = aiCacheQueueEngine.generateSubmissionHash(skill === "writing" ? "writing" : "speaking", userLevel, promptRef, userAnswer);
+    aiCacheQueueEngine.saveEvaluationToCache(hashKey, skill === "writing" ? "writing" : "speaking", userLevel, userAnswer, finalResult);
+  }
+
+  return finalResult;
 }

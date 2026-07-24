@@ -4,12 +4,24 @@ import { PwaRegister } from "@/components/PwaRegister";
 
 export const viewport: Viewport = {
   themeColor: "#D52B1E",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
 };
 
 export const metadata: Metadata = {
   title: "TCF Canada Pro - Préparez votre TCF Canada avec intelligence",
   description: "Réussissez votre examen grâce à une plateforme complète comprenant des examens blancs, une IA correctrice, des statistiques avancées et un suivi personnalisé.",
-  keywords: ["TCF Canada", "Test de connaissance du français", "immigration Canada", "préparation TCF"],
+  keywords: ["TCF Canada", "Test de connaissance du français", "immigration Canada", "préparation TCF", "PWA hors ligne"],
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "TCF Canada Pro",
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export default function RootLayout({

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Bell, Search, Menu, ChevronDown, Check, CreditCard, Clock, Sparkles, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/utils/supabase/client";
+import { NetworkStatusIndicator } from "@/components/ui/NetworkStatusIndicator";
 
 interface TopbarProps {
   userName?: string;
@@ -153,6 +154,8 @@ export function Topbar({ userName = "Candidat", onMenuClick }: TopbarProps) {
 
       {/* Right section */}
       <div className="flex items-center space-x-3 sm:space-x-5 ml-2 relative">
+        {/* Indicateur d'état réseau en temps réel & résilience Afrique centrale */}
+        <NetworkStatusIndicator />
         
         {/* Active Notifications Bell Dropdown */}
         <div className="relative">

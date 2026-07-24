@@ -1,6 +1,7 @@
 // Helper utility to detect, save, and manage interrupted test/course sessions with Supabase sync
 
 import { createClient } from "@/lib/supabaseClient";
+import { offlineDb } from "./indexedDbManager";
 
 export interface InterruptedSession {
   key: string;
@@ -119,38 +120,17 @@ const syncTimeouts: Record<string, NodeJS.Timeout> = {};
 export function saveSessionState(key: string, data: any) {
   if (typeof window === "undefined") return;
   
-  // Always save locally immediately
+  // Always save locally immediately in localStorage AND IndexedDB (< 5ms)
   try {
     const payload = { ...data, timestamp: Date.now() };
     localStorage.setItem(key, JSON.stringify(payload));
+    offlineDb.saveUserDraft(key, payload).catch(() => {});
 
-    // Clear existing timeout for this key
-    if (syncTimeouts[key]) {
-      clearTimeout(syncTimeouts[key]);
-    }
-
-    // Debounce Supabase sync by 2 seconds
-    syncTimeouts[key] = setTimeout(async () => {
-      try {
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (user) {
-          await supabase
-            .from("active_sessions")
-            .upsert({
-              user_id: user.id,
-              session_key: key,
-              session_data: payload,
-              updated_at: new Date().toISOString()
-            }, {
-              onConflict: 'user_id, session_key'
-            });
-        }
-      } catch (err) {
-        console.error("Failed to sync session to Supabase", err);
-      }
-    }, 2000);
+    // Déduplication et envoi par lots via le moteur de synchronisation en arrière-plan
+    offlineDb.enqueueSyncItem("session_state", {
+      sessionKey: key,
+      sessionData: payload,
+    }).catch(() => {});
   } catch (e) {
     console.error("Error saving session locally", e);
   }
