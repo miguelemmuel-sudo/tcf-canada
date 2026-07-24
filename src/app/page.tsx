@@ -4,8 +4,8 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
+import { SiteNavbar } from "@/components/layout/SiteNavbar";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 import { 
   CheckCircle2, 
   BrainCircuit, 
@@ -20,7 +20,6 @@ import {
   UserCheck,
   Globe,
   Trophy,
-  MessageCircle,
   FileCheck2,
   Users
 } from "lucide-react";
@@ -38,7 +37,7 @@ const stagger = {
 export default function Home() {
   return (
     <>
-      <Navbar />
+      <SiteNavbar />
       <main className="flex-1 pt-28">
         
         {/* Hero Section Griffon D'or */}
@@ -102,10 +101,14 @@ export default function Home() {
                     href="https://wa.me/237695903205" 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    className="absolute bottom-4 right-4 bg-emerald-500 hover:bg-emerald-600 text-white p-3.5 rounded-full shadow-lg transition-transform hover:scale-110 flex items-center justify-center"
+                    className="absolute bottom-4 right-4 rounded-full shadow-2xl transition-all hover:scale-110 hover:brightness-110 flex items-center justify-center"
                     aria-label="Contact WhatsApp"
                   >
-                    <MessageCircle className="h-6 w-6 fill-current" />
+                    <img 
+                      src="/whatsapp.svg" 
+                      alt="WhatsApp" 
+                      className="w-14 h-14 sm:w-16 sm:h-16 drop-shadow-xl" 
+                    />
                   </a>
                 </div>
               </motion.div>
@@ -122,11 +125,11 @@ export default function Home() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 divide-y md:divide-y-0 md:divide-x divide-slate-100 dark:divide-slate-800">
                 
                 <div className="flex items-start gap-4 pr-4 pt-4 md:pt-0">
-                  <div className="h-12 w-12 rounded-xl bg-amber-100 dark:bg-amber-950/60 flex items-center justify-center shrink-0">
-                    <BookOpen className="h-6 w-6 text-amber-600" />
+                  <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-amber-400/20 via-yellow-500/20 to-amber-600/10 border border-amber-400/60 flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/25">
+                    <BookOpen className="h-6 w-6 text-amber-500 dark:text-yellow-400 drop-shadow-[0_0_10px_rgba(245,158,11,0.6)]" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-900 dark:text-white text-base">Cours complets</h3>
+                    <h3 className="font-extrabold text-amber-600 dark:text-yellow-400 text-base drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]">Cours complets</h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                       Des cours structurés pour maîtriser toutes les compétences du TCF Canada.
                     </p>
@@ -134,11 +137,11 @@ export default function Home() {
                 </div>
 
                 <div className="flex items-start gap-4 px-0 md:px-4 pt-4 md:pt-0">
-                  <div className="h-12 w-12 rounded-xl bg-amber-100 dark:bg-amber-950/60 flex items-center justify-center shrink-0">
-                    <FileCheck2 className="h-6 w-6 text-amber-600" />
+                  <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-amber-400/20 via-yellow-500/20 to-amber-600/10 border border-amber-400/60 flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/25">
+                    <FileCheck2 className="h-6 w-6 text-amber-500 dark:text-yellow-400 drop-shadow-[0_0_10px_rgba(245,158,11,0.6)]" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-900 dark:text-white text-base">Tests réels</h3>
+                    <h3 className="font-extrabold text-amber-600 dark:text-yellow-400 text-base drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]">Tests réels</h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                       Entraînez-vous avec des tests réels et des examens blancs corrigés.
                     </p>
@@ -146,11 +149,11 @@ export default function Home() {
                 </div>
 
                 <div className="flex items-start gap-4 px-0 md:px-4 pt-4 md:pt-0">
-                  <div className="h-12 w-12 rounded-xl bg-amber-100 dark:bg-amber-950/60 flex items-center justify-center shrink-0">
-                    <UserCheck className="h-6 w-6 text-amber-600" />
+                  <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-amber-400/20 via-yellow-500/20 to-amber-600/10 border border-amber-400/60 flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/25">
+                    <UserCheck className="h-6 w-6 text-amber-500 dark:text-yellow-400 drop-shadow-[0_0_10px_rgba(245,158,11,0.6)]" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-900 dark:text-white text-base">Coaching personnalisé</h3>
+                    <h3 className="font-extrabold text-amber-600 dark:text-yellow-400 text-base drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]">Coaching personnalisé</h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                       Bénéficiez d'un suivi individuel pour progresser efficacement.
                     </p>
@@ -158,11 +161,11 @@ export default function Home() {
                 </div>
 
                 <div className="flex items-start gap-4 pl-0 lg:pl-4 pt-4 md:pt-0">
-                  <div className="h-12 w-12 rounded-xl bg-amber-100 dark:bg-amber-950/60 flex items-center justify-center shrink-0">
-                    <Trophy className="h-6 w-6 text-amber-600" />
+                  <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-amber-400/20 via-yellow-500/20 to-amber-600/10 border border-amber-400/60 flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/25">
+                    <Trophy className="h-6 w-6 text-amber-500 dark:text-yellow-400 drop-shadow-[0_0_10px_rgba(245,158,11,0.6)]" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-900 dark:text-white text-base">Réussite garantie</h3>
+                    <h3 className="font-extrabold text-amber-600 dark:text-yellow-400 text-base drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]">Réussite garantie</h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                       Notre méthode efficace pour maximiser vos chances de réussite.
                     </p>
@@ -245,10 +248,10 @@ export default function Home() {
                 >
                   <Card className="h-full border-border/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm hover:shadow-lg hover:border-amber-500/30 transition-all duration-300">
                     <CardHeader>
-                      <div className="h-12 w-12 rounded-xl bg-amber-500/10 flex items-center justify-center mb-4">
-                        <feature.icon className="h-6 w-6 text-amber-600" />
+                      <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-amber-400/20 via-yellow-500/20 to-amber-600/10 border border-amber-400/60 flex items-center justify-center mb-4 shadow-lg shadow-amber-500/25">
+                        <feature.icon className="h-6 w-6 text-amber-500 dark:text-yellow-400 drop-shadow-[0_0_10px_rgba(245,158,11,0.6)]" />
                       </div>
-                      <CardTitle className="text-xl text-[#0e2238] dark:text-white">{feature.title}</CardTitle>
+                      <CardTitle className="text-xl text-amber-600 dark:text-yellow-400 font-extrabold drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]">{feature.title}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <CardDescription className="text-base">{feature.desc}</CardDescription>
@@ -372,7 +375,7 @@ export default function Home() {
         </section>
 
       </main>
-      <Footer />
+      <SiteFooter />
     </>
   );
 }

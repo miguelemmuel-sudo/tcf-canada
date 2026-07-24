@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
-  BookOpen, CheckCircle2, ChevronLeft, BrainCircuit, Clock, Award, Sparkles, Check, X 
+  BookOpen, CheckCircle2, ChevronLeft, ChevronRight, ArrowRight, BrainCircuit, Clock, Award, Sparkles, Check, X 
 } from "lucide-react";
 import { ResumeSessionModal } from "@/components/ui/ResumeSessionModal";
 import { saveSessionState } from "@/utils/sessionManager";
@@ -196,20 +196,50 @@ export default function ReadingCoursePage() {
         </div>
       </div>
 
-      {/* Lesson Tabs */}
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {LESSONS.map((l, i) => (
-          <button key={l.id} onClick={() => { setCurrentLesson(i); setAnswers({}); setShowResults(false); }}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 ${
-              i === currentLesson
-                ? "bg-emerald-600 text-white"
-                : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 hover:border-emerald-300"
-            }`}
+      {/* Lesson Tabs & Arrow Navigation */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-slate-950 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="flex gap-2 overflow-x-auto pb-1 max-w-full sm:max-w-md">
+          {LESSONS.map((l, i) => (
+            <button key={l.id} onClick={() => { setCurrentLesson(i); setAnswers({}); setShowResults(false); }}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 ${
+                i === currentLesson
+                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-500/20"
+                  : "bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 hover:border-emerald-300"
+              }`}
+            >
+              {l.done && <CheckCircle2 className="h-3 w-3 text-emerald-400" />}
+              Leçon {i + 1}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={() => {
+              if (currentLesson > 0) {
+                setCurrentLesson(c => c - 1); setAnswers({}); setShowResults(false);
+              }
+            }}
+            disabled={currentLesson === 0}
+            className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 font-bold text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 transition-all flex items-center gap-1 shadow-sm"
           >
-            {l.done && <CheckCircle2 className="h-3 w-3 text-emerald-400" />}
-            Leçon {i + 1}
+            <ChevronLeft className="h-3.5 w-3.5" />
+            <span>Cours précédent</span>
           </button>
-        ))}
+          <button
+            onClick={() => {
+              if (currentLesson < LESSONS.length - 1) {
+                setCurrentLesson(c => c + 1); setAnswers({}); setShowResults(false);
+              } else {
+                window.location.href = "/dashboard/courses/speaking";
+              }
+            }}
+            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 font-bold text-xs text-white transition-all flex items-center gap-1 shadow-md shadow-emerald-500/20"
+          >
+            <span>Cours suivant</span>
+            <ChevronRight className="h-3.5 w-3.5" />
+          </button>
+        </div>
       </div>
 
       {/* Text to Read */}
@@ -340,17 +370,22 @@ export default function ReadingCoursePage() {
             <span>Vérifier mes réponses</span>
           </button>
 
-          {showResults && currentLesson < LESSONS.length - 1 && (
+          {showResults && (
             <button 
               onClick={() => { 
-                setCurrentLesson(c => c + 1); 
-                setAnswers({}); 
-                setShowResults(false); 
+                if (currentLesson < LESSONS.length - 1) {
+                  setCurrentLesson(c => c + 1); 
+                  setAnswers({}); 
+                  setShowResults(false); 
+                } else {
+                  window.location.href = "/dashboard/courses/speaking";
+                }
                 localStorage.removeItem("tcf_session_reading_course");
               }}
-              className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-colors"
+              className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 animate-pulse"
             >
-              Leçon suivante →
+              <span>Passer au cours suivant</span>
+              <ArrowRight className="h-4 w-4" />
             </button>
           )}
         </div>

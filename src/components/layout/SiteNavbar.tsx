@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { User, Mail, Phone, ChevronDown } from "lucide-react";
 
-export function Navbar() {
+export function SiteNavbar() {
   return (
     <header className="fixed top-0 w-full z-50 shadow-sm">
       {/* Top Header Bar */}

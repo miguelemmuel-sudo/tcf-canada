@@ -411,15 +411,38 @@ export default function SpeakingExamPage() {
                   </div>
                 </div>
               )}
-              <Button
-                className="w-full"
-                onClick={handleAIEval}
-                disabled={aiLoading || !hasRecording.some(Boolean)}
-              >
-                {aiLoading
-                  ? <><span className="animate-spin inline-block mr-2">⚙</span> Analyse en cours...</>
-                  : <><BrainCircuit className="h-4 w-4 mr-2" /> Évaluation complète par IA</>}
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <Button
+                  className="flex-1 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold"
+                  onClick={handleAIEval}
+                  disabled={aiLoading || !hasRecording.some(Boolean)}
+                >
+                  {aiLoading
+                    ? <><span className="animate-spin inline-block mr-2">⚙</span> Analyse en cours...</>
+                    : <><BrainCircuit className="h-4 w-4 mr-2" /> Évaluation complète par IA</>}
+                </Button>
+              </div>
+              <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center border-t border-slate-100 dark:border-slate-800">
+                <Button 
+                  onClick={handleRestartSession}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl px-6"
+                >
+                  Refaire le test
+                </Button>
+                <Button 
+                  onClick={() => window.location.href = "/dashboard/exams/writing"}
+                  className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold rounded-xl px-6 shadow-md"
+                >
+                  Passer au test suivant ➔
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => window.location.href = "/dashboard/exams"}
+                  className="rounded-xl font-bold"
+                >
+                  Retour aux examens
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </motion.div>
@@ -437,21 +460,42 @@ export default function SpeakingExamPage() {
         onResume={handleResumeSession}
         onRestart={handleRestartSession}
       />
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <Mic className="h-5 w-5 text-emerald-500" /> Expression Orale
-          </h1>
-          <p className="text-sm text-muted-foreground">Tâche {currentTask + 1} sur {ORAL_TASKS.length}</p>
+      {/* Header & Test Navigation */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="flex items-center space-x-3">
+          <Button variant="ghost" size="icon" onClick={() => window.location.href = "/dashboard/exams"}>
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-xl font-bold flex items-center gap-2 text-slate-900 dark:text-white">
+              <Mic className="h-5 w-5 text-emerald-500" /> Expression Orale (EO)
+            </h1>
+            <p className="text-sm text-muted-foreground">Tâche {currentTask + 1} sur {ORAL_TASKS.length}</p>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 text-muted-foreground">
+        <div className="flex items-center gap-2 self-end sm:self-center">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.location.href = "/dashboard/exams/reading"}
+            className="rounded-xl font-bold text-xs"
+          >
+            ← Test précédent
+          </Button>
+          <div className="flex items-center gap-1.5 text-muted-foreground px-2">
             <Clock className="h-4 w-4" />
             <Timer seconds={globalTimeLeft} color={globalTimeLeft < 120 ? "text-red-500" : ""} />
           </div>
-          <Button variant="outline" size="sm" onClick={() => setSubmitted(true)}>
+          <Button variant="outline" size="sm" onClick={() => setSubmitted(true)} className="rounded-xl">
             Terminer
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.location.href = "/dashboard/exams/writing"}
+            className="rounded-xl font-bold text-xs bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100"
+          >
+            Test suivant →
           </Button>
         </div>
       </div>

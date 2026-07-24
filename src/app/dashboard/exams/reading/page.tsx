@@ -263,17 +263,23 @@ export default function ReadingExamPage() {
                 })}
               </div>
 
-              <div className="pt-4 flex gap-3">
+              <div className="pt-4 flex flex-col sm:flex-row gap-3 justify-center">
                 <Button 
                   onClick={handleRestartSession} 
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl px-6"
                 >
                   Refaire le test
                 </Button>
                 <Button 
+                  onClick={() => window.location.href = "/dashboard/exams/speaking"}
+                  className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold rounded-xl px-6 shadow-md"
+                >
+                  Passer au test suivant ➔
+                </Button>
+                <Button 
                   variant="outline" 
                   onClick={() => window.location.href = "/dashboard/exams"} 
-                  className="flex-1 rounded-xl font-bold"
+                  className="rounded-xl font-bold"
                 >
                   Retour aux examens
                 </Button>
@@ -296,8 +302,8 @@ export default function ReadingExamPage() {
         onRestart={handleRestartSession}
       />
 
-      {/* Top Controls */}
-      <div className="flex items-center justify-between bg-white dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+      {/* Top Controls & Test Navigation */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="flex items-center space-x-3">
           <Button variant="ghost" size="icon" onClick={() => window.location.href = "/dashboard/exams"}>
             <ChevronLeft className="h-5 w-5" />
@@ -311,7 +317,25 @@ export default function ReadingExamPage() {
           </div>
         </div>
 
-        <Timer seconds={timeLeft} />
+        <div className="flex items-center gap-2 self-end sm:self-center">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.location.href = "/dashboard/exams/listening"}
+            className="rounded-xl font-bold text-xs"
+          >
+            ← Test précédent
+          </Button>
+          <Timer seconds={timeLeft} />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.location.href = "/dashboard/exams/speaking"}
+            className="rounded-xl font-bold text-xs bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100"
+          >
+            Test suivant →
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -381,7 +405,7 @@ export default function ReadingExamPage() {
               }}
               className="rounded-xl font-bold text-xs"
             >
-              <ChevronLeft className="h-4 w-4 mr-1" /> Précédent
+              <ChevronLeft className="h-4 w-4 mr-1" /> Question précédente
             </Button>
 
             {currentQ < passage.questions.length - 1 ? (
@@ -389,7 +413,7 @@ export default function ReadingExamPage() {
                 onClick={() => setCurrentQ(q => q + 1)}
                 className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs"
               >
-                Suivant <ChevronRight className="h-4 w-4 ml-1" />
+                Question suivante <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             ) : currentPassage < PASSAGES.length - 1 ? (
               <Button

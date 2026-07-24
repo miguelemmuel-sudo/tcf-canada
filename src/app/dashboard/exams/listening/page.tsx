@@ -393,6 +393,12 @@ export default function ListeningExamPage() {
                   Refaire le test
                 </Button>
                 <Button 
+                  onClick={() => window.location.href = "/dashboard/exams/reading"}
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold rounded-xl px-6 shadow-md"
+                >
+                  Passer au test suivant ➔
+                </Button>
+                <Button 
                   variant="outline" 
                   onClick={() => window.location.href = "/dashboard/exams"}
                   className="rounded-xl font-bold"
@@ -420,8 +426,8 @@ export default function ListeningExamPage() {
         onRestart={handleRestartSession}
       />
 
-      {/* Header */}
-      <div className="flex items-center justify-between bg-white dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+      {/* Header & Test Navigation */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="flex items-center space-x-3">
           <Button variant="ghost" size="icon" onClick={() => window.location.href = "/dashboard/exams"}>
             <ChevronLeft className="h-5 w-5" />
@@ -435,7 +441,25 @@ export default function ListeningExamPage() {
           </div>
         </div>
 
-        <Timer seconds={timeLeft} />
+        <div className="flex items-center gap-2 self-end sm:self-center">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.location.href = "/dashboard/exams/writing"}
+            className="rounded-xl font-bold text-xs"
+          >
+            ← Test précédent
+          </Button>
+          <Timer seconds={timeLeft} />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.location.href = "/dashboard/exams/reading"}
+            className="rounded-xl font-bold text-xs bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-100"
+          >
+            Test suivant →
+          </Button>
+        </div>
       </div>
 
       {/* Bannières Métadonnées Professionnelles Audio (Voix, Accents, Scénarios) */}
@@ -537,22 +561,22 @@ export default function ListeningExamPage() {
 
           {/* Navigation Controls */}
           <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
-            <Button
-              variant="outline"
-              disabled={currentQ === 0}
-              onClick={() => setCurrentQ(q => Math.max(0, q - 1))}
-              className="rounded-xl font-bold"
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" /> Précédent
-            </Button>
-
-            {currentQ < QUESTIONS.length - 1 ? (
               <Button
-                onClick={() => setCurrentQ(q => Math.min(QUESTIONS.length - 1, q + 1))}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl"
+                variant="outline"
+                disabled={currentQ === 0}
+                onClick={() => setCurrentQ(q => Math.max(0, q - 1))}
+                className="rounded-xl font-bold text-xs"
               >
-                Suivant <ChevronRight className="h-4 w-4 ml-1" />
+                <ChevronLeft className="h-4 w-4 mr-1" /> Question précédente
               </Button>
+
+              {currentQ < QUESTIONS.length - 1 ? (
+                <Button
+                  onClick={() => setCurrentQ(q => Math.min(QUESTIONS.length - 1, q + 1))}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs"
+                >
+                  Question suivante <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
             ) : (
               <Button
                 onClick={handleSubmit}

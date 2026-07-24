@@ -167,9 +167,10 @@ export default function ReservationsPage() {
               href="https://wa.me/237695903205?text=Bonjour,%20je%20souhaite%20réserver%20un%20créneau%20de%20coaching%20TCF%20Canada"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block mt-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs"
+              className="inline-flex items-center gap-2 mt-2 px-5 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#1eab52] text-white font-bold text-xs shadow-md shadow-[#25D366]/30 transition-all"
             >
-              Réserver avec un coach sur WhatsApp
+              <img src="/whatsapp.svg" alt="WhatsApp" className="h-5 w-5 shrink-0 object-contain" />
+              <span>Réserver avec un coach sur WhatsApp</span>
             </a>
           </div>
         ) : (

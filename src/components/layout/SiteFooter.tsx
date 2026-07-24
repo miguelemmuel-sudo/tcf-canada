@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { GraduationCap, Mail, Phone, MessageCircle } from "lucide-react";
+import { GraduationCap, Mail, Phone } from "lucide-react";
 
-export function Footer() {
+export function SiteFooter() {
   return (
     <footer className="border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 py-12">
       <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -47,9 +47,9 @@ export function Footer() {
                 href="https://wa.me/237695903205" 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="flex items-center gap-2 text-emerald-600 hover:text-emerald-700 font-bold transition-colors"
+                className="flex items-center gap-2 text-[#25D366] hover:text-[#1eab52] font-bold transition-colors"
               >
-                <MessageCircle className="h-4 w-4 shrink-0" />
+                <img src="/whatsapp.svg" alt="WhatsApp" className="h-5 w-5 shrink-0 object-contain" />
                 <span>Assistance WhatsApp 24/7</span>
               </a>
             </li>

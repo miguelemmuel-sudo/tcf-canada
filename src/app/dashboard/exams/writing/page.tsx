@@ -271,18 +271,42 @@ export default function WritingExamPage() {
         onRestart={handleRestartSession}
       />
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <PenTool className="h-5 w-5 text-amber-500" /> Expression Écrite
-          </h1>
-          <p className="text-sm text-muted-foreground">Tâche {currentTask + 1} sur {TASKS.length}</p>
+      {/* Header & Test Navigation */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="flex items-center space-x-3">
+          <Button variant="ghost" size="icon" onClick={() => window.location.href = "/dashboard/exams"}>
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-xl font-bold flex items-center gap-2 text-slate-900 dark:text-white">
+              <PenTool className="h-5 w-5 text-amber-500" /> Expression Écrite (EE)
+            </h1>
+            <p className="text-sm text-muted-foreground">Tâche {currentTask + 1} sur {TASKS.length}</p>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <Timer seconds={timeLeft} />
-          <Button variant="outline" size="sm" onClick={() => setSubmitted(true)}>
+        <div className="flex items-center gap-2 self-end sm:self-center">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.location.href = "/dashboard/exams/speaking"}
+            className="rounded-xl font-bold text-xs"
+          >
+            ← Test précédent
+          </Button>
+          <div className="flex items-center gap-1.5 text-muted-foreground px-2">
+            <Clock className="h-4 w-4" />
+            <Timer seconds={timeLeft} />
+          </div>
+          <Button variant="outline" size="sm" onClick={() => setSubmitted(true)} className="rounded-xl">
             Soumettre
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.location.href = "/dashboard/exams/listening"}
+            className="rounded-xl font-bold text-xs bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900 text-amber-700 dark:text-amber-300 hover:bg-amber-100"
+          >
+            Test suivant →
           </Button>
         </div>
       </div>

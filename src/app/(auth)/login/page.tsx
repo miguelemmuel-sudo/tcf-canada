@@ -97,8 +97,8 @@ export default function LoginPage() {
         
         {/* Header Logo TCF Canada */}
         <div className="flex items-center gap-3 mb-4 sm:mb-6">
-          <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-2xl bg-red-50 dark:bg-red-950/60 border border-red-100 dark:border-red-900/50 flex items-center justify-center text-red-600 shadow-sm shrink-0">
-            <GraduationCap className="h-6 w-6 sm:h-7 sm:w-7" />
+          <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-2xl bg-gradient-to-br from-amber-400/20 via-yellow-500/20 to-amber-600/10 border border-amber-400/60 flex items-center justify-center text-amber-500 dark:text-yellow-400 shadow-lg shadow-amber-500/25 shrink-0">
+            <GraduationCap className="h-6 w-6 sm:h-7 sm:w-7 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
           </div>
           <div>
             <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
@@ -122,8 +122,8 @@ export default function LoginPage() {
         >
           {/* Card Header Icon & Title */}
           <div className="flex items-start gap-4">
-            <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-2xl bg-red-50 dark:bg-red-950/60 border border-red-100 dark:border-red-900/40 flex items-center justify-center text-red-600 shrink-0">
-              <Lock className="h-5 w-5 sm:h-6 sm:w-6" />
+            <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-2xl bg-gradient-to-br from-amber-400/20 via-yellow-500/20 to-amber-600/10 border border-amber-400/60 flex items-center justify-center text-amber-500 dark:text-yellow-400 shadow-lg shadow-amber-500/25 shrink-0">
+              <Lock className="h-5 w-5 sm:h-6 sm:w-6 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
             </div>
             <div>
               <h2 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
@@ -150,14 +150,14 @@ export default function LoginPage() {
                 Adresse email
               </label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-red-500" />
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500 dark:text-yellow-400" />
                 <input
                   id="email"
                   name="email"
                   type="email"
                   required
                   placeholder="exemple@email.com"
-                  className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:bg-white transition-all"
+                  className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:bg-white transition-all"
                 />
               </div>
             </div>
@@ -168,14 +168,14 @@ export default function LoginPage() {
                 Mot de passe
               </label>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-red-500" />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500 dark:text-yellow-400" />
                 <input
                   id="password"
                   name="password"
                   type={showPassword ? "text" : "password"}
                   required
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-10 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:bg-white transition-all"
+                  className="w-full pl-10 pr-10 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:bg-white transition-all"
                 />
                 <button
                   type="button"
@@ -194,14 +194,14 @@ export default function LoginPage() {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-4 w-4 rounded border-slate-300 text-red-600 focus:ring-red-500 accent-red-600 shrink-0"
+                  className="h-4 w-4 rounded border-slate-300 text-amber-500 focus:ring-amber-500 accent-amber-500 shrink-0"
                 />
                 <span>Se souvenir de moi</span>
               </label>
 
               <Link 
                 href="/forgot-password" 
-                className="text-xs font-bold text-red-600 dark:text-red-400 hover:underline"
+                className="text-xs font-bold text-amber-600 dark:text-yellow-400 hover:underline drop-shadow-[0_0_6px_rgba(245,158,11,0.4)]"
               >
                 Mot de passe oublié ?
               </Link>
@@ -211,7 +211,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 rounded-2xl bg-[#D91B24] hover:bg-[#B8141C] text-white font-black text-sm shadow-lg shadow-red-600/30 hover:shadow-red-600/40 transition-all flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
+              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-600 hover:via-yellow-600 hover:to-amber-700 text-white font-black text-sm shadow-xl shadow-amber-500/40 hover:shadow-amber-500/60 border border-yellow-300/40 transition-all flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
             >
               {loading ? (
                 <>
@@ -236,8 +236,8 @@ export default function LoginPage() {
           </div>
 
           {/* Security Info Box */}
-          <div className="bg-red-50/60 dark:bg-red-950/30 border border-red-100 dark:border-red-900/40 rounded-2xl p-4 flex items-start gap-3">
-            <div className="h-8 w-8 rounded-full bg-red-100 dark:bg-red-900/50 flex items-center justify-center text-red-600 shrink-0 mt-0.5">
+          <div className="bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-2xl p-4 flex items-start gap-3 shadow-sm shadow-amber-500/10">
+            <div className="h-8 w-8 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-600 dark:text-yellow-400 shrink-0 mt-0.5">
               <ShieldCheck className="h-4 w-4" />
             </div>
             <div>
@@ -252,7 +252,7 @@ export default function LoginPage() {
           <div className="text-center pt-2">
             <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">
               Pas encore de compte ?{" "}
-              <Link href="/register" className="font-bold text-red-600 dark:text-red-400 hover:underline">
+              <Link href="/register" className="font-bold text-amber-600 dark:text-yellow-400 hover:underline drop-shadow-[0_0_6px_rgba(245,158,11,0.4)]">
                 S'inscrire
               </Link>
             </p>
@@ -262,7 +262,7 @@ export default function LoginPage() {
         {/* Footer 4 Feature Columns */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 sm:pt-8 border-t border-slate-200/60 dark:border-slate-800/60 mt-6 sm:mt-8 text-center">
           <div className="space-y-1">
-            <div className="h-9 w-9 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 flex items-center justify-center mx-auto">
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-400/20 via-yellow-500/20 to-amber-600/10 border border-amber-400/50 text-amber-500 dark:text-yellow-400 shadow-md shadow-amber-500/20 flex items-center justify-center mx-auto">
               <BookOpen className="h-4.5 w-4.5" />
             </div>
             <p className="font-bold text-xs text-slate-900 dark:text-white">Préparez-vous</p>
@@ -270,7 +270,7 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-1">
-            <div className="h-9 w-9 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 flex items-center justify-center mx-auto">
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-400/20 via-yellow-500/20 to-amber-600/10 border border-amber-400/50 text-amber-500 dark:text-yellow-400 shadow-md shadow-amber-500/20 flex items-center justify-center mx-auto">
               <TrendingUp className="h-4.5 w-4.5" />
             </div>
             <p className="font-bold text-xs text-slate-900 dark:text-white">Progressez</p>
@@ -278,7 +278,7 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-1">
-            <div className="h-9 w-9 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 flex items-center justify-center mx-auto">
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-400/20 via-yellow-500/20 to-amber-600/10 border border-amber-400/50 text-amber-500 dark:text-yellow-400 shadow-md shadow-amber-500/20 flex items-center justify-center mx-auto">
               <Target className="h-4.5 w-4.5" />
             </div>
             <p className="font-bold text-xs text-slate-900 dark:text-white">Atteignez vos objectifs</p>
@@ -286,7 +286,7 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-1">
-            <div className="h-9 w-9 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 flex items-center justify-center mx-auto">
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-400/20 via-yellow-500/20 to-amber-600/10 border border-amber-400/50 text-amber-500 dark:text-yellow-400 shadow-md shadow-amber-500/20 flex items-center justify-center mx-auto">
               <Globe className="h-4.5 w-4.5" />
             </div>
             <p className="font-bold text-xs text-slate-900 dark:text-white">Ouvrez les portes</p>

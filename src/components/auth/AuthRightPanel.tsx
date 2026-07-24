@@ -66,7 +66,7 @@ export function AuthRightPanel({ quote }: AuthRightPanelProps) {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="bg-[#0B132B]/60 backdrop-blur-md border border-white/20 rounded-3xl p-7 text-white shadow-2xl space-y-3"
           >
-            <div className="text-red-500 font-serif text-5xl font-black leading-none select-none">
+            <div className="text-amber-400 dark:text-yellow-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)] font-serif text-5xl font-black leading-none select-none">
               “
             </div>
 
@@ -74,13 +74,13 @@ export function AuthRightPanel({ quote }: AuthRightPanelProps) {
               {quote}
             </p>
 
-            <div className="h-1 w-12 bg-red-600 rounded-full mt-3" />
+            <div className="h-1 w-12 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-full mt-3 shadow-[0_0_6px_rgba(245,158,11,0.5)]" />
           </motion.div>
         </div>
 
-        {/* Decorative Bottom Right Red Maple Leaf Silhouette */}
+        {/* Decorative Bottom Right Gold Maple Leaf Silhouette */}
         <div className="absolute bottom-6 right-6 z-10 opacity-80 pointer-events-none">
-          <svg className="w-20 h-20 text-red-600 fill-current" viewBox="0 0 24 24">
+          <svg className="w-20 h-20 text-amber-500 dark:text-yellow-400 drop-shadow-[0_0_10px_rgba(245,158,11,0.5)] fill-current" viewBox="0 0 24 24">
             <path d="M12 2L13.8 7.2L18.5 4.5L16.8 9.8L22 11.5L17.2 13.8L20 18.5L14.7 16.8L13 22L12 17L11 22L9.3 16.8L4 18.5L6.8 13.8L2 11.5L7.2 9.8L5.5 4.5L10.2 7.2L12 2Z"/>
           </svg>
         </div>

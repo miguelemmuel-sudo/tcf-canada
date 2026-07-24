@@ -29,8 +29,8 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        // Cache immuable de 1 an pour tous les médias et fichiers statiques packagés
-        source: "/(.*)\\.(ico|png|jpg|jpeg|svg|webp|avif|woff|woff2|css|js)",
+        // Cache immuable de 1 an pour les images, médias et polices (Next.js gère déjà le cache JS/CSS automatiquement sans bloquer le dev HMR)
+        source: "/(.*)\\.(ico|png|jpg|jpeg|svg|webp|avif|woff|woff2)",
         headers: [
           {
             key: "Cache-Control",

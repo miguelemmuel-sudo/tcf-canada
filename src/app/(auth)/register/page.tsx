@@ -237,8 +237,8 @@ export default function RegisterPage() {
         
         {/* Header Logo TCF Canada */}
         <div className="flex items-center gap-3 mb-4 sm:mb-6">
-          <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-2xl bg-red-50 dark:bg-red-950/60 border border-red-100 dark:border-red-900/50 flex items-center justify-center text-red-600 shadow-sm shrink-0">
-            <GraduationCap className="h-6 w-6 sm:h-7 sm:w-7" />
+          <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-2xl bg-gradient-to-br from-amber-400/20 via-yellow-500/20 to-amber-600/10 border border-amber-400/60 flex items-center justify-center text-amber-500 dark:text-yellow-400 shadow-lg shadow-amber-500/25 shrink-0">
+            <GraduationCap className="h-6 w-6 sm:h-7 sm:w-7 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
           </div>
           <div>
             <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
@@ -262,8 +262,8 @@ export default function RegisterPage() {
         >
           {/* Card Header Icon & Title */}
           <div className="flex items-start gap-4">
-            <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-2xl bg-red-50 dark:bg-red-950/60 border border-red-100 dark:border-red-900/40 flex items-center justify-center text-red-600 shrink-0">
-              <User className="h-5 w-5 sm:h-6 sm:w-6" />
+            <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-2xl bg-gradient-to-br from-amber-400/20 via-yellow-500/20 to-amber-600/10 border border-amber-400/60 flex items-center justify-center text-amber-500 dark:text-yellow-400 shadow-lg shadow-amber-500/25 shrink-0">
+              <User className="h-5 w-5 sm:h-6 sm:w-6 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
             </div>
             <div>
               <h2 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
@@ -278,19 +278,19 @@ export default function RegisterPage() {
           {/* Stepper Indicator */}
           <div className="flex items-center gap-2 sm:gap-3 pt-1 pb-2">
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <span className={`h-6 w-6 sm:h-7 sm:w-7 rounded-full text-[11px] sm:text-xs font-extrabold flex items-center justify-center ${step === 1 ? "bg-red-600 text-white" : "bg-emerald-600 text-white"}`}>
+              <span className={`h-6 w-6 sm:h-7 sm:w-7 rounded-full text-[11px] sm:text-xs font-extrabold flex items-center justify-center ${step === 1 ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-md shadow-amber-500/40 border border-yellow-300/40" : "bg-emerald-600 text-white"}`}>
                 1
               </span>
               <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200">Informations personnelles</span>
             </div>
 
-            <div className={`h-0.5 flex-1 rounded-full ${step === 2 ? "bg-red-600" : "bg-slate-200 dark:bg-slate-800"}`} />
+            <div className={`h-0.5 flex-1 rounded-full transition-all ${step === 2 ? "bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 shadow-[0_0_8px_rgba(245,158,11,0.6)]" : "bg-slate-200 dark:bg-slate-800"}`} />
 
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <span className={`h-6 w-6 sm:h-7 sm:w-7 rounded-full text-[11px] sm:text-xs font-extrabold flex items-center justify-center ${step === 2 ? "bg-red-600 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-500"}`}>
+              <span className={`h-6 w-6 sm:h-7 sm:w-7 rounded-full text-[11px] sm:text-xs font-extrabold flex items-center justify-center transition-all ${step === 2 ? "bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 text-white shadow-lg shadow-amber-500/60 border border-yellow-200 ring-4 ring-amber-400/30 animate-pulse" : "bg-slate-200 dark:bg-slate-800 text-slate-500"}`}>
                 2
               </span>
-              <span className="text-[11px] sm:text-xs font-bold text-slate-500">Choix de la formule</span>
+              <span className={`text-[11px] sm:text-xs transition-all ${step === 2 ? "text-amber-600 dark:text-yellow-400 font-black drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]" : "font-bold text-slate-500"}`}>Choix de la formule</span>
             </div>
           </div>
 
@@ -309,14 +309,14 @@ export default function RegisterPage() {
                   Nom complet
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-red-500" />
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500 dark:text-yellow-400" />
                   <input
                     type="text"
                     required
                     value={formDataState.name}
                     onChange={(e) => setFormDataState({ ...formDataState, name: e.target.value })}
                     placeholder="Jean Dupont"
-                    className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:bg-white transition-all"
+                    className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:bg-white transition-all"
                   />
                 </div>
               </div>
@@ -327,14 +327,14 @@ export default function RegisterPage() {
                   Adresse email
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-red-500" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500 dark:text-yellow-400" />
                   <input
                     type="email"
                     required
                     value={formDataState.email}
                     onChange={(e) => setFormDataState({ ...formDataState, email: e.target.value })}
                     placeholder="nom@exemple.com"
-                    className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:bg-white transition-all"
+                    className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:bg-white transition-all"
                   />
                 </div>
               </div>
@@ -345,7 +345,7 @@ export default function RegisterPage() {
                   Mot de passe
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-red-500" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500 dark:text-yellow-400" />
                   <input
                     type={showPassword ? "text" : "password"}
                     required
@@ -353,7 +353,7 @@ export default function RegisterPage() {
                     value={formDataState.password}
                     onChange={(e) => setFormDataState({ ...formDataState, password: e.target.value })}
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-10 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:bg-white transition-all"
+                    className="w-full pl-10 pr-10 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:bg-white transition-all"
                   />
                   <button
                     type="button"
@@ -372,7 +372,7 @@ export default function RegisterPage() {
                   Confirmer le mot de passe
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-red-500" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500 dark:text-yellow-400" />
                   <input
                     type={showConfirmPassword ? "text" : "password"}
                     required
@@ -380,7 +380,7 @@ export default function RegisterPage() {
                     value={formDataState.confirmPassword}
                     onChange={(e) => setFormDataState({ ...formDataState, confirmPassword: e.target.value })}
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-10 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:bg-white transition-all"
+                    className="w-full pl-10 pr-10 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:bg-white transition-all"
                   />
                   <button
                     type="button"
@@ -399,7 +399,7 @@ export default function RegisterPage() {
                   id="terms"
                   checked={termsAccepted}
                   onChange={(e) => setTermsAccepted(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-red-600 focus:ring-red-500 accent-red-600 shrink-0"
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-amber-500 focus:ring-amber-500 accent-amber-500 shrink-0"
                   required
                 />
                 <label htmlFor="terms" className="text-xs text-slate-600 dark:text-slate-400 leading-tight">
@@ -408,7 +408,7 @@ export default function RegisterPage() {
                   <button
                     type="button"
                     onClick={() => setShowPrivacyModal(true)}
-                    className="text-red-600 font-bold hover:underline inline-block ml-0.5"
+                    className="text-amber-600 dark:text-yellow-400 font-bold hover:underline inline-block ml-0.5 drop-shadow-[0_0_6px_rgba(245,158,11,0.4)]"
                   >
                     Voir plus
                   </button>
@@ -418,7 +418,7 @@ export default function RegisterPage() {
               {/* Primary CTA Button */}
               <button
                 type="submit"
-                className="w-full py-3.5 rounded-2xl bg-[#D91B24] hover:bg-[#B8141C] text-white font-black text-sm shadow-lg shadow-red-600/30 hover:shadow-red-600/40 transition-all flex items-center justify-center gap-2 mt-2"
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-600 hover:via-yellow-600 hover:to-amber-700 text-white font-black text-sm shadow-xl shadow-amber-500/40 hover:shadow-amber-500/60 border border-yellow-300/40 transition-all flex items-center justify-center gap-2 mt-2"
               >
                 <span>Continuer vers le choix de la formule</span>
                 <ArrowRight className="h-4 w-4" />
@@ -436,12 +436,14 @@ export default function RegisterPage() {
                     onClick={() => setSelectedPlan(plan.id)}
                     className={`p-4 rounded-2xl border-2 transition-all cursor-pointer relative ${
                       selectedPlan === plan.id
-                        ? "border-red-600 bg-red-50/40 dark:bg-red-950/30 shadow-sm"
-                        : "border-slate-200 dark:border-slate-800 hover:border-slate-300"
+                        ? "border-amber-500 bg-amber-50/60 dark:bg-amber-950/40 shadow-xl shadow-amber-500/30 ring-2 ring-amber-400/50"
+                        : plan.popular
+                        ? "border-amber-400/80 bg-gradient-to-b from-amber-50/30 to-transparent dark:from-amber-950/20 dark:to-transparent shadow-md shadow-amber-500/20 hover:border-amber-500"
+                        : "border-slate-200 dark:border-slate-800 hover:border-amber-300/50"
                     }`}
                   >
                     {plan.popular && (
-                      <span className="absolute -top-3 right-4 bg-red-600 text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-sm">
+                      <span className="absolute -top-3 right-4 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 text-slate-950 text-[10px] font-black uppercase px-3.5 py-0.5 rounded-full shadow-lg shadow-amber-500/50 border border-yellow-100 tracking-wider animate-pulse">
                         Le plus populaire 🌟
                       </span>
                     )}
@@ -451,7 +453,7 @@ export default function RegisterPage() {
                         <h4 className="font-black text-sm text-slate-900 dark:text-white">{plan.name}</h4>
                         <p className="text-xs text-slate-500 mt-0.5">{plan.description}</p>
                       </div>
-                      <span className="font-black text-base text-red-600 dark:text-red-400 shrink-0 ml-2">
+                      <span className="font-black text-base text-transparent bg-clip-text bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 dark:from-yellow-300 dark:via-amber-400 dark:to-yellow-500 drop-shadow-[0_0_10px_rgba(245,158,11,0.6)] shrink-0 ml-2">
                         {plan.price}
                       </span>
                     </div>
@@ -472,7 +474,7 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="py-3 px-4 rounded-2xl border border-slate-200 dark:border-slate-800 font-bold text-xs text-slate-600"
+                  className="py-3 px-4 rounded-2xl border border-slate-200 dark:border-slate-800 font-bold text-xs text-slate-600 hover:border-amber-400"
                 >
                   ← Retour
                 </button>
@@ -480,7 +482,7 @@ export default function RegisterPage() {
                   type="button"
                   onClick={handleFinalSubmit}
                   disabled={loading}
-                  className="flex-1 py-3.5 rounded-2xl bg-[#D91B24] hover:bg-[#B8141C] text-white font-black text-sm shadow-lg shadow-red-600/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-600 hover:via-yellow-600 hover:to-amber-700 text-white font-black text-sm shadow-xl shadow-amber-500/40 hover:shadow-amber-500/60 border border-yellow-300/40 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {loading ? (
                     <>
@@ -502,7 +504,7 @@ export default function RegisterPage() {
           <div className="text-center pt-2 border-t border-slate-100 dark:border-slate-800">
             <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">
               Déjà un compte ?{" "}
-              <Link href="/login" className="font-bold text-red-600 dark:text-red-400 hover:underline">
+              <Link href="/login" className="font-bold text-amber-600 dark:text-yellow-400 hover:underline drop-shadow-[0_0_6px_rgba(245,158,11,0.4)]">
                 Se connecter
               </Link>
             </p>
@@ -512,7 +514,7 @@ export default function RegisterPage() {
         {/* Footer 4 Feature Columns */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 sm:pt-8 border-t border-slate-200/60 dark:border-slate-800/60 mt-6 sm:mt-8 text-center">
           <div className="space-y-1">
-            <div className="h-9 w-9 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 flex items-center justify-center mx-auto">
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-400/20 via-yellow-500/20 to-amber-600/10 border border-amber-400/50 text-amber-500 dark:text-yellow-400 shadow-md shadow-amber-500/20 flex items-center justify-center mx-auto">
               <Shield className="h-4.5 w-4.5" />
             </div>
             <p className="font-bold text-xs text-slate-900 dark:text-white">Sécurisé</p>
@@ -520,7 +522,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="space-y-1">
-            <div className="h-9 w-9 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 flex items-center justify-center mx-auto">
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-400/20 via-yellow-500/20 to-amber-600/10 border border-amber-400/50 text-amber-500 dark:text-yellow-400 shadow-md shadow-amber-500/20 flex items-center justify-center mx-auto">
               <Target className="h-4.5 w-4.5" />
             </div>
             <p className="font-bold text-xs text-slate-900 dark:text-white">Personnalisé</p>
@@ -528,7 +530,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="space-y-1">
-            <div className="h-9 w-9 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 flex items-center justify-center mx-auto">
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-400/20 via-yellow-500/20 to-amber-600/10 border border-amber-400/50 text-amber-500 dark:text-yellow-400 shadow-md shadow-amber-500/20 flex items-center justify-center mx-auto">
               <BarChart2 className="h-4.5 w-4.5" />
             </div>
             <p className="font-bold text-xs text-slate-900 dark:text-white">Efficace</p>
@@ -536,7 +538,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="space-y-1">
-            <div className="h-9 w-9 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 flex items-center justify-center mx-auto">
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-400/20 via-yellow-500/20 to-amber-600/10 border border-amber-400/50 text-amber-500 dark:text-yellow-400 shadow-md shadow-amber-500/20 flex items-center justify-center mx-auto">
               <Headphones className="h-4.5 w-4.5" />
             </div>
             <p className="font-bold text-xs text-slate-900 dark:text-white">Accompagné</p>
@@ -556,7 +558,7 @@ export default function RegisterPage() {
           <div className="bg-white dark:bg-slate-950 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in duration-200">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
-                <ShieldCheck className="h-5 w-5 text-red-600" />
+                <ShieldCheck className="h-5 w-5 text-amber-500 dark:text-yellow-400" />
                 Politique de confidentialité
               </h3>
               <button onClick={() => setShowPrivacyModal(false)} className="p-1 text-slate-400 hover:text-slate-600">
@@ -569,7 +571,7 @@ export default function RegisterPage() {
             </div>
             <button
               onClick={() => setShowPrivacyModal(false)}
-              className="w-full py-2.5 rounded-xl bg-red-600 text-white font-bold text-xs"
+              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 text-white font-bold text-xs shadow-lg shadow-amber-500/30"
             >
               Compris et accepter
             </button>
