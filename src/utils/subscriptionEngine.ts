@@ -162,3 +162,33 @@ export function isUserAdmin(): boolean {
   }
   return false;
 }
+
+/**
+ * Retourne la durée de l'examen en secondes selon le pack de l'utilisateur.
+ * - Pack Standard : durée officielle conservée
+ * - Pack Griffon D'OR : 1h 30 (90 minutes)
+ * - Pack VIP & Coaching : 2h 00 (120 minutes)
+ */
+export function getExamDurationSecondsForPack(pack: PackType, baseSeconds: number): number {
+  if (pack === "vip") {
+    return 120 * 60; // 2 heures (120 minutes)
+  }
+  if (pack === "griffon") {
+    return 90 * 60; // 1 heure 30 (90 minutes)
+  }
+  return baseSeconds; // Pack standard (durée standard de l'épreuve conservée)
+}
+
+/**
+ * Retourne le libellé de durée pour les badges d'examen.
+ */
+export function getExamBadgeDurationText(pack: PackType, baseText: string): string {
+  if (pack === "vip") {
+    return "2h 00 (120 min)";
+  }
+  if (pack === "griffon") {
+    return "1h 30 (90 min)";
+  }
+  return baseText;
+}
+

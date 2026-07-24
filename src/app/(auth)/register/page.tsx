@@ -34,8 +34,8 @@ const subscriptionPlans = [
     description: "Le pack le plus populaire pour maximiser votre score au TCF.",
     features: [
       "Accès plateforme 30 jours",
+      "Simulations et tests de 1h 30",
       "Corrections IA + Formateurs humains",
-      "Simulations réelles illimitées",
       "Messagerie directe avec Coach",
       "Support personnalisé 7j/7",
     ],
@@ -50,6 +50,7 @@ const subscriptionPlans = [
     description: "Accompagnement d'excellence individuel avec suivi complet.",
     features: [
       "Tout le Pack Griffon d'Or inclus (30 jours)",
+      "Simulations et tests de 2h 00 (max)",
       "Coaching 1-on-1 avec un expert certifié",
       "Suivi personnalisé du dossier d'immigration",
     ],

@@ -12,7 +12,7 @@ import {
 import { createClient } from "@/lib/supabaseClient";
 import { ResumeSessionModal } from "@/components/ui/ResumeSessionModal";
 import { saveSessionState } from "@/utils/sessionManager";
-import { getCurrentUserPack, PACK_CONFIGS } from "@/utils/subscriptionEngine";
+import { getCurrentUserPack, PACK_CONFIGS, getExamDurationSecondsForPack } from "@/utils/subscriptionEngine";
 import { generateExamQuestionsForPack } from "@/utils/courseGenerator";
 import { playMultiSpeakerDialogue, AudioScenario, AudioVoiceProfile } from "@/utils/audioContentEngine";
 
@@ -151,14 +151,18 @@ function Timer({ seconds }: { seconds: number }) {
 // ─── Page principale ──────────────────────────────────────────────────────────
 export default function ListeningExamPage() {
   const [pack, setPack] = useState(getCurrentUserPack());
-  useEffect(() => setPack(getCurrentUserPack()), []);
+  const [timeLeft, setTimeLeft] = useState(() => getExamDurationSecondsForPack(getCurrentUserPack(), TOTAL_TIME));
+  useEffect(() => {
+    const p = getCurrentUserPack();
+    setPack(p);
+    setTimeLeft(getExamDurationSecondsForPack(p, TOTAL_TIME));
+  }, []);
   const QUESTIONS = React.useMemo<Question[]>(() => generateExamQuestionsForPack(DEMO_QUESTIONS, pack, PACK_CONFIGS[pack], "listening"), [pack]);
 
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<(number | null)[]>(Array(QUESTIONS.length).fill(null));
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioProgress, setAudioProgress] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(TOTAL_TIME);
   const [submitted, setSubmitted] = useState(false);
   const [showResult, setShowResult] = useState(false);
 
@@ -220,7 +224,7 @@ export default function ListeningExamPage() {
     localStorage.removeItem("tcf_session_listening_exam");
     setAnswers(Array(QUESTIONS.length).fill(null));
     setCurrentQ(0);
-    setTimeLeft(TOTAL_TIME);
+    setTimeLeft(getExamDurationSecondsForPack(pack, TOTAL_TIME));
     setShowResumeModal(false);
   };
 

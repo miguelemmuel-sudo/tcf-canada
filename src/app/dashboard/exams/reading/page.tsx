@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, ChevronLeft, ChevronRight, CheckCircle2, BookOpen, XCircle } from "lucide-react";
 import { ResumeSessionModal } from "@/components/ui/ResumeSessionModal";
 import { saveSessionState } from "@/utils/sessionManager";
-import { getCurrentUserPack, PACK_CONFIGS } from "@/utils/subscriptionEngine";
+import { getCurrentUserPack, PACK_CONFIGS, getExamDurationSecondsForPack } from "@/utils/subscriptionEngine";
 import { generateExamPassagesForPack } from "@/utils/courseGenerator";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -101,13 +101,17 @@ function Timer({ seconds }: { seconds: number }) {
 
 export default function ReadingExamPage() {
   const [pack, setPack] = useState(getCurrentUserPack());
-  useEffect(() => setPack(getCurrentUserPack()), []);
+  const [timeLeft, setTimeLeft] = useState(() => getExamDurationSecondsForPack(getCurrentUserPack(), TOTAL_TIME));
+  useEffect(() => {
+    const p = getCurrentUserPack();
+    setPack(p);
+    setTimeLeft(getExamDurationSecondsForPack(p, TOTAL_TIME));
+  }, []);
   const PASSAGES = React.useMemo<typeof BASE_PASSAGES>(() => generateExamPassagesForPack(BASE_PASSAGES, pack, PACK_CONFIGS[pack]), [pack]);
 
   const [currentPassage, setCurrentPassage] = useState(0);
   const [currentQ, setCurrentQ] = useState(0);
   const [allAnswers, setAllAnswers] = useState<Record<number, number | null>>({});
-  const [timeLeft, setTimeLeft] = useState(TOTAL_TIME);
   const [showResult, setShowResult] = useState(false);
 
   // Resume Session Modal State
@@ -166,7 +170,7 @@ export default function ReadingExamPage() {
     setAllAnswers({});
     setCurrentPassage(0);
     setCurrentQ(0);
-    setTimeLeft(TOTAL_TIME);
+    setTimeLeft(getExamDurationSecondsForPack(pack, TOTAL_TIME));
     setShowResumeModal(false);
   };
 

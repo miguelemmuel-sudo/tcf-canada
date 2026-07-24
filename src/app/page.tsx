@@ -342,8 +342,8 @@ export default function Home() {
                 <CardContent className="space-y-4">
                   <ul className="space-y-3 text-sm font-medium">
                     <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Accès illimité jusqu'à l'examen</li>
+                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Simulations et tests de 1h 30</li>
                     <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Corrections IA + Formateurs humains</li>
-                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Simulations réelles illimitées</li>
                     <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Messagerie directe avec Coach</li>
                     <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Support personnalisé</li>
                   </ul>
@@ -358,7 +358,8 @@ export default function Home() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <ul className="space-y-3 text-sm">
-                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Tout le Pack Griffon d'Or</li>
+                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Tout le Pack Griffon d'Or inclus</li>
+                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Simulations et tests de 2h 00 (max)</li>
                     <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Coaching 1-on-1 avec expert</li>
                     <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Suivi dossier d'immigration</li>
                   </ul>

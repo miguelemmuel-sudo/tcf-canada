@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { ResumeSessionModal } from "@/components/ui/ResumeSessionModal";
 import { saveSessionState } from "@/utils/sessionManager";
-import { getCurrentUserPack, PACK_CONFIGS } from "@/utils/subscriptionEngine";
+import { getCurrentUserPack, PACK_CONFIGS, getExamDurationSecondsForPack } from "@/utils/subscriptionEngine";
 import { generateExamWritingTasksForPack } from "@/utils/courseGenerator";
 import { evaluateUserResponse } from "@/utils/aiEvaluationEngine";
 
@@ -88,7 +88,12 @@ function Timer({ seconds, color = "text-foreground" }: { seconds: number; color?
 
 export default function SpeakingExamPage() {
   const [pack, setPack] = useState(getCurrentUserPack());
-  useEffect(() => setPack(getCurrentUserPack()), []);
+  const [globalTimeLeft, setGlobalTimeLeft] = useState(() => getExamDurationSecondsForPack(getCurrentUserPack(), 12 * 60));
+  useEffect(() => {
+    const p = getCurrentUserPack();
+    setPack(p);
+    setGlobalTimeLeft(getExamDurationSecondsForPack(p, 12 * 60));
+  }, []);
   const ORAL_TASKS = React.useMemo<typeof BASE_ORAL_TASKS>(() => generateExamWritingTasksForPack(BASE_ORAL_TASKS, pack, PACK_CONFIGS[pack], "speaking"), [pack]);
 
   const [currentTask, setCurrentTask] = useState(0);
@@ -98,7 +103,6 @@ export default function SpeakingExamPage() {
   const [playbackProgress, setPlaybackProgress] = useState(0);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiFeedback, setAiFeedback] = useState<string | null>(null);
-  const [globalTimeLeft, setGlobalTimeLeft] = useState(12 * 60);
   const [hasRecording, setHasRecording] = useState<boolean[]>(Array(ORAL_TASKS.length).fill(false));
   const [submitted, setSubmitted] = useState(false);
   const [isSpeakingPrompt, setIsSpeakingPrompt] = useState(false);
@@ -158,7 +162,7 @@ export default function SpeakingExamPage() {
     localStorage.removeItem("tcf_session_speaking_exam");
     setHasRecording(Array(ORAL_TASKS.length).fill(false));
     setCurrentTask(0);
-    setGlobalTimeLeft(12 * 60);
+    setGlobalTimeLeft(getExamDurationSecondsForPack(pack, 12 * 60));
     setShowResumeModal(false);
   };
 

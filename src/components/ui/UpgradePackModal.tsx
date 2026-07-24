@@ -171,9 +171,9 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
                         {isSelected && <Check className="h-4 w-4 text-amber-600 dark:text-amber-400 stroke-[3]" />}
                       </h4>
                       <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 leading-snug">
-                        {pKey === "standard" && "Validité 1 mois • 2 modules • 20 cours • 20 tests d'examens"}
-                        {pKey === "griffon" && "Validité 1 mois • 10 modules • 500+ cours • Corrections IA & Messagerie"}
-                        {pKey === "vip" && "Validité 2 mois • 20 modules • 500+ cours • Coaching 1-on-1 & Réservations"}
+                        {pKey === "standard" && "Validité 1 mois • 2 modules • 20 cours • 20 tests (durée standard)"}
+                        {pKey === "griffon" && "Validité 1 mois • 10 modules • 500+ cours • Tests de 1h 30 • Corrections IA"}
+                        {pKey === "vip" && "Validité 2 mois • 20 modules • 500+ cours • Tests de 2h 00 • Coaching 1-on-1"}
                       </p>
                     </div>
                     <span className="font-black text-sm sm:text-base text-amber-600 dark:text-amber-400 shrink-0">

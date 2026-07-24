@@ -361,9 +361,9 @@ function PaymentsContent() {
                 <div>
                   <h3 className="font-black text-lg text-slate-900 dark:text-white">{currentPackConfig.name}</h3>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    {currentPackKey === "standard" && "Accès standard 1 mois • 20 cours • 20 tests d'entraînement"}
-                    {currentPackKey === "griffon" && "Accès populaire 1 mois • 500+ cours • Corrections IA & Messagerie"}
-                    {currentPackKey === "vip" && "Accès VIP 2 mois • 10 000 cours • Coaching 1-on-1 & Réservations illimitées"}
+                    {currentPackKey === "standard" && "Accès standard 1 mois • 20 cours • 20 tests (durée standard)"}
+                    {currentPackKey === "griffon" && "Accès populaire 1 mois • 500+ cours • Tests de 1h 30 • Corrections IA"}
+                    {currentPackKey === "vip" && "Accès VIP 2 mois • 10 000 cours • Tests de 2h 00 • Coaching 1-on-1"}
                   </p>
                 </div>
                 <span className="font-black text-lg text-amber-600 shrink-0 ml-2">

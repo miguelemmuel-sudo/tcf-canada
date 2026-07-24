@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabaseClient";
-import { getCurrentUserPack, PACK_CONFIGS } from "@/utils/subscriptionEngine";
+import { getCurrentUserPack, PACK_CONFIGS, getExamBadgeDurationText } from "@/utils/subscriptionEngine";
 
 const testsCategories = [
   { name: "Tous les tests", href: "/dashboard/exams" },
@@ -183,7 +183,7 @@ export default function TestsPage() {
                 CO
               </div>
               <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400">
-                35 minutes • 39 questions
+                {getExamBadgeDurationText(userPack, "35 minutes")} • 39 questions
               </span>
             </div>
             <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">Compréhension orale</h3>
@@ -206,7 +206,7 @@ export default function TestsPage() {
                 CE
               </div>
               <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400">
-                60 minutes • 39 questions
+                {getExamBadgeDurationText(userPack, "60 minutes")} • 39 questions
               </span>
             </div>
             <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">Compréhension écrite</h3>
@@ -229,7 +229,7 @@ export default function TestsPage() {
                 PE
               </div>
               <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400">
-                60 minutes • 3 tâches
+                {getExamBadgeDurationText(userPack, "60 minutes")} • 3 tâches
               </span>
             </div>
             <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">Production écrite</h3>
@@ -252,7 +252,7 @@ export default function TestsPage() {
                 PO
               </div>
               <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400">
-                12 minutes • 3 épreuves
+                {getExamBadgeDurationText(userPack, "12 minutes")} • 3 épreuves
               </span>
             </div>
             <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">Production orale</h3>

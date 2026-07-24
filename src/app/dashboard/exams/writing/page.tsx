@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, PenTool, BrainCircuit, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle } from "lucide-react";
 import { ResumeSessionModal } from "@/components/ui/ResumeSessionModal";
 import { saveSessionState } from "@/utils/sessionManager";
-import { getCurrentUserPack, PACK_CONFIGS } from "@/utils/subscriptionEngine";
+import { getCurrentUserPack, PACK_CONFIGS, getExamDurationSecondsForPack } from "@/utils/subscriptionEngine";
 import { generateExamWritingTasksForPack } from "@/utils/courseGenerator";
 import { evaluateUserResponse } from "@/utils/aiEvaluationEngine";
 
@@ -105,12 +105,16 @@ function countWords(text: string): number {
 
 export default function WritingExamPage() {
   const [pack, setPack] = useState(getCurrentUserPack());
-  useEffect(() => setPack(getCurrentUserPack()), []);
+  const [timeLeft, setTimeLeft] = useState(() => getExamDurationSecondsForPack(getCurrentUserPack(), TOTAL_TIME));
+  useEffect(() => {
+    const p = getCurrentUserPack();
+    setPack(p);
+    setTimeLeft(getExamDurationSecondsForPack(p, TOTAL_TIME));
+  }, []);
   const TASKS = React.useMemo<typeof BASE_TASKS>(() => generateExamWritingTasksForPack(BASE_TASKS, pack, PACK_CONFIGS[pack], "writing"), [pack]);
 
   const [currentTask, setCurrentTask] = useState(0);
   const [texts, setTexts] = useState<string[]>(Array(TASKS.length).fill(""));
-  const [timeLeft, setTimeLeft] = useState(TOTAL_TIME);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiFeedback, setAiFeedback] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -169,7 +173,7 @@ export default function WritingExamPage() {
     localStorage.removeItem("tcf_session_writing_exam");
     setTexts(Array(TASKS.length).fill(""));
     setCurrentTask(0);
-    setTimeLeft(TOTAL_TIME);
+    setTimeLeft(getExamDurationSecondsForPack(pack, TOTAL_TIME));
     setShowResumeModal(false);
   };
 
