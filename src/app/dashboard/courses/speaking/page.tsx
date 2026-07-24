@@ -211,50 +211,51 @@ export default function SpeakingCoursePage() {
         </div>
       </div>
 
-      {/* Lesson Tabs & Arrow Navigation */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-slate-950 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div className="flex gap-2 overflow-x-auto pb-1 max-w-full sm:max-w-md">
+      {/* Lesson Tabs & Arrow Navigation (< / >) */}
+      <div className="flex items-center justify-between gap-2 bg-slate-100 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-200/80 dark:border-slate-800 flex-wrap">
+        <button
+          onClick={() => {
+            if (currentLesson > 0) {
+              setCurrentLesson(c => c - 1); reset();
+            }
+          }}
+          disabled={currentLesson === 0}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-purple-50 hover:border-purple-300 dark:hover:bg-purple-950/30 disabled:opacity-40 disabled:pointer-events-none transition-all shadow-sm shrink-0"
+          title="Leçon précédente"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          <span>Leçon précédente</span>
+        </button>
+
+        <div className="flex items-center gap-1.5 overflow-x-auto py-1 flex-1 justify-center">
           {LESSONS.map((l, i) => (
             <button key={l.id} onClick={() => { setCurrentLesson(i); reset(); }}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 ${
+              className={`px-3.5 py-1.5 rounded-lg text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
                 i === currentLesson
-                  ? "bg-purple-600 text-white shadow-md shadow-purple-500/20"
-                  : "bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 hover:border-purple-300"
+                  ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-500/25 border border-purple-400"
+                  : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 hover:border-purple-400 hover:text-purple-600 dark:text-slate-300 dark:hover:text-purple-400"
               }`}
             >
-              {l.done && <CheckCircle2 className="h-3 w-3 text-emerald-400" />}
-              Leçon {i + 1}
+              {l.done && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />}
+              <span>Leçon {i + 1}</span>
             </button>
           ))}
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={() => {
-              if (currentLesson > 0) {
-                setCurrentLesson(c => c - 1); reset();
-              }
-            }}
-            disabled={currentLesson === 0}
-            className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 font-bold text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 transition-all flex items-center gap-1 shadow-sm"
-          >
-            <ChevronLeft className="h-3.5 w-3.5" />
-            <span>Cours précédent</span>
-          </button>
-          <button
-            onClick={() => {
-              if (currentLesson < LESSONS.length - 1) {
-                setCurrentLesson(c => c + 1); reset();
-              } else {
-                window.location.href = "/dashboard/courses/writing";
-              }
-            }}
-            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 font-bold text-xs text-white transition-all flex items-center gap-1 shadow-md shadow-purple-500/20"
-          >
-            <span>Cours suivant</span>
-            <ChevronRight className="h-3.5 w-3.5" />
-          </button>
-        </div>
+        <button
+          onClick={() => {
+            if (currentLesson < LESSONS.length - 1) {
+              setCurrentLesson(c => c + 1); reset();
+            } else {
+              window.location.href = "/dashboard/courses/writing";
+            }
+          }}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-purple-50 hover:border-purple-300 dark:hover:bg-purple-950/30 transition-all shadow-sm shrink-0"
+          title={currentLesson < LESSONS.length - 1 ? "Leçon suivante" : "Cours suivant"}
+        >
+          <span>{currentLesson < LESSONS.length - 1 ? "Leçon suivante" : "Cours suivant"}</span>
+          <ChevronRight className="h-4 w-4" />
+        </button>
       </div>
 
       {/* Lesson Content */}

@@ -311,22 +311,44 @@ export default function WritingExamPage() {
         </div>
       </div>
 
-      {/* Onglets tâches */}
-      <div className="flex gap-2">
-        {TASKS.map((t, i) => (
-          <button key={t.id} onClick={() => { setCurrentTask(i); setAiFeedback(null); }}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-              i === currentTask
-                ? "bg-amber-500 text-white shadow-md shadow-amber-500/25"
-                : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-muted-foreground hover:border-amber-300"
-            }`}
-          >
-            Tâche {i + 1}
-            {texts[i].trim() && i !== currentTask && (
-              <CheckCircle2 className="h-3 w-3 inline ml-1.5 text-emerald-500" />
-            )}
-          </button>
-        ))}
+      {/* Onglets tâches et flèches de navigation (< / >) */}
+      <div className="flex items-center justify-between gap-2 bg-slate-100 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-200/80 dark:border-slate-800 flex-wrap">
+        <button
+          onClick={() => { setCurrentTask((prev) => Math.max(0, prev - 1)); setAiFeedback(null); }}
+          disabled={currentTask === 0}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-amber-50 hover:border-amber-300 dark:hover:bg-amber-950/30 disabled:opacity-40 disabled:pointer-events-none transition-all shadow-sm shrink-0"
+          title="Tâche précédente"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          <span>Tâche précédente</span>
+        </button>
+
+        <div className="flex items-center gap-1.5 overflow-x-auto py-1 flex-1 justify-center">
+          {TASKS.map((t, i) => (
+            <button key={t.id} onClick={() => { setCurrentTask(i); setAiFeedback(null); }}
+              className={`px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-all ${
+                i === currentTask
+                  ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-md shadow-amber-500/25 border border-amber-400"
+                  : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-muted-foreground hover:border-amber-400 hover:text-amber-600 dark:hover:text-amber-400"
+              }`}
+            >
+              Tâche {i + 1}
+              {texts[i].trim() && i !== currentTask && (
+                <CheckCircle2 className="h-3 w-3 inline ml-1.5 text-emerald-500" />
+              )}
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={() => { setCurrentTask((prev) => Math.min(TASKS.length - 1, prev + 1)); setAiFeedback(null); }}
+          disabled={currentTask === TASKS.length - 1}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-amber-50 hover:border-amber-300 dark:hover:bg-amber-950/30 disabled:opacity-40 disabled:pointer-events-none transition-all shadow-sm shrink-0"
+          title="Tâche suivante"
+        >
+          <span>Tâche suivante</span>
+          <ChevronRight className="h-4 w-4" />
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

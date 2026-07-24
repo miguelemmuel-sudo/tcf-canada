@@ -338,6 +338,47 @@ export default function ReadingExamPage() {
         </div>
       </div>
 
+      {/* Navigation des questions (< / >) */}
+      <div className="flex items-center justify-between gap-2 bg-slate-100 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-200/80 dark:border-slate-800 flex-wrap">
+        <button
+          onClick={() => {
+            if (currentQ > 0) {
+              setCurrentQ(q => q - 1);
+            } else if (currentPassage > 0) {
+              setCurrentPassage(p => p - 1);
+              setCurrentQ(PASSAGES[currentPassage - 1].questions.length - 1);
+            }
+          }}
+          disabled={currentPassage === 0 && currentQ === 0}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-emerald-50 hover:border-emerald-300 dark:hover:bg-emerald-950/30 disabled:opacity-40 disabled:pointer-events-none transition-all shadow-sm shrink-0"
+          title="Question précédente"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          <span>Question précédente</span>
+        </button>
+
+        <div className="text-sm font-bold text-slate-700 dark:text-slate-200 px-4 py-1.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
+          Passage {currentPassage + 1} — Question {currentQ + 1} sur {passage.questions.length}
+        </div>
+
+        <button
+          onClick={() => {
+            if (currentQ < passage.questions.length - 1) {
+              setCurrentQ(q => q + 1);
+            } else if (currentPassage < PASSAGES.length - 1) {
+              setCurrentPassage(p => p + 1);
+              setCurrentQ(0);
+            }
+          }}
+          disabled={currentPassage === PASSAGES.length - 1 && currentQ === passage.questions.length - 1}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-emerald-50 hover:border-emerald-300 dark:hover:bg-emerald-950/30 disabled:opacity-40 disabled:pointer-events-none transition-all shadow-sm shrink-0"
+          title="Question suivante"
+        >
+          <span>Question suivante</span>
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left Column: Passage Text */}
         <Card className="border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm rounded-2xl">

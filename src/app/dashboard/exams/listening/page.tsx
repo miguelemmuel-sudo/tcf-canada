@@ -485,6 +485,33 @@ export default function ListeningExamPage() {
         </div>
       </div>
 
+      {/* Navigation des questions (< / >) */}
+      <div className="flex items-center justify-between gap-2 bg-slate-100 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-200/80 dark:border-slate-800 flex-wrap">
+        <button
+          onClick={() => setCurrentQ((prev) => Math.max(0, prev - 1))}
+          disabled={currentQ === 0}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-blue-50 hover:border-blue-300 dark:hover:bg-blue-950/30 disabled:opacity-40 disabled:pointer-events-none transition-all shadow-sm shrink-0"
+          title="Question précédente"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          <span>Question précédente</span>
+        </button>
+
+        <div className="text-sm font-bold text-slate-700 dark:text-slate-200 px-4 py-1.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
+          Question {currentQ + 1} sur {QUESTIONS.length}
+        </div>
+
+        <button
+          onClick={() => setCurrentQ((prev) => Math.min(QUESTIONS.length - 1, prev + 1))}
+          disabled={currentQ === QUESTIONS.length - 1}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-blue-50 hover:border-blue-300 dark:hover:bg-blue-950/30 disabled:opacity-40 disabled:pointer-events-none transition-all shadow-sm shrink-0"
+          title="Question suivante"
+        >
+          <span>Question suivante</span>
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+
       {/* Main Question Card */}
       <Card className="border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-sm rounded-2xl overflow-hidden">
         <CardHeader className="border-b border-slate-100 dark:border-slate-800 pb-4">
