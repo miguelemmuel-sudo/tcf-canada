@@ -139,7 +139,7 @@ export function generateLessonsForPack(
       const hasAuthenticOptions = q.options &&
         Array.isArray(q.options) &&
         q.options.length === 4 &&
-        q.options.every((o: string) => typeof o === "string" && o.length > 5) &&
+        q.options.every((o: string) => typeof o === "string" && o.trim().length > 0) &&
         !q.options[0]?.includes("Option A") &&
         !q.options[0]?.includes("Proposition correcte") &&
         !q.options[0]?.includes("Hors sujet D");
@@ -245,7 +245,7 @@ export function generateExamQuestionsForPack(
       rawQItem.options &&
       Array.isArray(rawQItem.options) &&
       rawQItem.options.length === 4 &&
-      rawQItem.options.every((o: string) => typeof o === "string" && o.length > 8) &&
+      rawQItem.options.every((o: string) => typeof o === "string" && o.trim().length > 0) &&
       !rawQItem.options[0]?.includes("Option A") &&
       !rawQItem.options[0]?.includes("Proposition correcte");
 
@@ -372,7 +372,7 @@ export function generateExamPassagesForPack(
       const hasRealOptions = q.options &&
         Array.isArray(q.options) &&
         q.options.length === 4 &&
-        q.options.every((o: string) => typeof o === "string" && o.length > 8) &&
+        q.options.every((o: string) => typeof o === "string" && o.trim().length > 0) &&
         !q.options[0]?.includes("Option A") &&
         !q.options[0]?.includes("Proposition correcte");
 
