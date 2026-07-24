@@ -66,11 +66,13 @@ export default function ProfilePage() {
             if (localAvatar) setAvatarUrl(localAvatar);
           }
         } else {
-          // Local guest fallbacks
-          const localAvatar = localStorage.getItem("griffon_avatar_url_guest");
-          if (localAvatar) setAvatarUrl(localAvatar);
-          setFullName(localStorage.getItem("griffon_user_name") || "Candidat TCF");
-          setEmail(localStorage.getItem("griffon_user_email") || "candidat@email.com");
+          // Local guest fallbacks (Indépendant par email)
+          const localEmail = (localStorage.getItem("griffon_user_email") || "candidat@email.com").toLowerCase().trim();
+          const emailAvatarKey = `griffon_avatar_url_${localEmail}`;
+          const localAvatarByEmail = localStorage.getItem(emailAvatarKey) || localStorage.getItem("griffon_avatar_url_guest");
+          if (localAvatarByEmail) setAvatarUrl(localAvatarByEmail);
+          setFullName(localStorage.getItem(`griffon_user_name_${localEmail}`) || localStorage.getItem("griffon_user_name") || "Candidat TCF");
+          setEmail(localEmail);
           setPhone(localStorage.getItem("griffon_user_phone") || "+237 695 903 205");
           setCountry(localStorage.getItem("griffon_user_country") || "Cameroun 🇨🇲");
         }
@@ -97,6 +99,9 @@ export default function ProfilePage() {
       try {
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
+        const localEmail = (user?.email || localStorage.getItem("griffon_user_email") || "candidat@email.com").toLowerCase().trim();
+        const emailAvatarKey = `griffon_avatar_url_${localEmail}`;
+        localStorage.setItem(emailAvatarKey, res);
 
         if (user) {
           // Save in user-specific localStorage key to avoid overwriting other users

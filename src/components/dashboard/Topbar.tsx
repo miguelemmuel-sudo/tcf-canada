@@ -55,13 +55,22 @@ export function Topbar({ userName = "Candidat", onMenuClick }: TopbarProps) {
 
   useEffect(() => {
     async function loadUserAvatarAndName() {
+      const localEmail = (localStorage.getItem("griffon_user_email") || "").toLowerCase().trim() || "default_guest";
+      const emailAvatarKey = `griffon_avatar_url_${localEmail}`;
+      const emailNameKey = `griffon_user_name_${localEmail}`;
+      const localAvatarByEmail = localStorage.getItem(emailAvatarKey);
+      const localNameByEmail = localStorage.getItem(emailNameKey) || localStorage.getItem("griffon_user_name");
+
+      if (localAvatarByEmail) setAvatar(localAvatarByEmail);
+      if (localNameByEmail) setDisplayName(localNameByEmail);
+
       try {
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
         if (user) {
           const userAvatarKey = `griffon_avatar_url_${user.id}`;
-          const localAvatar = localStorage.getItem(userAvatarKey);
+          const localAvatarById = localStorage.getItem(userAvatarKey);
 
           // Fetch from Supabase profiles
           const { data: profile } = await supabase
@@ -72,12 +81,15 @@ export function Topbar({ userName = "Candidat", onMenuClick }: TopbarProps) {
 
           if (profile?.avatar_url) {
             setAvatar(profile.avatar_url);
-          } else if (localAvatar) {
-            setAvatar(localAvatar);
+            localStorage.setItem(emailAvatarKey, profile.avatar_url);
+          } else if (localAvatarById) {
+            setAvatar(localAvatarById);
           }
 
           if (profile?.full_name || profile?.first_name) {
-            setDisplayName(profile.full_name || profile.first_name);
+            const name = profile.full_name || profile.first_name;
+            setDisplayName(name);
+            localStorage.setItem(emailNameKey, name);
           } else if (user.user_metadata?.full_name) {
             setDisplayName(user.user_metadata.full_name);
           }
@@ -93,9 +105,9 @@ export function Topbar({ userName = "Candidat", onMenuClick }: TopbarProps) {
             }
           }
         } else {
-          // Guest fallback
-          const guestAvatar = localStorage.getItem("griffon_avatar_url_guest");
-          if (guestAvatar) setAvatar(guestAvatar);
+          // Fallback hors-ligne / invité (strictement par email)
+          const fallbackAvatar = localStorage.getItem(emailAvatarKey) || localStorage.getItem("griffon_avatar_url_guest");
+          if (fallbackAvatar) setAvatar(fallbackAvatar);
         }
       } catch (err) {
         console.error("Erreur Topbar:", err);
