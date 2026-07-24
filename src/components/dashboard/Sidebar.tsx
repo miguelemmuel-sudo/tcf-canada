@@ -149,6 +149,32 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             );
           })}
 
+          {isAdmin && (
+            <div className="pt-3 border-t border-slate-800/80 my-2">
+              <span className="px-4 text-[10px] font-black uppercase text-amber-500/90 tracking-wider block mb-1">
+                Direction & SaaS
+              </span>
+              <Link href="/dashboard/admin" onClick={onClose}>
+                <div
+                  className={cn(
+                    "flex items-center justify-between px-4 py-3 rounded-xl font-bold text-sm transition-all duration-150",
+                    pathname.startsWith("/dashboard/admin")
+                      ? "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-lg shadow-amber-500/20"
+                      : "text-amber-400 hover:bg-slate-800/60 hover:text-amber-300 border border-amber-500/30"
+                  )}
+                >
+                  <div className="flex items-center space-x-3.5">
+                    <Crown className="h-5 w-5" />
+                    <span>Admin SaaS & Finance</span>
+                  </div>
+                  <span className="text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded font-black">
+                    VIP
+                  </span>
+                </div>
+              </Link>
+            </div>
+          )}
+
           <button
             onClick={async () => {
               if (typeof window !== "undefined") {

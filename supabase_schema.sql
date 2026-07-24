@@ -317,3 +317,55 @@ WHERE id IN (
   SELECT id FROM auth.users 
   WHERE email IN ('emmuel.proreseau@gmail.com', 'joumefiomiguel@gmail.com', 'miguelemmuel@gmail.com', 'admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com')
 );
+
+-- 14. SYSTÈMES ET TABLES FAPSHI (TRANSACTIONS, JOURNAUX DE PAIEMENTS, RLS)
+CREATE TABLE IF NOT EXISTS public.transactions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  subscription_id UUID REFERENCES public.subscriptions(id) ON DELETE SET NULL,
+  provider TEXT NOT NULL DEFAULT 'Fapshi',
+  provider_transaction_id TEXT,
+  payment_method TEXT,
+  amount TEXT NOT NULL,
+  currency TEXT DEFAULT 'FCFA',
+  reference TEXT NOT NULL UNIQUE,
+  status TEXT NOT NULL DEFAULT 'pending',
+  webhook_status TEXT DEFAULT 'unprocessed',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON public.transactions(user_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_reference ON public.transactions(reference);
+CREATE INDEX IF NOT EXISTS idx_transactions_status ON public.transactions(status);
+
+ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Transactions user select policy" ON public.transactions;
+CREATE POLICY "Transactions user select policy" ON public.transactions FOR SELECT USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Transactions user insert policy" ON public.transactions;
+CREATE POLICY "Transactions user insert policy" ON public.transactions FOR INSERT WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Transactions admin full access" ON public.transactions;
+CREATE POLICY "Transactions admin full access" ON public.transactions FOR ALL USING (public.is_admin());
+
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS type TEXT DEFAULT 'info';
+CREATE INDEX IF NOT EXISTS idx_notifications_user_type ON public.notifications(user_id, type);
+
+CREATE TABLE IF NOT EXISTS public.payment_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  transaction_reference TEXT,
+  event_type TEXT NOT NULL,
+  payload JSONB DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_payment_logs_tx_ref ON public.payment_logs(transaction_reference);
+CREATE INDEX IF NOT EXISTS idx_payment_logs_user_id ON public.payment_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_payment_logs_event_type ON public.payment_logs(event_type);
+
+ALTER TABLE public.payment_logs ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Payment logs user select policy" ON public.payment_logs;
+CREATE POLICY "Payment logs user select policy" ON public.payment_logs FOR SELECT USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Payment logs admin full access" ON public.payment_logs;
+CREATE POLICY "Payment logs admin full access" ON public.payment_logs FOR ALL USING (public.is_admin());
+
