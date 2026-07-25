@@ -160,7 +160,7 @@ export default function RegisterPage() {
         'admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com'
       ].includes(formDataState.email.toLowerCase().trim());
 
-      // ── ÉTAPE 1 : Inscription directe côté client (sans API, sans clé service role) ──
+      // ── ÉTAPE 1 : Inscription (signUp) ──
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: formDataState.email,
         password: formDataState.password,
@@ -173,56 +173,85 @@ export default function RegisterPage() {
       });
 
       if (signUpError) {
-        const lowerMsg = signUpError.message.toLowerCase();
+        const lowerMsg = signUpError.message?.toLowerCase() ?? "";
         if (lowerMsg.includes("already") || lowerMsg.includes("registered") || lowerMsg.includes("exists")) {
           setError("❌ Cette adresse e-mail est déjà utilisée. Veuillez vous connecter.");
         } else if (lowerMsg.includes("password") || lowerMsg.includes("weak")) {
           setError("❌ Mot de passe trop faible. Minimum 8 caractères.");
-        } else {
+        } else if (lowerMsg.includes("rate limit") || lowerMsg.includes("too many")) {
+          setError("⏳ Trop de tentatives. Veuillez patienter quelques minutes.");
+        } else if (lowerMsg.includes("invalid email") || lowerMsg.includes("unable to validate")) {
+          setError("❌ Adresse e-mail invalide.");
+        } else if (lowerMsg.includes("failed to fetch") || lowerMsg.includes("network")) {
+          setError("🌐 Erreur de connexion. Vérifiez votre connexion Internet.");
+        } else if (signUpError.message) {
           setError(`❌ Erreur d'inscription: ${signUpError.message}`);
+        } else {
+          setError("❌ Impossible de créer le compte. Veuillez réessayer.");
         }
         setLoading(false);
         return;
       }
 
       const user = signUpData?.user;
-      if (!user) {
+
+      // Cas Supabase avec "Confirm email" activé : identities vides = email déjà utilisé
+      if (!user?.id) {
         setError("❌ Impossible de créer le compte. Veuillez réessayer avec une autre adresse e-mail.");
         setLoading(false);
         return;
       }
 
-      // ── ÉTAPE 2 : Connexion immédiate ──
-      await supabase.auth.signInWithPassword({
-        email: formDataState.email,
-        password: formDataState.password,
-      });
+      if (user.identities && user.identities.length === 0) {
+        setError("❌ Cette adresse e-mail est déjà associée à un compte. Veuillez vous connecter.");
+        setLoading(false);
+        return;
+      }
 
-      // ── ÉTAPE 3 : Synchronisation du profil ──
-      await supabase.from("profiles").upsert({
-        id: user.id,
-        email: formDataState.email.toLowerCase().trim(),
-        full_name: formDataState.name,
-        subscription_type: isAdminEmail ? "vip" : selectedPlan,
-        is_admin: isAdminEmail,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: "id" });
+      // ── ÉTAPE 2 : Connexion immédiate (best-effort, ne bloque pas) ──
+      try {
+        await supabase.auth.signInWithPassword({
+          email: formDataState.email,
+          password: formDataState.password,
+        });
+      } catch (_) {
+        // Peut échouer si confirmation email requise — on continue quand même
+      }
 
-      // ── ÉTAPE 4 : Données locales ──
-      const { clearAllUserLocalData } = await import("@/utils/sessionManager");
-      clearAllUserLocalData();
-      localStorage.setItem("griffon_user_name", formDataState.name || formDataState.email);
-      localStorage.setItem("griffon_user_email", formDataState.email);
-      localStorage.setItem("griffon_user_plan", isAdminEmail ? "vip" : selectedPlan);
-      localStorage.setItem("griffon_user_new", "true");
+      // ── ÉTAPE 3 : Synchronisation du profil (best-effort, ne bloque pas) ──
+      try {
+        await supabase.from("profiles").upsert({
+          id: user.id,
+          email: formDataState.email.toLowerCase().trim(),
+          full_name: formDataState.name,
+          subscription_type: isAdminEmail ? "vip" : selectedPlan,
+          is_admin: isAdminEmail,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: "id" });
+      } catch (_) {
+        // Ne pas bloquer si la table ou les permissions posent problème
+      }
+
+      // ── ÉTAPE 4 : Données locales (best-effort) ──
+      try {
+        const { clearAllUserLocalData } = await import("@/utils/sessionManager");
+        clearAllUserLocalData();
+      } catch (_) {}
+
+      try {
+        localStorage.setItem("griffon_user_name", formDataState.name || formDataState.email);
+        localStorage.setItem("griffon_user_email", formDataState.email);
+        localStorage.setItem("griffon_user_plan", isAdminEmail ? "vip" : selectedPlan);
+        localStorage.setItem("griffon_user_new", "true");
+      } catch (_) {}
 
       // ── ÉTAPE 5 : Admin → dashboard direct ──
       if (isAdminEmail) {
-        localStorage.setItem("griffon_user_is_admin", "true");
+        try { localStorage.setItem("griffon_user_is_admin", "true"); } catch (_) {}
         router.push("/dashboard");
         return;
       }
-      localStorage.removeItem("griffon_user_is_admin");
+      try { localStorage.removeItem("griffon_user_is_admin"); } catch (_) {}
 
       // ── ÉTAPE 6 : Redirection vers Fapshi pour le paiement ──
       try {
@@ -238,36 +267,31 @@ export default function RegisterPage() {
         });
 
         let fapshiData: any = {};
-        try {
-          fapshiData = await fapshiRes.json();
-        } catch (_) {}
+        try { fapshiData = await fapshiRes.json(); } catch (_) {}
 
         if (fapshiRes.ok && fapshiData.link) {
           window.location.href = fapshiData.link;
           return;
         } else {
-          // Récupérer le message d'erreur Fapshi s'il existe
-          const fapshiErrMsg = typeof fapshiData?.error === "string"
-            ? fapshiData.error
-            : `Erreur ${fapshiRes.status}`;
-          console.error("Fapshi error:", fapshiErrMsg, fapshiData);
-          // Fallback: aller sur la page de paiement avec info
+          const fapshiErrMsg = typeof fapshiData?.error === "string" ? fapshiData.error : `Erreur ${fapshiRes.status}`;
+          console.error("[Fapshi] Erreur initiation paiement:", fapshiErrMsg, fapshiData);
+          // Fallback : rediriger vers la page de paiement manuellement
           router.push(`/dashboard/payments?pack=${selectedPlan}&initiate=true`);
         }
       } catch (fapshiErr: any) {
-        console.error("Fapshi network error:", fapshiErr);
+        console.error("[Fapshi] Erreur réseau:", fapshiErr?.message || fapshiErr);
         router.push(`/dashboard/payments?pack=${selectedPlan}&initiate=true`);
       }
 
     } catch (err: any) {
-      console.error("Erreur globale inscription:", err);
-      const errMsg = (typeof err?.message === "string" && err.message)
-        ? err.message
-        : (typeof err === "string" ? err : null);
-      setError(errMsg
-        ? `❌ Erreur inattendue: ${errMsg}`
-        : "❌ Une erreur inattendue est survenue. Veuillez réessayer."
-      );
+      console.error("[Inscription] Erreur globale:", err);
+      let errMsg = "❌ Une erreur inattendue est survenue. Veuillez réessayer.";
+      if (typeof err?.message === "string" && err.message.trim()) {
+        errMsg = `❌ Erreur: ${err.message}`;
+      } else if (typeof err === "string" && err.trim()) {
+        errMsg = `❌ Erreur: ${err}`;
+      }
+      setError(errMsg);
       setLoading(false);
     }
   };
