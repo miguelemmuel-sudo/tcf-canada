@@ -12,6 +12,7 @@ export default function DashboardLayout({
   const [userName, setUserName] = useState("Candidat");
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
+  const [hasActiveSub, setHasActiveSub] = useState(false);
 
   useEffect(() => {
     // Read user name from localStorage
@@ -51,15 +52,19 @@ export default function DashboardLayout({
 
         const isPaymentsPage = window.location.pathname.includes("/dashboard/payments");
 
-        if (!sub && !isPaymentsPage) {
-          // No active subscription, redirect to payments
-          window.location.href = "/dashboard/payments";
-        } else if (sub && sub.expires_at && new Date(sub.expires_at) < new Date() && !isPaymentsPage) {
+        if (!sub) {
+          // No active subscription
+          setHasActiveSub(false);
+          if (!isPaymentsPage) window.location.href = "/dashboard/payments";
+        } else if (sub.expires_at && new Date(sub.expires_at) < new Date()) {
           // Expired subscription
-          window.location.href = "/dashboard/payments";
+          setHasActiveSub(false);
+          if (!isPaymentsPage) window.location.href = "/dashboard/payments";
         } else {
-          setIsChecking(false);
+          setHasActiveSub(true);
         }
+        
+        setIsChecking(false);
       } catch (err) {
         console.error("Erreur de vérification d'abonnement", err);
         setIsChecking(false);
@@ -76,6 +81,23 @@ export default function DashboardLayout({
     );
   }
 
+
+  if (!hasActiveSub) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-5xl bg-white dark:bg-slate-950 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-[90vh]">
+          <div className="p-4 bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 text-center">
+            <h2 className="text-lg font-black text-slate-800 dark:text-slate-200 flex items-center justify-center gap-2">
+              🔒 Accès Restreint - Paiement Requis
+            </h2>
+          </div>
+          <main className="flex-1 overflow-y-auto p-4 md:p-6">
+            {children}
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-900 overflow-hidden relative">
