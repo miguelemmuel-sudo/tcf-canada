@@ -52,12 +52,27 @@ export async function POST(request: Request) {
   }
 
   const cleanEmail = email.toLowerCase().trim();
-  const packKey = pack.toLowerCase();
+  // Normalise le pack : accepte les variantes communes
+  const packKeyRaw = pack.toLowerCase().trim();
+  const packAliases: Record<string, string> = {
+    "griffon": "griffon",
+    "griffon d'or": "griffon",
+    "griffondor": "griffon",
+    "gold": "griffon",
+    "standard": "standard",
+    "basique": "standard",
+    "basic": "standard",
+    "vip": "vip",
+    "coaching": "vip",
+    "vip & coaching": "vip",
+  };
+  const packKey = packAliases[packKeyRaw] || packKeyRaw;
   const packConfig = SERVER_PRICING[packKey];
   const isAdmin = ADMIN_EMAILS.includes(cleanEmail);
 
   if (!packConfig) {
-    return NextResponse.json({ error: `Pack "${pack}" non reconnu.` }, { status: 400 });
+    console.error("[Register API] Pack non reconnu:", pack, "→ packKey:", packKey);
+    return NextResponse.json({ error: `Pack "${pack}" non reconnu. Packs disponibles : standard, griffon, vip.` }, { status: 400 });
   }
 
   // ── 3. Vérification des variables d'environnement ──
@@ -84,42 +99,49 @@ export async function POST(request: Request) {
   try {
     let userId: string;
 
+    // ── Tentative avec service_role (admin) si la clé est disponible ──
+    let adminSuccess = false;
     if (serviceKey) {
-      // ── MODE ADMIN : création directe sans email de confirmation ──
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: cleanEmail,
-        password,
-        user_metadata: { full_name: name, subscription_type: isAdmin ? "vip" : packKey },
-        email_confirm: true,
-      });
+      try {
+        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+          email: cleanEmail,
+          password,
+          user_metadata: { full_name: name, subscription_type: isAdmin ? "vip" : packKey },
+          email_confirm: true,
+        });
 
-      if (authError) {
-        const msg = errorToString(authError);
-        const lower = msg.toLowerCase();
-        if (lower.includes("already") || lower.includes("exists") || lower.includes("registered")) {
-          return NextResponse.json({
-            error: "Cette adresse e-mail est déjà utilisée. Veuillez vous connecter."
-          }, { status: 400 });
+        if (authError) {
+          const msg = errorToString(authError);
+          const lower = msg.toLowerCase();
+          if (lower.includes("already") || lower.includes("exists") || lower.includes("registered") || lower.includes("user_exists")) {
+            return NextResponse.json({
+              error: "Cette adresse e-mail est déjà utilisée. Veuillez vous connecter."
+            }, { status: 400 });
+          }
+          if (lower.includes("password") || lower.includes("weak")) {
+            return NextResponse.json({
+              error: "Mot de passe trop faible. Utilisez au moins 8 caractères avec lettres et chiffres."
+            }, { status: 400 });
+          }
+          // Si l'erreur admin n'est pas fatale (ex: clé service invalide), on tombe dans le fallback
+          console.warn("[Register API] Admin createUser échoué, bascule sur signUp:", msg);
+        } else if (authData?.user?.id) {
+          userId = authData.user.id;
+          adminSuccess = true;
         }
-        if (lower.includes("password") || lower.includes("weak")) {
-          return NextResponse.json({
-            error: "Mot de passe trop faible. Utilisez au moins 8 caractères avec lettres et chiffres."
-          }, { status: 400 });
-        }
-        console.error("[Register API] Auth error:", msg);
-        return NextResponse.json({ error: msg }, { status: 400 });
+      } catch (adminErr) {
+        // Erreur inattendue avec l'API admin → fallback signUp
+        console.warn("[Register API] Erreur admin API, bascule sur signUp:", errorToString(adminErr));
       }
+    }
 
-      if (!authData?.user?.id) {
-        return NextResponse.json({
-          error: "Impossible de créer le compte. Veuillez essayer avec une autre adresse e-mail."
-        }, { status: 400 });
-      }
+    // ── MODE FALLBACK : signUp standard (ANON KEY ou si admin a échoué) ──
+    if (!adminSuccess) {
+      const supabaseFallback = anonKey
+        ? createSupabaseJsClient(supabaseUrl, anonKey, { auth: { persistSession: false, autoRefreshToken: false } })
+        : supabase;
 
-      userId = authData.user.id;
-    } else {
-      // ── MODE FALLBACK : signUp standard (ANON KEY) ──
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      const { data: signUpData, error: signUpError } = await supabaseFallback.auth.signUp({
         email: cleanEmail,
         password,
         options: { data: { full_name: name, subscription_type: isAdmin ? "vip" : packKey } }
@@ -128,7 +150,7 @@ export async function POST(request: Request) {
       if (signUpError) {
         const msg = errorToString(signUpError);
         const lower = msg.toLowerCase();
-        if (lower.includes("already") || lower.includes("exists") || lower.includes("registered")) {
+        if (lower.includes("already") || lower.includes("exists") || lower.includes("registered") || lower.includes("user_exists")) {
           return NextResponse.json({
             error: "Cette adresse e-mail est déjà utilisée. Veuillez vous connecter."
           }, { status: 400 });
@@ -138,12 +160,14 @@ export async function POST(request: Request) {
             error: "Trop de tentatives. Veuillez patienter quelques minutes."
           }, { status: 429 });
         }
+        console.error("[Register API] signUp error:", msg);
         return NextResponse.json({ error: msg }, { status: 400 });
       }
 
       if (!signUpData?.user?.id) {
+        // L'e-mail existe déjà mais Supabase retourne identityData vide (comportement connu)
         return NextResponse.json({
-          error: "Cette adresse e-mail est peut-être déjà utilisée. Veuillez vous connecter."
+          error: "Cette adresse e-mail est peut-être déjà utilisée. Veuillez vous connecter ou utiliser une autre adresse."
         }, { status: 400 });
       }
 
