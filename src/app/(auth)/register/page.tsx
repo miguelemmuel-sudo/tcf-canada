@@ -237,14 +237,21 @@ export default function RegisterPage() {
           }),
         });
 
-        const fapshiData = await fapshiRes.json();
+        let fapshiData: any = {};
+        try {
+          fapshiData = await fapshiRes.json();
+        } catch (_) {}
 
         if (fapshiRes.ok && fapshiData.link) {
           window.location.href = fapshiData.link;
           return;
         } else {
-          console.error("Fapshi error:", fapshiData);
-          // Fallback: aller sur la page de paiement
+          // Récupérer le message d'erreur Fapshi s'il existe
+          const fapshiErrMsg = typeof fapshiData?.error === "string"
+            ? fapshiData.error
+            : `Erreur ${fapshiRes.status}`;
+          console.error("Fapshi error:", fapshiErrMsg, fapshiData);
+          // Fallback: aller sur la page de paiement avec info
           router.push(`/dashboard/payments?pack=${selectedPlan}&initiate=true`);
         }
       } catch (fapshiErr: any) {
@@ -254,7 +261,13 @@ export default function RegisterPage() {
 
     } catch (err: any) {
       console.error("Erreur globale inscription:", err);
-      setError(`❌ Erreur inattendue: ${err?.message || "Veuillez réessayer."}`);
+      const errMsg = (typeof err?.message === "string" && err.message)
+        ? err.message
+        : (typeof err === "string" ? err : null);
+      setError(errMsg
+        ? `❌ Erreur inattendue: ${errMsg}`
+        : "❌ Une erreur inattendue est survenue. Veuillez réessayer."
+      );
       setLoading(false);
     }
   };
