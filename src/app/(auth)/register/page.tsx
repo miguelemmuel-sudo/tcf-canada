@@ -159,36 +159,66 @@ export default function RegisterPage() {
     setLoading(true);
     setError(null);
 
+    // Fonction utilitaire : extraire un message lisible de n'importe quelle erreur
+    const safeErrorMsg = (val: any): string => {
+      if (!val) return "";
+      if (typeof val === "string" && val.trim()) return val.trim();
+      if (typeof val === "object") {
+        if (typeof val.message === "string" && val.message.trim()) return val.message.trim();
+        if (typeof val.error_description === "string" && val.error_description.trim()) return val.error_description.trim();
+        try {
+          const s = JSON.stringify(val);
+          if (s && s !== "{}" && s !== "[]" && s !== "null") return `Erreur technique: ${s}`;
+        } catch (_) {}
+      }
+      return "";
+    };
+
     try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formDataState.name,
-          email: formDataState.email,
-          password: formDataState.password,
-          pack: selectedPlan,
-        }),
-      });
+      let response: Response;
+      let data: any;
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(`❌ ${data.error || "Une erreur inattendue est survenue lors de l'inscription."}`);
+      // Appel API serveur
+      try {
+        response = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: formDataState.name,
+            email: formDataState.email,
+            password: formDataState.password,
+            pack: selectedPlan,
+          }),
+        });
+      } catch (fetchErr: any) {
+        setError("🌐 Impossible de joindre le serveur. Vérifiez votre connexion Internet.");
         setLoading(false);
         return;
       }
 
-      // ── ÉTAPE 2 : Connexion immédiate (best-effort, ne bloque pas) ──
+      // Analyse de la réponse JSON (même en cas d'erreur serveur)
+      try {
+        data = await response.json();
+      } catch (_) {
+        data = {};
+      }
+
+      // Erreur HTTP → afficher le message serveur
+      if (!response.ok) {
+        const msg = safeErrorMsg(data?.error) || safeErrorMsg(data?.message) || safeErrorMsg(data);
+        setError(`❌ ${msg || "Une erreur est survenue lors de l'inscription. Veuillez réessayer."}`);
+        setLoading(false);
+        return;
+      }
+
+      // Succès → connexion auto et localStorage
       const supabase = createClient();
       try {
         await supabase.auth.signInWithPassword({
           email: formDataState.email,
           password: formDataState.password,
         });
-      } catch (_) {
-        // Ignorer l'erreur de connexion, l'essentiel est la création
-      }
+      } catch (_) {}
 
       try {
         const { clearAllUserLocalData } = await import("@/utils/sessionManager");
@@ -202,20 +232,29 @@ export default function RegisterPage() {
         localStorage.setItem("griffon_user_new", "true");
       } catch (_) {}
 
-      // ── ÉTAPE 3 : Redirection vers Fapshi ──
+      // Admin → dashboard direct
+      if (data.admin) {
+        try { localStorage.setItem("griffon_user_is_admin", "true"); } catch (_) {}
+        window.location.href = "/dashboard";
+        return;
+      }
+
+      // Redirection vers Fapshi ou page de paiement
       if (data.link) {
         window.location.href = data.link;
+      } else if (data.redirectTo) {
+        router.push(data.redirectTo);
       } else {
         router.push(`/dashboard/payments?pack=${selectedPlan}&initiate=true`);
       }
 
     } catch (err: any) {
       console.error("[Inscription] Erreur globale:", err);
-      let errMsg = "❌ Une erreur inattendue est survenue. Veuillez vérifier votre connexion.";
-      setError(errMsg);
+      setError("❌ Une erreur inattendue est survenue. Veuillez réessayer.");
       setLoading(false);
     }
   };
+
 
 
 
