@@ -471,7 +471,7 @@ export default function ReadingExamPage() {
                 onClick={handleFinishTest}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl text-xs"
               >
-                Terminer & Soumettre
+                Soumettre les résultats
               </Button>
             )}
           </div>

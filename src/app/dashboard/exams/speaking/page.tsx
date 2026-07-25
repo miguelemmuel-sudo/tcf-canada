@@ -88,11 +88,11 @@ function Timer({ seconds, color = "text-foreground" }: { seconds: number; color?
 
 export default function SpeakingExamPage() {
   const [pack, setPack] = useState(getCurrentUserPack());
-  const [globalTimeLeft, setGlobalTimeLeft] = useState(() => getExamDurationSecondsForPack(getCurrentUserPack(), 12 * 60));
+  const [globalTimeLeft, setGlobalTimeLeft] = useState(() => getExamDurationSecondsForPack(getCurrentUserPack(), 40 * 60));
   useEffect(() => {
     const p = getCurrentUserPack();
     setPack(p);
-    setGlobalTimeLeft(getExamDurationSecondsForPack(p, 12 * 60));
+    setGlobalTimeLeft(getExamDurationSecondsForPack(p, 40 * 60));
   }, []);
   const ORAL_TASKS = React.useMemo<typeof BASE_ORAL_TASKS>(() => generateExamWritingTasksForPack(BASE_ORAL_TASKS, pack, PACK_CONFIGS[pack], "speaking"), [pack]);
 
@@ -378,6 +378,38 @@ export default function SpeakingExamPage() {
     }
   }, [currentTask, pack, task]);
 
+  const handleGlobalAIEval = useCallback(async () => {
+    setAiLoading(true);
+    setAiFeedback(null);
+    try {
+      const simulatedTranscripts: Record<number, string> = {
+        0: "Bonjour, je m'appelle Jean-Dupont. Je suis ingénieur et je vis actuellement au France. J'ai de expérience depuis 5 ans dans mon domaine. Je veux immigrer en Canada pour trouver une bonne opportunité professionnelle dans une grande entreprise.",
+        1: "Bonjour monsieur. Je vous appelle parce que j'ai vu votre annonce pour la location du studio à Québec. J'aimerais savoir le montant exact du loyer et si le chauffage est inclus ? Est-ce que il y a un arrêt de bus pour aller au centre-ville ?",
+        2: "À mon avis, le télétravail est une très bonne chose pour les employés au Canada. En effet, il permet de réduire le stress des transports en hiver et de avoir une conciliation entre vie professionnelle et vie personnelle. Cependant, il est important de garder le contact avec l'équipe."
+      };
+      const combinedText = ORAL_TASKS.map((t, i) => `[TÂCHE ${i+1}]\n${hasRecording[i] ? simulatedTranscripts[i] || "Candidat a parlé." : "Non répondu"}`).join("\n\n");
+      const totalDuration = ORAL_TASKS.reduce((acc, t) => acc + t.speakTime, 0);
+      
+      const result = await evaluateUserResponse({
+        skill: "speaking",
+        userAnswer: combinedText,
+        userLevel: "B2/C1",
+        userPack: pack,
+        questionContext: {
+          title: "Évaluation Globale de l'Examen d'Expression Orale",
+          prompt: "Voici la retranscription globale des enregistrements vocaux du candidat.",
+          durationSeconds: totalDuration
+        }
+      });
+      setAiFeedback(result.formattedMarkdown);
+    } catch (err) {
+      console.error("Erreur IA evaluation globale:", err);
+      setAiFeedback("⚠️ **Erreur lors de l'analyse globale.**");
+    } finally {
+      setAiLoading(false);
+    }
+  }, [hasRecording, pack, ORAL_TASKS]);
+
   const resetTask = () => {
     clearInterval(timerRef.current!);
     clearInterval(audioSimRef.current!);
@@ -404,7 +436,7 @@ export default function SpeakingExamPage() {
               {aiFeedback && (
                 <div className="bg-emerald-50 dark:bg-emerald-950/20 rounded-xl p-4 text-left border border-emerald-200 dark:border-emerald-900">
                   <h3 className="font-semibold flex items-center gap-2 text-emerald-800 dark:text-emerald-200 mb-3">
-                    <BrainCircuit className="h-4 w-4" /> Évaluation IA
+                    <BrainCircuit className="h-4 w-4" /> Score et Analyse Globale de l'IA
                   </h3>
                   <div className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed space-y-1">
                     {aiFeedback}
@@ -414,12 +446,12 @@ export default function SpeakingExamPage() {
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <Button
                   className="flex-1 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold"
-                  onClick={handleAIEval}
+                  onClick={handleGlobalAIEval}
                   disabled={aiLoading || !hasRecording.some(Boolean)}
                 >
                   {aiLoading
                     ? <><span className="animate-spin inline-block mr-2">⚙</span> Analyse en cours...</>
-                    : <><BrainCircuit className="h-4 w-4 mr-2" /> Évaluation complète par IA</>}
+                    : <><BrainCircuit className="h-4 w-4 mr-2" /> Calculer mon Score Global par IA</>}
                 </Button>
               </div>
               <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center border-t border-slate-100 dark:border-slate-800">
@@ -717,7 +749,7 @@ export default function SpeakingExamPage() {
               Tâche suivante <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           : <Button onClick={() => setSubmitted(true)} className="bg-emerald-600 hover:bg-emerald-700">
-              <CheckCircle2 className="h-4 w-4 mr-1" /> Terminer l'oral
+              <CheckCircle2 className="h-4 w-4 mr-1" /> Soumettre les résultats
             </Button>
         }
       </div>

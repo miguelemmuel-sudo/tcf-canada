@@ -609,7 +609,7 @@ export default function ListeningExamPage() {
                 onClick={handleSubmit}
                 className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl px-6"
               >
-                Terminer & Soumettre
+                Soumettre les résultats
               </Button>
             )}
           </div>

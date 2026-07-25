@@ -212,6 +212,36 @@ export default function WritingExamPage() {
     }
   }, [texts, currentTask, pack, task]);
 
+  const handleGlobalAIEval = useCallback(async () => {
+    setAiLoading(true);
+    setAiFeedback(null);
+    try {
+      const combinedText = TASKS.map((t, i) => `[TÂCHE ${i+1}]\n${texts[i] || "Non répondu"}`).join("\n\n");
+      const totalMinWords = TASKS.reduce((acc, t) => acc + t.minWords, 0);
+      const totalMaxWords = TASKS.reduce((acc, t) => acc + t.maxWords, 0);
+      
+      const result = await evaluateUserResponse({
+        skill: "writing",
+        userAnswer: combinedText,
+        userLevel: "B2/C1",
+        userPack: pack,
+        questionContext: {
+          title: "Évaluation Globale de l'Examen d'Expression Écrite",
+          prompt: "Voici l'ensemble des productions du candidat pour l'examen.",
+          minWords: totalMinWords,
+          maxWords: totalMaxWords,
+          durationSeconds: 60 * 60
+        }
+      });
+      setAiFeedback(result.formattedMarkdown);
+    } catch (err) {
+      console.error("Erreur IA evaluation globale:", err);
+      setAiFeedback("⚠️ **Erreur lors de l'analyse globale.**");
+    } finally {
+      setAiLoading(false);
+    }
+  }, [texts, pack]);
+
   const wordCount = countWords(texts[currentTask]);
   const wordStatus = wordCount < task.minWords ? "under" : wordCount > task.maxWords ? "over" : "ok";
 
@@ -238,7 +268,7 @@ export default function WritingExamPage() {
               {aiFeedback && (
                 <div className="bg-amber-50 dark:bg-amber-950/20 rounded-xl p-4 text-left space-y-2 border border-amber-200 dark:border-amber-900">
                   <h3 className="font-semibold flex items-center gap-2 text-amber-800 dark:text-amber-200">
-                    <BrainCircuit className="h-4 w-4" /> Retour de l'IA
+                    <BrainCircuit className="h-4 w-4" /> Score et Analyse Globale de l'IA
                   </h3>
                   <div className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed">
                     {aiFeedback}
@@ -249,8 +279,8 @@ export default function WritingExamPage() {
                 <Button variant="outline" className="flex-1" onClick={() => { setSubmitted(false); setAiFeedback(null); }}>
                   Modifier
                 </Button>
-                <Button className="flex-1" onClick={handleAICorrection} disabled={aiLoading}>
-                  {aiLoading ? <><span className="animate-spin mr-2">⚙</span> Analyse...</> : <><BrainCircuit className="h-4 w-4 mr-2" /> Corriger par IA</>}
+                <Button className="flex-1 bg-purple-600 hover:bg-purple-700 font-bold" onClick={handleGlobalAIEval} disabled={aiLoading}>
+                  {aiLoading ? <><span className="animate-spin mr-2">⚙</span> Calcul du Score...</> : <><BrainCircuit className="h-4 w-4 mr-2" /> Calculer mon Score Global</>}
                 </Button>
               </div>
             </CardContent>
@@ -430,7 +460,7 @@ export default function WritingExamPage() {
         </Button>
         {currentTask < TASKS.length - 1
           ? <Button onClick={() => setCurrentTask((t) => t + 1)}>Tâche suivante <ChevronRight className="h-4 w-4 ml-1" /></Button>
-          : <Button onClick={() => setSubmitted(true)} className="bg-emerald-600 hover:bg-emerald-700"><CheckCircle2 className="h-4 w-4 mr-1" /> Soumettre tout</Button>
+          : <Button onClick={() => setSubmitted(true)} className="bg-emerald-600 hover:bg-emerald-700"><CheckCircle2 className="h-4 w-4 mr-1" /> Soumettre les résultats</Button>
         }
       </div>
     </div>
