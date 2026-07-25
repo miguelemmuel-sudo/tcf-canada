@@ -154,102 +154,111 @@ export default function RegisterPage() {
     setError(null);
 
     try {
-      // 1. Inscription serveur avec auto-confirmation (email_confirm: true via API Admin)
-      // Contourne définitivement l'envoi d'e-mail par Resend/SMTP et l'erreur 550
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: formDataState.email,
-          password: formDataState.password,
-          name: formDataState.name,
-          subscription_type: selectedPlan,
-        }),
+      const supabase = createClient();
+      const isAdminEmail = [
+        'emmuel.proreseau@gmail.com', 'joumefiomiguel@gmail.com', 'miguelemmuel@gmail.com',
+        'admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com'
+      ].includes(formDataState.email.toLowerCase().trim());
+
+      // ── ÉTAPE 1 : Inscription directe côté client (sans API, sans clé service role) ──
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: formDataState.email,
+        password: formDataState.password,
+        options: {
+          data: {
+            full_name: formDataState.name,
+            subscription_type: isAdminEmail ? "vip" : selectedPlan,
+          },
+        },
       });
 
-      const result = await res.json();
-
-      if (!res.ok || result.error) {
-        setError(formatAuthError(result.error || "Erreur lors de l'inscription."));
+      if (signUpError) {
+        const lowerMsg = signUpError.message.toLowerCase();
+        if (lowerMsg.includes("already") || lowerMsg.includes("registered") || lowerMsg.includes("exists")) {
+          setError("❌ Cette adresse e-mail est déjà utilisée. Veuillez vous connecter.");
+        } else if (lowerMsg.includes("password") || lowerMsg.includes("weak")) {
+          setError("❌ Mot de passe trop faible. Minimum 8 caractères.");
+        } else {
+          setError(`❌ Erreur d'inscription: ${signUpError.message}`);
+        }
         setLoading(false);
         return;
       }
 
-      // 2. Connecter immédiatement l'utilisateur côté client pour établir la session et les cookies SSR
-      const supabase = createClient();
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      const user = signUpData?.user;
+      if (!user) {
+        setError("❌ Impossible de créer le compte. Veuillez réessayer avec une autre adresse e-mail.");
+        setLoading(false);
+        return;
+      }
+
+      // ── ÉTAPE 2 : Connexion immédiate ──
+      await supabase.auth.signInWithPassword({
         email: formDataState.email,
         password: formDataState.password,
       });
 
-      if (signInError) {
-        console.warn("Avertissement connexion auto post-inscription:", signInError);
-      }
+      // ── ÉTAPE 3 : Synchronisation du profil ──
+      await supabase.from("profiles").upsert({
+        id: user.id,
+        email: formDataState.email.toLowerCase().trim(),
+        full_name: formDataState.name,
+        subscription_type: isAdminEmail ? "vip" : selectedPlan,
+        is_admin: isAdminEmail,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "id" });
 
-      const user = signInData?.user || result.user;
-
-      const isAdminEmail = ['emmuel.proreseau@gmail.com', 'joumefiomiguel@gmail.com', 'miguelemmuel@gmail.com', 'admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com'].includes(formDataState.email.toLowerCase().trim());
-
-      if (user) {
-        const { clearAllUserLocalData } = await import("@/utils/sessionManager");
-        clearAllUserLocalData();
-
-        await supabase
-          .from("profiles")
-          .upsert({ 
-            id: user.id, 
-            subscription_type: isAdminEmail ? "vip" : selectedPlan, 
-            full_name: formDataState.name,
-            is_admin: isAdminEmail,
-            updated_at: new Date().toISOString()
-          });
-      }
-
+      // ── ÉTAPE 4 : Données locales ──
+      const { clearAllUserLocalData } = await import("@/utils/sessionManager");
+      clearAllUserLocalData();
       localStorage.setItem("griffon_user_name", formDataState.name || formDataState.email);
       localStorage.setItem("griffon_user_email", formDataState.email);
       localStorage.setItem("griffon_user_plan", isAdminEmail ? "vip" : selectedPlan);
       localStorage.setItem("griffon_user_new", "true");
+
+      // ── ÉTAPE 5 : Admin → dashboard direct ──
       if (isAdminEmail) {
         localStorage.setItem("griffon_user_is_admin", "true");
         router.push("/dashboard");
         return;
-      } else {
-        localStorage.removeItem("griffon_user_is_admin");
       }
+      localStorage.removeItem("griffon_user_is_admin");
 
-      // En environnement productif, rediriger immédiatement le candidat vers l'agrégateur Fapshi pour le paiement du pack choisi
+      // ── ÉTAPE 6 : Redirection vers Fapshi pour le paiement ──
       try {
-        const res = await fetch("/api/fapshi/initiate", {
+        const fapshiRes = await fetch("/api/fapshi/initiate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             pack: selectedPlan,
             redirectUrl: `${window.location.origin}/dashboard/payments?status=check&pack=${selectedPlan}`,
-            userId: user?.id,
-            email: formDataState.email
-          })
+            userId: user.id,
+            email: formDataState.email,
+          }),
         });
 
-        const fapshiData = await res.json();
+        const fapshiData = await fapshiRes.json();
 
-        if (res.ok && fapshiData.link) {
+        if (fapshiRes.ok && fapshiData.link) {
           window.location.href = fapshiData.link;
           return;
         } else {
-          console.error("Erreur initialisation Fapshi lors de l'inscription:", fapshiData.error);
+          console.error("Fapshi error:", fapshiData);
+          // Fallback: aller sur la page de paiement
           router.push(`/dashboard/payments?pack=${selectedPlan}&initiate=true`);
-          return;
         }
       } catch (fapshiErr: any) {
-        console.error("Erreur réseau Fapshi lors de l'inscription:", fapshiErr);
+        console.error("Fapshi network error:", fapshiErr);
         router.push(`/dashboard/payments?pack=${selectedPlan}&initiate=true`);
-        return;
       }
+
     } catch (err: any) {
-      setError(formatAuthError(err));
+      console.error("Erreur globale inscription:", err);
+      setError(`❌ Erreur inattendue: ${err?.message || "Veuillez réessayer."}`);
       setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen w-full flex flex-col lg:flex-row bg-slate-50 dark:bg-slate-950 overflow-hidden">
