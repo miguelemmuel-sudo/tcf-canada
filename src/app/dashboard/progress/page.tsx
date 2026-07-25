@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BarChart3, TrendingUp, Clock, Target, Calendar, ChevronUp, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabaseClient";
+import { getLearningTimeSeconds, formatTimeFromSeconds } from "@/utils/courseTracker";
 
 const days = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
@@ -55,6 +56,8 @@ export default function ProgressPage() {
               
               const level = avg >= 85 ? "C1" : avg >= 75 ? "B2+" : avg >= 60 ? "B2" : avg >= 40 ? "B1" : "A2";
               
+              const learningSeconds = getLearningTimeSeconds();
+              
               // Déterminer les scores des derniers 7 jours si possible
               const scores = completed.slice(0, 7).map(e => e.score || 0);
               while (scores.length < 7) scores.push(0);
@@ -62,7 +65,7 @@ export default function ProgressPage() {
               setUserProgressData({
                 estimatedScore: avg,
                 cefrLevel: level,
-                weeklyHours: `${completed.length * 1}h30`,
+                weeklyHours: formatTimeFromSeconds(learningSeconds),
                 streakDays: Math.min(7, completed.length),
                 weekData: scores,
                 objectives: [
@@ -74,11 +77,12 @@ export default function ProgressPage() {
               });
             }
           } else {
+            const learningSeconds = getLearningTimeSeconds();
             // NOUVEAU CLIENT : tout à 0 / null
             setUserProgressData({
               estimatedScore: 0,
               cefrLevel: "-",
-              weeklyHours: "0h00",
+              weeklyHours: formatTimeFromSeconds(learningSeconds),
               streakDays: 0,
               weekData: [0, 0, 0, 0, 0, 0, 0],
               objectives: [
