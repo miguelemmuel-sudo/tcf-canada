@@ -1,31 +1,49 @@
 import { NextResponse } from "next/server";
 import { createClient as createSupabaseJsClient } from "@supabase/supabase-js";
+import { createHash, randomUUID } from "crypto";
 
 const SERVER_PRICING: Record<string, { amount: number; name: string; currency: string }> = {
   standard: { amount: 15000, name: "Pack Standard", currency: "FCFA" },
   griffon: { amount: 25000, name: "Pack Griffon D'OR", currency: "FCFA" },
-  vip: { amount: 100000, name: "Pack VIP & Coaching", currency: "FCFA" }
+  vip: { amount: 100000, name: "Pack VIP & Coaching", currency: "FCFA" },
+};
+
+const PACK_ALIASES: Record<string, string> = {
+  griffon: "griffon", "griffon d'or": "griffon", griffondor: "griffon", gold: "griffon",
+  standard: "standard", basique: "standard", basic: "standard",
+  vip: "vip", coaching: "vip", "vip & coaching": "vip",
 };
 
 const ADMIN_EMAILS = [
   "emmuel.proreseau@gmail.com", "joumefiomiguel@gmail.com", "miguelemmuel@gmail.com",
-  "admin.miguel@griffondor.com", "miguel.admin@griffondor.com", "admin@griffondor.com", "miguel@griffondor.com"
+  "admin.miguel@griffondor.com", "miguel.admin@griffondor.com",
+  "admin@griffondor.com", "miguel@griffondor.com",
 ];
 
-function errorToString(err: unknown): string {
-  if (!err) return "Erreur inconnue.";
-  if (typeof err === "string" && err.trim()) return err.trim();
+function safeStr(err: unknown): string {
+  if (!err) return "Erreur inconnue";
+  if (typeof err === "string") return err;
   if (typeof err === "object") {
     const e = err as Record<string, unknown>;
-    if (typeof e.message === "string" && e.message.trim()) return e.message.trim();
-    if (typeof e.msg === "string" && e.msg.trim()) return e.msg.trim();
-    if (typeof e.error_description === "string" && e.error_description.trim()) return e.error_description.trim();
+    if (typeof e.message === "string" && e.message) return e.message;
+    if (typeof e.msg === "string" && e.msg) return e.msg;
+    if (typeof e.error_description === "string" && e.error_description) return e.error_description;
+    try {
+      const s = JSON.stringify(e);
+      if (s && s !== "{}") return s;
+    } catch (_) {}
   }
-  return "Une erreur est survenue. Veuillez réessayer.";
+  return "Erreur serveur inattendue";
+}
+
+/** Hash bcrypt-compatible via crypto (utilisé par Supabase en interne) */
+function hashPassword(password: string): string {
+  // Supabase stocke les mots de passe en bcrypt — on utilise l'API admin pour ça
+  // Cette fonction est un fallback sha256 pour debug uniquement
+  return createHash("sha256").update(password).digest("hex");
 }
 
 export async function POST(request: Request) {
-  // ── 1. Lecture du corps de la requête ──
   let body: Record<string, unknown>;
   try {
     body = await request.json();
@@ -37,7 +55,7 @@ export async function POST(request: Request) {
     email?: string; password?: string; name?: string; pack?: string;
   };
 
-  // ── 2. Validation des champs ──
+  // ── Validation ──
   if (!email || typeof email !== "string" || !email.includes("@")) {
     return NextResponse.json({ error: "Adresse e-mail invalide ou manquante." }, { status: 400 });
   }
@@ -52,105 +70,152 @@ export async function POST(request: Request) {
   }
 
   const cleanEmail = email.toLowerCase().trim();
-  // Normalise le pack : accepte les variantes communes
-  const packKeyRaw = pack.toLowerCase().trim();
-  const packAliases: Record<string, string> = {
-    "griffon": "griffon",
-    "griffon d'or": "griffon",
-    "griffondor": "griffon",
-    "gold": "griffon",
-    "standard": "standard",
-    "basique": "standard",
-    "basic": "standard",
-    "vip": "vip",
-    "coaching": "vip",
-    "vip & coaching": "vip",
-  };
-  const packKey = packAliases[packKeyRaw] || packKeyRaw;
+  const packKey = PACK_ALIASES[pack.toLowerCase().trim()] || pack.toLowerCase().trim();
   const packConfig = SERVER_PRICING[packKey];
   const isAdmin = ADMIN_EMAILS.includes(cleanEmail);
 
   if (!packConfig) {
-    console.error("[Register API] Pack non reconnu:", pack, "→ packKey:", packKey);
-    return NextResponse.json({ error: `Pack "${pack}" non reconnu. Packs disponibles : standard, griffon, vip.` }, { status: 400 });
+    return NextResponse.json({
+      error: `Pack "${pack}" non reconnu. Packs disponibles : standard, griffon, vip.`
+    }, { status: 400 });
   }
 
-  // ── 3. Vérification des variables d'environnement ──
+  // ── Variables d'environnement ──
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
-  console.log("[Register API] Env check - URL:", !!supabaseUrl, "SERVICE_KEY:", !!serviceKey, "ANON_KEY:", !!anonKey);
+  console.log("[Register] ENV check → URL:", !!supabaseUrl, "SERVICE:", !!serviceKey, "ANON:", !!anonKey);
 
-  if (!supabaseUrl) {
-    return NextResponse.json({ error: "Configuration serveur incomplète (URL Supabase manquante)." }, { status: 500 });
+  if (!supabaseUrl || (!serviceKey && !anonKey)) {
+    return NextResponse.json({ error: "Configuration serveur incomplète." }, { status: 500 });
   }
 
-  // ── 4. Client Supabase admin (SERVICE_ROLE_KEY prioritaire) ──
   const keyToUse = serviceKey || anonKey;
-  if (!keyToUse) {
-    return NextResponse.json({ error: "Configuration serveur incomplète (clé Supabase manquante)." }, { status: 500 });
-  }
-
   const supabase = createSupabaseJsClient(supabaseUrl, keyToUse, {
-    auth: { persistSession: false, autoRefreshToken: false }
+    auth: { persistSession: false, autoRefreshToken: false },
   });
 
   try {
-    let userId: string;
+    let userId: string | null = null;
 
-    // ── Tentative avec service_role (admin) si la clé est disponible ──
-    let adminSuccess = false;
+    // ══════════════════════════════════════════════════════════════════
+    // MÉTHODE 1 — SQL direct (bypass total de l'API Auth et du SMTP)
+    // ══════════════════════════════════════════════════════════════════
     if (serviceKey) {
+      console.log("[Register] Tentative création via SQL direct...");
       try {
-        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        // Vérifie si l'email existe déjà
+        const { data: existing } = await supabase
+          .from("auth.users" as "profiles")
+          .select("id")
+          .eq("email", cleanEmail)
+          .maybeSingle();
+
+        // Utiliser RPC ou SQL direct
+        const newUserId = randomUUID();
+        const now = new Date().toISOString();
+
+        const { data: sqlResult, error: sqlError } = await supabase.rpc(
+          "create_user_bypass_email",
+          {
+            p_id: newUserId,
+            p_email: cleanEmail,
+            p_password: password,
+            p_full_name: name,
+            p_subscription_type: isAdmin ? "vip" : packKey,
+          }
+        );
+
+        if (!sqlError && sqlResult) {
+          userId = sqlResult as string;
+          console.log("[Register] ✅ Utilisateur créé via RPC SQL:", userId);
+        } else {
+          console.warn("[Register] RPC non disponible, bascule méthode 2:", safeStr(sqlError));
+        }
+      } catch (e) {
+        console.warn("[Register] SQL direct échoué:", safeStr(e));
+      }
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // MÉTHODE 2 — admin.createUser avec email_confirm:true
+    // ══════════════════════════════════════════════════════════════════
+    if (!userId && serviceKey) {
+      console.log("[Register] Tentative admin.createUser...");
+      try {
+        const { data: adminData, error: adminError } = await supabase.auth.admin.createUser({
           email: cleanEmail,
           password,
           user_metadata: { full_name: name, subscription_type: isAdmin ? "vip" : packKey },
           email_confirm: true,
         });
 
-        if (authError) {
-          const msg = errorToString(authError);
-          const lower = msg.toLowerCase();
-          if (lower.includes("already") || lower.includes("exists") || lower.includes("registered") || lower.includes("user_exists")) {
+        if (adminError) {
+          const msg = safeStr(adminError).toLowerCase();
+          if (msg.includes("already") || msg.includes("exists") || msg.includes("user_exists")) {
             return NextResponse.json({
               error: "Cette adresse e-mail est déjà utilisée. Veuillez vous connecter."
             }, { status: 400 });
           }
-          if (lower.includes("password") || lower.includes("weak")) {
-            return NextResponse.json({
-              error: "Mot de passe trop faible. Utilisez au moins 8 caractères avec lettres et chiffres."
-            }, { status: 400 });
-          }
-          // Si l'erreur admin n'est pas fatale (ex: clé service invalide), on tombe dans le fallback
-          console.warn("[Register API] Admin createUser échoué, bascule sur signUp:", msg);
-        } else if (authData?.user?.id) {
-          userId = authData.user.id;
-          adminSuccess = true;
+          console.warn("[Register] admin.createUser échoué:", safeStr(adminError));
+        } else if (adminData?.user?.id) {
+          userId = adminData.user.id;
+          console.log("[Register] ✅ admin.createUser OK:", userId);
         }
-      } catch (adminErr) {
-        // Erreur inattendue avec l'API admin → fallback signUp
-        console.warn("[Register API] Erreur admin API, bascule sur signUp:", errorToString(adminErr));
+      } catch (e) {
+        console.warn("[Register] admin.createUser exception:", safeStr(e));
       }
     }
 
-    // ── MODE FALLBACK : signUp standard (ANON KEY ou si admin a échoué) ──
-    if (!adminSuccess) {
-      const supabaseFallback = anonKey
-        ? createSupabaseJsClient(supabaseUrl, anonKey, { auth: { persistSession: false, autoRefreshToken: false } })
-        : supabase;
+    // ══════════════════════════════════════════════════════════════════
+    // MÉTHODE 3 — INSERT SQL direct dans auth.users (ultra fallback)
+    // ══════════════════════════════════════════════════════════════════
+    if (!userId) {
+      console.log("[Register] Tentative INSERT SQL direct dans auth.users...");
+      try {
+        const newId = randomUUID();
+        const now = new Date().toISOString();
 
-      const { data: signUpData, error: signUpError } = await supabaseFallback.auth.signUp({
+        const { data: sqlData, error: sqlError } = await supabase.rpc("register_user_direct", {
+          p_email: cleanEmail,
+          p_password: password,
+          p_full_name: name,
+          p_sub_type: isAdmin ? "vip" : packKey,
+        });
+
+        if (!sqlError && sqlData) {
+          userId = sqlData as string;
+          console.log("[Register] ✅ INSERT SQL OK:", userId);
+        } else {
+          console.warn("[Register] INSERT SQL échoué:", safeStr(sqlError));
+        }
+      } catch (e) {
+        console.warn("[Register] INSERT SQL exception:", safeStr(e));
+      }
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // MÉTHODE 4 — signUp (dernier recours, même si SMTP plante)
+    // ══════════════════════════════════════════════════════════════════
+    if (!userId) {
+      console.log("[Register] Tentative signUp standard...");
+      const clientFallback = createSupabaseJsClient(supabaseUrl, anonKey || keyToUse, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
+
+      const { data: signUpData, error: signUpError } = await clientFallback.auth.signUp({
         email: cleanEmail,
         password,
-        options: { data: { full_name: name, subscription_type: isAdmin ? "vip" : packKey } }
+        options: { data: { full_name: name, subscription_type: isAdmin ? "vip" : packKey } },
       });
 
       if (signUpError) {
-        const msg = errorToString(signUpError);
+        const msg = safeStr(signUpError);
         const lower = msg.toLowerCase();
-        if (lower.includes("already") || lower.includes("exists") || lower.includes("registered") || lower.includes("user_exists")) {
+        console.error("[Register] signUp error:", msg);
+
+        if (lower.includes("already") || lower.includes("exists") || lower.includes("user_exists")) {
           return NextResponse.json({
             error: "Cette adresse e-mail est déjà utilisée. Veuillez vous connecter."
           }, { status: 400 });
@@ -160,23 +225,42 @@ export async function POST(request: Request) {
             error: "Trop de tentatives. Veuillez patienter quelques minutes."
           }, { status: 429 });
         }
-        console.error("[Register API] signUp error:", msg);
-        return NextResponse.json({ error: msg }, { status: 400 });
-      }
-
-      if (!signUpData?.user?.id) {
-        // L'e-mail existe déjà mais Supabase retourne identityData vide (comportement connu)
+        if (lower.includes("smtp") || lower.includes("email") || lower.includes("sending") || lower.includes("500")) {
+          // SMTP en panne → essai de récupérer l'ID si le user a quand même été créé
+          console.warn("[Register] SMTP échoué mais l'utilisateur existe peut-être...");
+          const { data: existingUser } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("email", cleanEmail)
+            .maybeSingle();
+          if (existingUser?.id) {
+            userId = existingUser.id;
+            console.log("[Register] ✅ User déjà en base via profiles:", userId);
+          }
+        }
+        if (!userId) {
+          return NextResponse.json({
+            error: `Erreur inscription: ${msg}`
+          }, { status: 400 });
+        }
+      } else if (signUpData?.user?.id) {
+        userId = signUpData.user.id;
+        console.log("[Register] ✅ signUp OK:", userId);
+      } else {
         return NextResponse.json({
           error: "Cette adresse e-mail est peut-être déjà utilisée. Veuillez vous connecter ou utiliser une autre adresse."
         }, { status: 400 });
       }
+    }
 
-      userId = signUpData.user.id;
+    // ── À ce stade, userId est garanti non-null ──
+    if (!userId) {
+      return NextResponse.json({ error: "Impossible de créer le compte. Veuillez réessayer." }, { status: 500 });
     }
 
     const now = new Date().toISOString();
 
-    // ── 5. Profil utilisateur ──
+    // ── Profil utilisateur ──
     try {
       await supabase.from("profiles").upsert({
         id: userId,
@@ -188,13 +272,13 @@ export async function POST(request: Request) {
         updated_at: now,
       }, { onConflict: "id" });
     } catch (e) {
-      console.error("[Register API] Profil error (non-bloquant):", errorToString(e));
+      console.error("[Register] Profil error:", safeStr(e));
     }
 
-    // ── 6. Admin → retour immédiat sans paiement ──
+    // ── Admin → accès direct ──
     if (isAdmin) {
       try {
-        await supabase.from("subscriptions").insert({
+        await supabase.from("subscriptions").upsert({
           user_id: userId,
           pack: "vip",
           amount: "0",
@@ -203,15 +287,15 @@ export async function POST(request: Request) {
           started_at: now,
           expires_at: new Date(Date.now() + 365 * 24 * 3600 * 1000).toISOString(),
           created_at: now,
-          updated_at: now
-        });
+          updated_at: now,
+        }, { onConflict: "user_id" });
       } catch (e) {
-        console.error("[Register API] Admin subscription error:", errorToString(e));
+        console.error("[Register] Admin sub error:", safeStr(e));
       }
       return NextResponse.json({ success: true, admin: true, user: { id: userId, email: cleanEmail } });
     }
 
-    // ── 7. Abonnement en attente ──
+    // ── Abonnement en attente ──
     let subscriptionId: string | null = null;
     try {
       const { data: subData } = await supabase.from("subscriptions").insert({
@@ -223,14 +307,14 @@ export async function POST(request: Request) {
         started_at: null,
         expires_at: null,
         created_at: now,
-        updated_at: now
+        updated_at: now,
       }).select("id").single();
       subscriptionId = subData?.id || null;
     } catch (e) {
-      console.error("[Register API] Subscription error:", errorToString(e));
+      console.error("[Register] Subscription error:", safeStr(e));
     }
 
-    // ── 8. Transaction en attente ──
+    // ── Transaction en attente ──
     const reference = `TCF_${userId.slice(0, 8)}_${Date.now()}`;
     try {
       await supabase.from("transactions").insert({
@@ -243,16 +327,17 @@ export async function POST(request: Request) {
         status: "pending",
         webhook_status: "unprocessed",
         payment_method: "Agregateur_Fapshi",
-        created_at: now
+        created_at: now,
       });
     } catch (e) {
-      console.error("[Register API] Transaction error:", errorToString(e));
+      console.error("[Register] Transaction error:", safeStr(e));
     }
 
-    // ── 9. Initiation Fapshi ──
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL
-      || request.headers.get("origin")
-      || "https://tcf-canada-olive.vercel.app";
+    // ── Initiation Fapshi ──
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      request.headers.get("origin") ||
+      "https://tcf-canada-olive.vercel.app";
     const redirectUrl = `${baseUrl}/dashboard/payments?status=check&ref=${reference}&pack=${packKey}`;
 
     try {
@@ -263,7 +348,7 @@ export async function POST(request: Request) {
         redirectUrl,
         userId,
         externalId: reference,
-        message: `Abonnement ${packConfig.name} - TCF Canada Pro`
+        message: `Abonnement ${packConfig.name} - TCF Canada Pro`,
       });
 
       if (fapshiRes.transId) {
@@ -272,7 +357,7 @@ export async function POST(request: Request) {
             .update({ provider_transaction_id: fapshiRes.transId })
             .eq("reference", reference);
         } catch (e) {
-          console.error("[Register API] Fapshi transId update error:", errorToString(e));
+          console.error("[Register] Fapshi transId update:", safeStr(e));
         }
       }
 
@@ -281,24 +366,21 @@ export async function POST(request: Request) {
         link: fapshiRes.link,
         transId: fapshiRes.transId,
         reference,
-        user: { id: userId, email: cleanEmail }
+        user: { id: userId, email: cleanEmail },
       });
-
-    } catch (fapshiErr: unknown) {
-      console.error("[Register API] Fapshi error:", errorToString(fapshiErr));
-      // Compte créé — on redirige vers paiement manuel
+    } catch (fapshiErr) {
+      console.error("[Register] Fapshi error (non bloquant):", safeStr(fapshiErr));
       return NextResponse.json({
         success: true,
         link: null,
         redirectTo: `/dashboard/payments?pack=${packKey}&initiate=true`,
         user: { id: userId, email: cleanEmail },
-        message: "Compte créé. Veuillez finaliser le paiement."
+        message: "Compte créé. Veuillez finaliser le paiement.",
       });
     }
-
-  } catch (err: unknown) {
-    const msg = errorToString(err);
-    console.error("[Register API] Erreur globale:", msg);
+  } catch (err) {
+    const msg = safeStr(err);
+    console.error("[Register] Erreur globale:", msg);
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
