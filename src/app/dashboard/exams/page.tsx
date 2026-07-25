@@ -21,8 +21,8 @@ const testsCategories = [
   { name: "Tous les tests", href: "/dashboard/exams" },
   { name: "Compréhension orale", href: "/dashboard/exams/listening" },
   { name: "Compréhension écrite", href: "/dashboard/exams/reading" },
-  { name: "Production écrite", href: "/dashboard/exams/writing" },
-  { name: "Production orale", href: "/dashboard/exams/speaking" }
+  { name: "Expression écrite", href: "/dashboard/exams/writing" },
+  { name: "Expression orale", href: "/dashboard/exams/speaking" }
 ];
 
 export default function TestsPage() {
@@ -232,14 +232,14 @@ export default function TestsPage() {
                 {getExamBadgeDurationText(userPack, "60 minutes")} • 3 tâches
               </span>
             </div>
-            <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">Production écrite</h3>
+            <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">Expression écrite</h3>
             <p className="text-xs text-slate-500 leading-relaxed">
               Rédigez des messages, lettres et essais évalués automatiquement avec correction détaillée par IA.
             </p>
           </div>
 
           <Link href="/dashboard/exams/writing" className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs transition-colors flex items-center justify-center gap-2">
-            <span>Démarrer la Production Écrite</span>
+            <span>Démarrer l'Expression Écrite</span>
             <ChevronRight className="h-4 w-4" />
           </Link>
         </div>
@@ -255,14 +255,14 @@ export default function TestsPage() {
                 {getExamBadgeDurationText(userPack, "12 minutes")} • 3 épreuves
               </span>
             </div>
-            <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">Production orale</h3>
+            <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">Expression orale</h3>
             <p className="text-xs text-slate-500 leading-relaxed">
               Exprimez-vous à l'oral avec enregistrement audio en direct et évaluation automatique du score TCF.
             </p>
           </div>
 
           <Link href="/dashboard/exams/speaking" className="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-2">
-            <span>Démarrer la Production Orale</span>
+            <span>Démarrer l'Expression Orale</span>
             <ChevronRight className="h-4 w-4" />
           </Link>
         </div>

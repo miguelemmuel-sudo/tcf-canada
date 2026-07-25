@@ -541,7 +541,7 @@ L'avènement de l'écosystème numérique et la prépondérance des communicatio
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PRODUCTION ÉCRITE (PE)
+// EXPRESSION ÉCRITE (EE)
 // ─────────────────────────────────────────────────────────────────────────────
 export const writingCourses: CourseLesson[] = [
   {
@@ -555,7 +555,7 @@ export const writingCourses: CourseLesson[] = [
     objective: "Rédiger un message électronique ou une note courte (entre 60 et 120 mots au total) pour raconter un fait, saluer, inviter ou remercier en respectant le registre adéquat.",
     text: `### Développement Pédagogique Intégral
 
-La Tâche 1 est l'épreuve d'entrée de la Production Écrite. Elle est notée selon votre respect absolu de la consigne et du nombre de mots (60 à 120 mots, salutations comprises).
+La Tâche 1 est l'épreuve d'entrée de l'Expression Écrite. Elle est notée selon votre respect absolu de la consigne et du nombre de mots (60 à 120 mots, salutations comprises).
 
 #### Structure Incontournable de la Tâche 1
 1. **Formule d'appel (Salutation initiale) :** *Salut Marc,* (familier) ou *Cher Monsieur,* (formel). N'oubliez pas la virgule et le retour à la ligne !
@@ -614,7 +614,7 @@ Julien`,
     objective: "Raconter une expérience personnelle, professionnelle ou associative passée, décrire des événements et exprimer ses réactions, opinions ou émotions de manière argumentée et cohérente.",
     text: `### Développement Pédagogique Intégral
 
-La Tâche 2 de Production Écrite exige une longueur comprise entre 120 et 150 mots. Elle vous demande d'écrire un article, un témoignage ou un rapport pour raconter un événement vécu et partager votre point de vue.
+La Tâche 2 d'Expression Écrite exige une longueur comprise entre 120 et 150 mots. Elle vous demande d'écrire un article, un témoignage ou un rapport pour raconter un événement vécu et partager votre point de vue.
 
 #### Les Secrets d'une Tâche 2 Réussie (Niveau B2 certifié)
 1. **L'alternance des temps du passé :** Utilisez l'**Imparfait** pour le décor, l'atmosphère, les habitudes et les descriptions (*« Le soleil brillait, la salle était bondée »*), et utilisez le **Passé Composé** pour les actions ponctuelles de l'événement (*« Soudain, le conférencier a pris la parole et a captivé le public »*).
@@ -717,7 +717,7 @@ Consigne : Rédigez un texte de 120 à 180 mots. Dans une première partie, vous
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PRODUCTION ORALE (PO)
+// EXPRESSION ORALE (EO)
 // ─────────────────────────────────────────────────────────────────────────────
 export const speakingCourses: CourseLesson[] = [
   {
@@ -727,7 +727,7 @@ export const speakingCourses: CourseLesson[] = [
     duration: "15 min",
     level: "A2",
     cecrLevel: "A2",
-    instruction: "Préparez la Tâche 1 de Production Orale (durée : 2 minutes sans préparation) : l'échange d'introduction avec l'examinateur.",
+    instruction: "Préparez la Tâche 1 d'Expression Orale (durée : 2 minutes sans préparation) : l'échange d'introduction avec l'examinateur.",
     objective: "Se présenter, parler de soi, de son parcours scolaire ou professionnel, de son entourage familial, de sa ville d'origine et de ses projets de vie au Canada en répondant spontanément aux questions de l'examinateur.",
     text: `### Développement Pédagogique Intégral
 

@@ -230,7 +230,7 @@ Si le défi de l'intégration massive des énergies renouvelables intermittentes
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// EXAMEN - PRODUCTION ÉCRITE (PE)
+// EXAMEN - EXPRESSION ÉCRITE (EE)
 // ─────────────────────────────────────────────────────────────────────────────
 export const writingTasks: WritingTask[] = [
   {
@@ -282,7 +282,7 @@ Consigne : Rédigez un texte de 120 à 180 mots. Dans une première partie, vous
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// EXAMEN - PRODUCTION ORALE (PO)
+// EXAMEN - EXPRESSION ORALE (EO)
 // ─────────────────────────────────────────────────────────────────────────────
 export const speakingTasks: SpeakingTask[] = [
   {

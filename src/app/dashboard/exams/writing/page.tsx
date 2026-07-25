@@ -321,7 +321,7 @@ export default function WritingExamPage() {
             onClick={() => window.location.href = "/dashboard/exams/speaking"}
             className="rounded-xl font-bold text-xs"
           >
-            ← Test précédent
+            ← <span className="hidden sm:inline ml-1">Test précédent</span>
           </Button>
           <div className="flex items-center gap-1.5 text-muted-foreground px-2">
             <Clock className="h-4 w-4" />
@@ -336,7 +336,7 @@ export default function WritingExamPage() {
             onClick={() => window.location.href = "/dashboard/exams/listening"}
             className="rounded-xl font-bold text-xs bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900 text-amber-700 dark:text-amber-300 hover:bg-amber-100"
           >
-            Test suivant →
+            <span className="hidden sm:inline mr-1">Test suivant</span> →
           </Button>
         </div>
       </div>
@@ -350,7 +350,7 @@ export default function WritingExamPage() {
           title="Tâche précédente"
         >
           <ChevronLeft className="h-4 w-4" />
-          <span>Tâche précédente</span>
+          <span className="hidden sm:inline">Tâche précédente</span>
         </button>
 
         <div className="flex items-center gap-1.5 overflow-x-auto py-1 flex-1 justify-center">
@@ -376,7 +376,7 @@ export default function WritingExamPage() {
           className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-amber-50 hover:border-amber-300 dark:hover:bg-amber-950/30 disabled:opacity-40 disabled:pointer-events-none transition-all shadow-sm shrink-0"
           title="Tâche suivante"
         >
-          <span>Tâche suivante</span>
+          <span className="hidden sm:inline">Tâche suivante</span>
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>
@@ -456,10 +456,10 @@ export default function WritingExamPage() {
       {/* Navigation */}
       <div className="flex items-center justify-between">
         <Button variant="outline" onClick={() => setCurrentTask((t) => Math.max(0, t - 1))} disabled={currentTask === 0}>
-          <ChevronLeft className="h-4 w-4 mr-1" /> Tâche précédente
+          <ChevronLeft className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">Tâche précédente</span>
         </Button>
         {currentTask < TASKS.length - 1
-          ? <Button onClick={() => setCurrentTask((t) => t + 1)}>Tâche suivante <ChevronRight className="h-4 w-4 ml-1" /></Button>
+          ? <Button onClick={() => setCurrentTask((t) => t + 1)}><span className="hidden sm:inline">Tâche suivante</span> <ChevronRight className="h-4 w-4 sm:ml-1" /></Button>
           : <Button onClick={() => setSubmitted(true)} className="bg-emerald-600 hover:bg-emerald-700"><CheckCircle2 className="h-4 w-4 mr-1" /> Soumettre les résultats</Button>
         }
       </div>

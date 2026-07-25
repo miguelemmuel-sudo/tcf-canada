@@ -14,12 +14,12 @@ export interface InterruptedSession {
 const SESSION_KEYS: { key: string; path: string; title: string; type: "test" | "cours" }[] = [
   { key: "tcf_session_listening_exam", path: "/dashboard/exams/listening", title: "Examen Compréhension Orale", type: "test" },
   { key: "tcf_session_reading_exam", path: "/dashboard/exams/reading", title: "Examen Compréhension Écrite", type: "test" },
-  { key: "tcf_session_writing_exam", path: "/dashboard/exams/writing", title: "Examen Production Écrite", type: "test" },
-  { key: "tcf_session_speaking_exam", path: "/dashboard/exams/speaking", title: "Examen Production Orale", type: "test" },
+  { key: "tcf_session_writing_exam", path: "/dashboard/exams/writing", title: "Examen Expression Écrite", type: "test" },
+  { key: "tcf_session_speaking_exam", path: "/dashboard/exams/speaking", title: "Examen Expression Orale", type: "test" },
   { key: "tcf_session_listening_course", path: "/dashboard/courses/listening", title: "Cours Compréhension Orale", type: "cours" },
   { key: "tcf_session_reading_course", path: "/dashboard/courses/reading", title: "Cours Compréhension Écrite", type: "cours" },
-  { key: "tcf_session_writing_course", path: "/dashboard/courses/writing", title: "Cours Production Écrite", type: "cours" },
-  { key: "tcf_session_speaking_course", path: "/dashboard/courses/speaking", title: "Cours Production Orale", type: "cours" },
+  { key: "tcf_session_writing_course", path: "/dashboard/courses/writing", title: "Cours Expression Écrite", type: "cours" },
+  { key: "tcf_session_speaking_course", path: "/dashboard/courses/speaking", title: "Cours Expression Orale", type: "cours" },
 ];
 
 /**

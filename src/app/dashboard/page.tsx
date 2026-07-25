@@ -317,7 +317,7 @@ export default function DashboardPage() {
             <div className="bg-white dark:bg-slate-950 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm hover:border-amber-500/50 transition-all space-y-3">
               <div className="flex items-center justify-between">
                 <span className="px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/50 text-amber-600 font-extrabold text-[10px] uppercase">
-                  Production Écrite
+                  Expression Écrite
                 </span>
                 <span className="text-xs font-bold text-slate-400">3 tâches</span>
               </div>
@@ -332,7 +332,7 @@ export default function DashboardPage() {
             <div className="bg-white dark:bg-slate-950 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm hover:border-amber-500/50 transition-all space-y-3">
               <div className="flex items-center justify-between">
                 <span className="px-2.5 py-1 rounded-lg bg-purple-50 dark:bg-purple-950/50 text-purple-600 font-extrabold text-[10px] uppercase">
-                  Production Orale
+                  Expression Orale
                 </span>
                 <span className="text-xs font-bold text-slate-400">3 tâches</span>
               </div>

@@ -17,8 +17,8 @@ const courseCategories = [
   { name: "Tous les cours", href: "/dashboard/courses" },
   { name: "Compréhension orale", href: "/dashboard/courses/listening" },
   { name: "Compréhension écrite", href: "/dashboard/courses/reading" },
-  { name: "Production écrite", href: "/dashboard/courses/writing" },
-  { name: "Production orale", href: "/dashboard/courses/speaking" }
+  { name: "Expression écrite", href: "/dashboard/courses/writing" },
+  { name: "Expression orale", href: "/dashboard/courses/speaking" }
 ];
 
 const defaultCoursesList = [
@@ -71,7 +71,7 @@ const defaultCoursesList = [
   {
     id: "pe",
     code: "PE",
-    title: "Production écrite",
+    title: "Expression écrite",
     desc: "Apprenez à rédiger des textes clairs et structurés selon les critères du TCF Canada.",
     progress: 0,
     lessons: "0 / 10 leçons",
@@ -95,7 +95,7 @@ const defaultCoursesList = [
   {
     id: "po",
     code: "PO",
-    title: "Production orale",
+    title: "Expression orale",
     desc: "Entraînez-vous à parler en français sur des sujets variés et améliorez votre aisance.",
     progress: 0,
     lessons: "0 / 10 leçons",

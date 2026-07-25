@@ -250,7 +250,7 @@ export default function ResultsPage() {
 
                   <div>
                     <div className="flex justify-between mb-1">
-                      <span className="flex items-center gap-2 text-slate-700 dark:text-slate-300"><PenTool className="h-4 w-4 text-amber-500" /> Production écrite</span>
+                      <span className="flex items-center gap-2 text-slate-700 dark:text-slate-300"><PenTool className="h-4 w-4 text-amber-500" /> Expression écrite</span>
                       <span className="text-slate-900 dark:text-white">{userStats.writingAvg}%</span>
                     </div>
                     <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
@@ -260,7 +260,7 @@ export default function ResultsPage() {
 
                   <div>
                     <div className="flex justify-between mb-1">
-                      <span className="flex items-center gap-2 text-slate-700 dark:text-slate-300"><Mic className="h-4 w-4 text-purple-600" /> Production orale</span>
+                      <span className="flex items-center gap-2 text-slate-700 dark:text-slate-300"><Mic className="h-4 w-4 text-purple-600" /> Expression orale</span>
                       <span className="text-slate-900 dark:text-white">{userStats.speakingAvg}%</span>
                     </div>
                     <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">

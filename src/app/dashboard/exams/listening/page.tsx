@@ -448,7 +448,7 @@ export default function ListeningExamPage() {
             onClick={() => window.location.href = "/dashboard/exams/writing"}
             className="rounded-xl font-bold text-xs"
           >
-            ← Test précédent
+            ← <span className="hidden sm:inline ml-1">Test précédent</span>
           </Button>
           <Timer seconds={timeLeft} />
           <Button
@@ -457,7 +457,7 @@ export default function ListeningExamPage() {
             onClick={() => window.location.href = "/dashboard/exams/reading"}
             className="rounded-xl font-bold text-xs bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-100"
           >
-            Test suivant →
+            <span className="hidden sm:inline mr-1">Test suivant</span> →
           </Button>
         </div>
       </div>
@@ -494,7 +494,7 @@ export default function ListeningExamPage() {
           title="Question précédente"
         >
           <ChevronLeft className="h-4 w-4" />
-          <span>Question précédente</span>
+          <span className="hidden sm:inline">Question précédente</span>
         </button>
 
         <div className="text-sm font-bold text-slate-700 dark:text-slate-200 px-4 py-1.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -507,7 +507,7 @@ export default function ListeningExamPage() {
           className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-blue-50 hover:border-blue-300 dark:hover:bg-blue-950/30 disabled:opacity-40 disabled:pointer-events-none transition-all shadow-sm shrink-0"
           title="Question suivante"
         >
-          <span>Question suivante</span>
+          <span className="hidden sm:inline">Question suivante</span>
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>
@@ -594,7 +594,7 @@ export default function ListeningExamPage() {
                 onClick={() => setCurrentQ(q => Math.max(0, q - 1))}
                 className="rounded-xl font-bold text-xs"
               >
-                <ChevronLeft className="h-4 w-4 mr-1" /> Question précédente
+                <ChevronLeft className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">Question précédente</span>
               </Button>
 
               {currentQ < QUESTIONS.length - 1 ? (
@@ -602,7 +602,7 @@ export default function ListeningExamPage() {
                   onClick={() => setCurrentQ(q => Math.min(QUESTIONS.length - 1, q + 1))}
                   className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs"
                 >
-                  Question suivante <ChevronRight className="h-4 w-4 ml-1" />
+                  <span className="hidden sm:inline">Question suivante</span> <ChevronRight className="h-4 w-4 sm:ml-1" />
                 </Button>
             ) : (
               <Button

@@ -426,7 +426,7 @@ export function generateExamPassagesForPack(
 }
 
 /**
- * Générateur d'examens pratiques réels TCF Canada (EE & EO - Production Écrite et Orale) :
+ * Générateur d'examens pratiques réels TCF Canada (EE & EO - Expression Écrite et Orale) :
  * Variété absolue des tâches, sujets canadiens authentiques (sans aucune répétition).
  */
 export function generateExamWritingTasksForPack(

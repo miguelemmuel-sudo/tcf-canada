@@ -181,7 +181,7 @@ export default function WritingCoursePage() {
           <ChevronLeft className="h-3.5 w-3.5" /> Mes cours
         </Link>
         <span>/</span>
-        <span className="text-slate-800 dark:text-slate-200 font-semibold">Production écrite</span>
+        <span className="text-slate-800 dark:text-slate-200 font-semibold">Expression écrite</span>
       </div>
 
       {/* Header */}
@@ -191,7 +191,7 @@ export default function WritingCoursePage() {
             <PenTool className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-xl font-black">Production Écrite (PE)</h1>
+            <h1 className="text-xl font-black">Expression Écrite (EE)</h1>
             <p className="text-amber-100 text-sm">Leçon {currentLesson + 1} sur {LESSONS.length}</p>
           </div>
         </div>
@@ -213,7 +213,7 @@ export default function WritingCoursePage() {
           title="Leçon précédente"
         >
           <ChevronLeft className="h-4 w-4" />
-          <span>Leçon précédente</span>
+          <span className="hidden sm:inline">Leçon précédente</span>
         </button>
 
         <div className="flex items-center gap-1.5 overflow-x-auto py-1 flex-1 justify-center">
@@ -242,7 +242,7 @@ export default function WritingCoursePage() {
           className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-amber-50 hover:border-amber-300 dark:hover:bg-amber-950/30 transition-all shadow-sm shrink-0"
           title={currentLesson < LESSONS.length - 1 ? "Leçon suivante" : "Cours suivant"}
         >
-          <span>{currentLesson < LESSONS.length - 1 ? "Leçon suivante" : "Cours suivant"}</span>
+          <span className="hidden sm:inline">{currentLesson < LESSONS.length - 1 ? "Leçon suivante" : "Cours suivant"}</span>
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>

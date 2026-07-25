@@ -324,7 +324,7 @@ export default function ReadingExamPage() {
             onClick={() => window.location.href = "/dashboard/exams/listening"}
             className="rounded-xl font-bold text-xs"
           >
-            ← Test précédent
+            ← <span className="hidden sm:inline ml-1">Test précédent</span>
           </Button>
           <Timer seconds={timeLeft} />
           <Button
@@ -333,7 +333,7 @@ export default function ReadingExamPage() {
             onClick={() => window.location.href = "/dashboard/exams/speaking"}
             className="rounded-xl font-bold text-xs bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100"
           >
-            Test suivant →
+            <span className="hidden sm:inline mr-1">Test suivant</span> →
           </Button>
         </div>
       </div>
@@ -354,7 +354,7 @@ export default function ReadingExamPage() {
           title="Question précédente"
         >
           <ChevronLeft className="h-4 w-4" />
-          <span>Question précédente</span>
+          <span className="hidden sm:inline">Question précédente</span>
         </button>
 
         <div className="text-sm font-bold text-slate-700 dark:text-slate-200 px-4 py-1.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -374,7 +374,7 @@ export default function ReadingExamPage() {
           className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-emerald-50 hover:border-emerald-300 dark:hover:bg-emerald-950/30 disabled:opacity-40 disabled:pointer-events-none transition-all shadow-sm shrink-0"
           title="Question suivante"
         >
-          <span>Question suivante</span>
+          <span className="hidden sm:inline">Question suivante</span>
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>
@@ -446,7 +446,7 @@ export default function ReadingExamPage() {
               }}
               className="rounded-xl font-bold text-xs"
             >
-              <ChevronLeft className="h-4 w-4 mr-1" /> Question précédente
+              <ChevronLeft className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">Question précédente</span>
             </Button>
 
             {currentQ < passage.questions.length - 1 ? (
@@ -454,7 +454,7 @@ export default function ReadingExamPage() {
                 onClick={() => setCurrentQ(q => q + 1)}
                 className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs"
               >
-                Question suivante <ChevronRight className="h-4 w-4 ml-1" />
+                <span className="hidden sm:inline">Question suivante</span> <ChevronRight className="h-4 w-4 sm:ml-1" />
               </Button>
             ) : currentPassage < PASSAGES.length - 1 ? (
               <Button
@@ -464,7 +464,7 @@ export default function ReadingExamPage() {
                 }}
                 className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs"
               >
-                Passage suivant <ChevronRight className="h-4 w-4 ml-1" />
+                <span className="hidden sm:inline">Passage suivant</span> <ChevronRight className="h-4 w-4 sm:ml-1" />
               </Button>
             ) : (
               <Button

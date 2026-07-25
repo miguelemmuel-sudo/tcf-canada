@@ -21,7 +21,7 @@ export const OFFICIAL_CURRICULUM: PedagogicalModule[] = [
     objectives: [
       "Maîtriser le déroulement chronologique officiel des 4 épreuves du TCF Canada.",
       "Comprendre le système de cotation et les paliers de points requis pour l'immigration canadienne (Entrée express / NCLC 7 et plus).",
-      "Éviter les pièges de pénalisation sur les QCM de compréhension et respecter les quotas de mots en production écrite."
+      "Éviter les pièges de pénalisation sur les QCM de compréhension et respecter les quotas de mots en expression écrite."
     ],
     skillsFocus: ["listening", "reading", "writing", "speaking"]
   },
@@ -185,7 +185,7 @@ export const OFFICIAL_CURRICULUM: PedagogicalModule[] = [
     id: 15,
     title: "Module 15 : Niveau C1/C2 – Expression Orale Spontanée et Argumentation Chronométrée",
     cecrLevel: "C2",
-    description: "Entraînement intensif en conditions réelles d'examen pour la Production Orale : préparation rapide de la Tâche 2 et structuration immédiate de la Tâche 3.",
+    description: "Entraînement intensif en conditions réelles d'examen pour l'Expression Orale : préparation rapide de la Tâche 2 et structuration immédiate de la Tâche 3.",
     objectives: [
       "Optimiser les 2 minutes de préparation de la Tâche 2 pour formuler 8 à 10 questions précises, variées et grammaticalement irréprochables.",
       "Structurer mentalement en 30 secondes un plan dialectique (thèse, antithèse, synthèse personnelle) pour la Tâche 3.",
@@ -221,7 +221,7 @@ export const OFFICIAL_CURRICULUM: PedagogicalModule[] = [
     id: 18,
     title: "Module 18 : Niveau C2 – Excellence Rédactionnelle en Expression Écrite",
     cecrLevel: "C2",
-    description: "Entraînement de niveau maître sur les 3 tâches de Production Écrite en respectant à la virgule près les temps impartis et les quotas de mots officiels.",
+    description: "Entraînement de niveau maître sur les 3 tâches d'Expression Écrite en respectant à la virgule près les temps impartis et les quotas de mots officiels.",
     objectives: [
       "Rédiger la Tâche 1 en moins de 10 minutes avec une correction orthographique et grammaticale de 100%.",
       "Exécuter la Tâche 2 en 15 minutes avec une richesse de vocabulaire et une variété de structures impressionnantes.",
