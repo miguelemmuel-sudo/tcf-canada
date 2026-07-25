@@ -594,7 +594,7 @@ function PaymentsContent() {
             <button
               onClick={() => {
                 setPaymentSuccessModal({ show: false });
-                window.location.reload();
+                window.location.href = "/dashboard";
               }}
               className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm shadow-lg shadow-emerald-600/30 transition-all"
             >

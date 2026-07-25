@@ -136,6 +136,12 @@ export default function RegisterPage() {
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formDataState.email)) {
+      setError("L'adresse e-mail saisie n'est pas valide.");
+      return;
+    }
+
     if (formDataState.password.length < 8) {
       setError("Le mot de passe doit contenir au moins 8 caractères.");
       return;
@@ -154,85 +160,36 @@ export default function RegisterPage() {
     setError(null);
 
     try {
-      const supabase = createClient();
-      const isAdminEmail = [
-        'emmuel.proreseau@gmail.com', 'joumefiomiguel@gmail.com', 'miguelemmuel@gmail.com',
-        'admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com'
-      ].includes(formDataState.email.toLowerCase().trim());
-
-      // ── ÉTAPE 1 : Inscription (signUp) ──
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: formDataState.email,
-        password: formDataState.password,
-        options: {
-          data: {
-            full_name: formDataState.name,
-            subscription_type: isAdminEmail ? "vip" : selectedPlan,
-          },
-        },
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formDataState.name,
+          email: formDataState.email,
+          password: formDataState.password,
+          pack: selectedPlan,
+        }),
       });
 
-      if (signUpError) {
-        const lowerMsg = signUpError.message?.toLowerCase() ?? "";
-        if (lowerMsg.includes("already") || lowerMsg.includes("registered") || lowerMsg.includes("exists")) {
-          setError("❌ Cette adresse e-mail est déjà utilisée. Veuillez vous connecter.");
-        } else if (lowerMsg.includes("password") || lowerMsg.includes("weak")) {
-          setError("❌ Mot de passe trop faible. Minimum 8 caractères.");
-        } else if (lowerMsg.includes("rate limit") || lowerMsg.includes("too many")) {
-          setError("⏳ Trop de tentatives. Veuillez patienter quelques minutes.");
-        } else if (lowerMsg.includes("invalid email") || lowerMsg.includes("unable to validate")) {
-          setError("❌ Adresse e-mail invalide.");
-        } else if (lowerMsg.includes("failed to fetch") || lowerMsg.includes("network")) {
-          setError("🌐 Erreur de connexion. Vérifiez votre connexion Internet.");
-        } else if (signUpError.message) {
-          setError(`❌ Erreur d'inscription: ${signUpError.message}`);
-        } else {
-          setError("❌ Impossible de créer le compte. Veuillez réessayer.");
-        }
-        setLoading(false);
-        return;
-      }
+      const data = await response.json();
 
-      const user = signUpData?.user;
-
-      // Cas Supabase avec "Confirm email" activé : identities vides = email déjà utilisé
-      if (!user?.id) {
-        setError("❌ Impossible de créer le compte. Veuillez réessayer avec une autre adresse e-mail.");
-        setLoading(false);
-        return;
-      }
-
-      if (user.identities && user.identities.length === 0) {
-        setError("❌ Cette adresse e-mail est déjà associée à un compte. Veuillez vous connecter.");
+      if (!response.ok) {
+        setError(`❌ ${data.error || "Une erreur inattendue est survenue lors de l'inscription."}`);
         setLoading(false);
         return;
       }
 
       // ── ÉTAPE 2 : Connexion immédiate (best-effort, ne bloque pas) ──
+      const supabase = createClient();
       try {
         await supabase.auth.signInWithPassword({
           email: formDataState.email,
           password: formDataState.password,
         });
       } catch (_) {
-        // Peut échouer si confirmation email requise — on continue quand même
+        // Ignorer l'erreur de connexion, l'essentiel est la création
       }
 
-      // ── ÉTAPE 3 : Synchronisation du profil (best-effort, ne bloque pas) ──
-      try {
-        await supabase.from("profiles").upsert({
-          id: user.id,
-          email: formDataState.email.toLowerCase().trim(),
-          full_name: formDataState.name,
-          subscription_type: isAdminEmail ? "vip" : selectedPlan,
-          is_admin: isAdminEmail,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: "id" });
-      } catch (_) {
-        // Ne pas bloquer si la table ou les permissions posent problème
-      }
-
-      // ── ÉTAPE 4 : Données locales (best-effort) ──
       try {
         const { clearAllUserLocalData } = await import("@/utils/sessionManager");
         clearAllUserLocalData();
@@ -241,60 +198,25 @@ export default function RegisterPage() {
       try {
         localStorage.setItem("griffon_user_name", formDataState.name || formDataState.email);
         localStorage.setItem("griffon_user_email", formDataState.email);
-        localStorage.setItem("griffon_user_plan", isAdminEmail ? "vip" : selectedPlan);
+        localStorage.setItem("griffon_user_plan", selectedPlan);
         localStorage.setItem("griffon_user_new", "true");
       } catch (_) {}
 
-      // ── ÉTAPE 5 : Admin → dashboard direct ──
-      if (isAdminEmail) {
-        try { localStorage.setItem("griffon_user_is_admin", "true"); } catch (_) {}
-        router.push("/dashboard");
-        return;
-      }
-      try { localStorage.removeItem("griffon_user_is_admin"); } catch (_) {}
-
-      // ── ÉTAPE 6 : Redirection vers Fapshi pour le paiement ──
-      try {
-        const fapshiRes = await fetch("/api/fapshi/initiate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            pack: selectedPlan,
-            redirectUrl: `${window.location.origin}/dashboard/payments?status=check&pack=${selectedPlan}`,
-            userId: user.id,
-            email: formDataState.email,
-          }),
-        });
-
-        let fapshiData: any = {};
-        try { fapshiData = await fapshiRes.json(); } catch (_) {}
-
-        if (fapshiRes.ok && fapshiData.link) {
-          window.location.href = fapshiData.link;
-          return;
-        } else {
-          const fapshiErrMsg = typeof fapshiData?.error === "string" ? fapshiData.error : `Erreur ${fapshiRes.status}`;
-          console.error("[Fapshi] Erreur initiation paiement:", fapshiErrMsg, fapshiData);
-          // Fallback : rediriger vers la page de paiement manuellement
-          router.push(`/dashboard/payments?pack=${selectedPlan}&initiate=true`);
-        }
-      } catch (fapshiErr: any) {
-        console.error("[Fapshi] Erreur réseau:", fapshiErr?.message || fapshiErr);
+      // ── ÉTAPE 3 : Redirection vers Fapshi ──
+      if (data.link) {
+        window.location.href = data.link;
+      } else {
         router.push(`/dashboard/payments?pack=${selectedPlan}&initiate=true`);
       }
 
     } catch (err: any) {
       console.error("[Inscription] Erreur globale:", err);
-      let errMsg = "❌ Une erreur inattendue est survenue. Veuillez réessayer.";
-      if (typeof err?.message === "string" && err.message.trim()) {
-        errMsg = `❌ Erreur: ${err.message}`;
-      } else if (typeof err === "string" && err.trim()) {
-        errMsg = `❌ Erreur: ${err}`;
-      }
+      let errMsg = "❌ Une erreur inattendue est survenue. Veuillez vérifier votre connexion.";
       setError(errMsg);
       setLoading(false);
     }
   };
+
 
 
   return (
