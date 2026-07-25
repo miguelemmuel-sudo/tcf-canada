@@ -344,7 +344,7 @@ export default function WritingCoursePage() {
         <button disabled={currentLesson === 0} onClick={() => { setCurrentLesson(c => c - 1); reset(); }}
           className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-sm font-bold text-slate-700 dark:text-slate-300 disabled:opacity-40 hover:bg-slate-50 transition-colors flex items-center gap-1.5">
           <ChevronLeft className="h-4 w-4" />
-          <span>← Cours précédent</span>
+          <span className="hidden sm:inline">← Cours précédent</span>
         </button>
         <button
           onClick={() => {
@@ -356,7 +356,7 @@ export default function WritingCoursePage() {
           }}
           className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-white font-bold text-sm transition-colors flex items-center gap-1.5 shadow-md shadow-amber-500/20"
         >
-          <span>Cours suivant →</span>
+          <span className="hidden sm:inline">Cours suivant →</span>
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>

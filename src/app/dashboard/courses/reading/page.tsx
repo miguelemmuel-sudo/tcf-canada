@@ -357,21 +357,34 @@ export default function ReadingCoursePage() {
           </div>
         )}
 
-        <div className="flex gap-3 pt-2">
+        <div className="flex gap-2 pt-2">
           <button 
             onClick={() => {
-              setShowResults(true);
-              markLessonCompleted("ce", currentLesson + 1, LESSONS.length);
-              localStorage.removeItem("tcf_session_reading_course");
-            }} 
-            disabled={Object.keys(answers).length < lesson.questions.length || showResults}
-            className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-sm transition-colors flex items-center justify-center gap-2"
+              if (currentLesson > 0) {
+                setCurrentLesson(c => c - 1); setAnswers({}); setShowResults(false);
+              }
+            }}
+            disabled={currentLesson === 0}
+            className="w-12 flex-shrink-0 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40 flex items-center justify-center transition-colors"
           >
-            <Sparkles className="h-4 w-4" />
-            <span>Vérifier mes réponses</span>
+            <ChevronLeft className="h-5 w-5" />
           </button>
 
-          {showResults && (
+          {!showResults ? (
+            <button 
+              onClick={() => {
+                setShowResults(true);
+                markLessonCompleted("ce", currentLesson + 1, LESSONS.length);
+                localStorage.removeItem("tcf_session_reading_course");
+              }} 
+              disabled={Object.keys(answers).length < lesson.questions.length}
+              className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-sm transition-colors flex items-center justify-center gap-2"
+            >
+              <Sparkles className="h-4 w-4" />
+              <span className="hidden sm:inline">Vérifier mes réponses</span>
+              <span className="sm:hidden">Vérifier</span>
+            </button>
+          ) : (
             <button 
               onClick={() => { 
                 if (currentLesson < LESSONS.length - 1) {
@@ -383,12 +396,28 @@ export default function ReadingCoursePage() {
                 }
                 localStorage.removeItem("tcf_session_reading_course");
               }}
-              className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 animate-pulse"
+              className="flex-1 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 animate-pulse"
             >
-              <span>Passer au cours suivant</span>
+              <span className="hidden sm:inline">Passer au cours suivant</span>
+              <span className="sm:hidden">Suivant</span>
               <ArrowRight className="h-4 w-4" />
             </button>
           )}
+
+          <button 
+            onClick={() => { 
+              if (currentLesson < LESSONS.length - 1) {
+                setCurrentLesson(c => c + 1); 
+                setAnswers({}); 
+                setShowResults(false); 
+              } else {
+                window.location.href = "/dashboard/courses/speaking";
+              }
+            }}
+            className="w-12 flex-shrink-0 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition-colors"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
         </div>
       </div>
     </div>

@@ -477,21 +477,34 @@ export default function ListeningCoursePage() {
           </div>
         )}
 
-        <div className="flex gap-3 pt-2">
+        <div className="flex gap-2 pt-2">
           <button 
             onClick={() => {
-              setShowResults(true);
-              markLessonCompleted("co", currentLesson + 1, LESSONS.length);
-              localStorage.removeItem("tcf_session_listening_course");
-            }} 
-            disabled={Object.keys(answers).length < (lesson.questions || []).length || showResults}
-            className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-sm transition-colors flex items-center justify-center gap-2"
+              if (currentLesson > 0) {
+                setCurrentLesson(c => c - 1); setAnswers({}); setShowResults(false); stopAudio();
+              }
+            }}
+            disabled={currentLesson === 0}
+            className="w-12 flex-shrink-0 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40 flex items-center justify-center transition-colors"
           >
-            <Sparkles className="h-4 w-4" />
-            <span>Vérifier mes réponses</span>
+            <ChevronLeft className="h-5 w-5" />
           </button>
 
-          {showResults && (
+          {!showResults ? (
+            <button 
+              onClick={() => {
+                setShowResults(true);
+                markLessonCompleted("co", currentLesson + 1, LESSONS.length);
+                localStorage.removeItem("tcf_session_listening_course");
+              }} 
+              disabled={Object.keys(answers).length < (lesson.questions || []).length}
+              className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-sm transition-colors flex items-center justify-center gap-2"
+            >
+              <Sparkles className="h-4 w-4" />
+              <span className="hidden sm:inline">Vérifier mes réponses</span>
+              <span className="sm:hidden">Vérifier</span>
+            </button>
+          ) : (
             <button 
               onClick={() => { 
                 if (currentLesson < LESSONS.length - 1) {
@@ -504,12 +517,29 @@ export default function ListeningCoursePage() {
                 }
                 localStorage.removeItem("tcf_session_listening_course");
               }}
-              className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 animate-pulse"
+              className="flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 animate-pulse"
             >
-              <span>Passer au cours suivant</span>
+              <span className="hidden sm:inline">Passer au cours suivant</span>
+              <span className="sm:hidden">Suivant</span>
               <ArrowRight className="h-4 w-4" />
             </button>
           )}
+
+          <button 
+            onClick={() => { 
+              if (currentLesson < LESSONS.length - 1) {
+                setCurrentLesson(c => c + 1); 
+                setAnswers({}); 
+                setShowResults(false); 
+                stopAudio();
+              } else {
+                window.location.href = "/dashboard/courses/reading";
+              }
+            }}
+            className="w-12 flex-shrink-0 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition-colors"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
         </div>
       </div>
     </div>
