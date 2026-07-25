@@ -120,7 +120,8 @@ export default function RegisterPage() {
 
   // Form Data State
   const [formDataState, setFormDataState] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -136,19 +137,25 @@ export default function RegisterPage() {
       return;
     }
 
+    if (!formDataState.firstName.trim() || !formDataState.lastName.trim()) {
+      setError("❌ Veuillez renseigner votre nom et votre prénom.");
+      return;
+    }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formDataState.email)) {
-      setError("L'adresse e-mail saisie n'est pas valide.");
+      setError("❌ L'adresse e-mail saisie n'est pas valide.");
       return;
     }
 
     if (formDataState.password.length < 8) {
-      setError("Le mot de passe doit contenir au moins 8 caractères.");
+      setError("❌ Le mot de passe doit contenir au moins 8 caractères.");
       return;
     }
 
+    // Checking for simple weak passwords if necessary, but length is the minimum
     if (formDataState.password !== formDataState.confirmPassword) {
-      setError("Les mots de passe ne correspondent pas.");
+      setError("❌ Les mots de passe ne correspondent pas. Veuillez vérifier votre saisie.");
       return;
     }
 
@@ -184,7 +191,8 @@ export default function RegisterPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name: formDataState.name,
+            firstName: formDataState.firstName.trim(),
+            lastName: formDataState.lastName.trim(),
             email: formDataState.email,
             password: formDataState.password,
             pack: selectedPlan,
@@ -226,7 +234,7 @@ export default function RegisterPage() {
       } catch (_) {}
 
       try {
-        localStorage.setItem("griffon_user_name", formDataState.name || formDataState.email);
+        localStorage.setItem("griffon_user_name", `${formDataState.firstName} ${formDataState.lastName}`.trim());
         localStorage.setItem("griffon_user_email", formDataState.email);
         localStorage.setItem("griffon_user_plan", selectedPlan);
         localStorage.setItem("griffon_user_new", "true");
@@ -332,21 +340,41 @@ export default function RegisterPage() {
           {/* ÉTAPE 1: Informations Personnelles */}
           {step === 1 && (
             <form className="space-y-4" onSubmit={handleStep1Submit}>
-              {/* Nom complet */}
-              <div>
-                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 block mb-1.5">
-                  Nom complet
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500 dark:text-yellow-400" />
-                  <input
-                    type="text"
-                    required
-                    value={formDataState.name}
-                    onChange={(e) => setFormDataState({ ...formDataState, name: e.target.value })}
-                    placeholder="Jean Dupont"
-                    className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:bg-white transition-all"
-                  />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Nom */}
+                <div>
+                  <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 block mb-1.5">
+                    Nom
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500 dark:text-yellow-400" />
+                    <input
+                      type="text"
+                      required
+                      value={formDataState.lastName}
+                      onChange={(e) => setFormDataState({ ...formDataState, lastName: e.target.value })}
+                      placeholder="Dupont"
+                      className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:bg-white transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Prénom */}
+                <div>
+                  <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 block mb-1.5">
+                    Prénom
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500 dark:text-yellow-400" />
+                    <input
+                      type="text"
+                      required
+                      value={formDataState.firstName}
+                      onChange={(e) => setFormDataState({ ...formDataState, firstName: e.target.value })}
+                      placeholder="Jean"
+                      className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:bg-white transition-all"
+                    />
+                  </div>
                 </div>
               </div>
 

@@ -51,8 +51,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Corps de la requête invalide." }, { status: 400 });
   }
 
-  const { email, password, name, pack } = body as {
-    email?: string; password?: string; name?: string; pack?: string;
+  const { email, password, firstName, lastName, pack } = body as {
+    email?: string; password?: string; firstName?: string; lastName?: string; pack?: string;
   };
 
   // ── Validation ──
@@ -62,9 +62,11 @@ export async function POST(request: Request) {
   if (!password || typeof password !== "string" || password.length < 8) {
     return NextResponse.json({ error: "Le mot de passe doit contenir au moins 8 caractères." }, { status: 400 });
   }
-  if (!name || typeof name !== "string" || !name.trim()) {
-    return NextResponse.json({ error: "Le nom complet est requis." }, { status: 400 });
+  if (!firstName || typeof firstName !== "string" || !firstName.trim() || !lastName || typeof lastName !== "string" || !lastName.trim()) {
+    return NextResponse.json({ error: "Veuillez renseigner votre nom et votre prénom." }, { status: 400 });
   }
+  
+  const fullName = `${firstName.trim()} ${lastName.trim()}`;
   if (!pack || typeof pack !== "string") {
     return NextResponse.json({ error: "Veuillez sélectionner un pack." }, { status: 400 });
   }
@@ -122,7 +124,7 @@ export async function POST(request: Request) {
             p_id: newUserId,
             p_email: cleanEmail,
             p_password: password,
-            p_full_name: name,
+            p_full_name: fullName,
             p_subscription_type: isAdmin ? "vip" : packKey,
           }
         );
@@ -147,7 +149,7 @@ export async function POST(request: Request) {
         const { data: adminData, error: adminError } = await supabase.auth.admin.createUser({
           email: cleanEmail,
           password,
-          user_metadata: { full_name: name, subscription_type: isAdmin ? "vip" : packKey },
+          user_metadata: { first_name: firstName.trim(), last_name: lastName.trim(), full_name: fullName, subscription_type: isAdmin ? "vip" : packKey },
           email_confirm: true,
         });
 
@@ -180,7 +182,8 @@ export async function POST(request: Request) {
         const { data: sqlData, error: sqlError } = await supabase.rpc("register_user_direct", {
           p_email: cleanEmail,
           p_password: password,
-          p_full_name: name,
+          p_first_name: firstName.trim(),
+          p_last_name: lastName.trim(),
           p_sub_type: isAdmin ? "vip" : packKey,
         });
 
@@ -207,7 +210,7 @@ export async function POST(request: Request) {
       const { data: signUpData, error: signUpError } = await clientFallback.auth.signUp({
         email: cleanEmail,
         password,
-        options: { data: { full_name: name, subscription_type: isAdmin ? "vip" : packKey } },
+        options: { data: { first_name: firstName.trim(), last_name: lastName.trim(), full_name: fullName, subscription_type: isAdmin ? "vip" : packKey } },
       });
 
       if (signUpError) {
@@ -265,7 +268,9 @@ export async function POST(request: Request) {
       await supabase.from("profiles").upsert({
         id: userId,
         email: cleanEmail,
-        full_name: name,
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        full_name: fullName,
         subscription_type: isAdmin ? "vip" : packKey,
         is_admin: isAdmin,
         created_at: now,

@@ -12,15 +12,15 @@ function getAdminSupabase() {
 }
 
 // Fonction utilitaire pour déterminer le pack et la durée officielle selon le montant payé ou la référence
-function getPackInfo(amountNum: number, reference: string = ""): { key: string; name: string; durationMonths: number } {
+function getPackInfo(amountNum: number, reference: string = ""): { key: string; name: string; durationDays: number } {
   const refLower = reference.toLowerCase();
   
   if (amountNum >= 90000 || refLower.includes("vip")) {
-    return { key: "vip", name: "Pack VIP & Coaching", durationMonths: 2 };
+    return { key: "vip", name: "Pack VIP & Coaching", durationDays: 60 };
   } else if (amountNum >= 20000 || refLower.includes("griffon")) {
-    return { key: "griffon", name: "Pack Griffon D'OR", durationMonths: 1 };
+    return { key: "griffon", name: "Pack Griffon D'OR", durationDays: 30 };
   } else {
-    return { key: "standard", name: "Pack Standard", durationMonths: 1 };
+    return { key: "standard", name: "Pack Standard", durationDays: 30 };
   }
 }
 
@@ -76,12 +76,11 @@ export async function POST(request: Request) {
     const statusUpper = (status || "").toUpperCase();
 
     if (statusUpper === "SUCCESSFUL" || statusUpper === "COMPLETED" || statusUpper === "PAYÉ") {
-      const { key: packKey, name: packName, durationMonths } = getPackInfo(amountVal, reference);
+      const { key: packKey, name: packName, durationDays } = getPackInfo(amountVal, reference);
 
-      // Calcul automatique de la durée (1 mois pour Standard/Griffon, 2 mois pour VIP)
+      // Calcul automatique de la durée (30 jours pour Standard/Griffon, 60 jours pour VIP)
       const now = new Date();
-      const expiresAt = new Date(now);
-      expiresAt.setMonth(expiresAt.getMonth() + durationMonths);
+      const expiresAt = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000);
 
       const formattedExpiresAt = expiresAt.toLocaleDateString("fr-FR", {
         day: "2-digit",
@@ -156,7 +155,7 @@ export async function POST(request: Request) {
 
         // E. Créer automatiquement une notification dans le tableau de bord utilisateur
         const notifTitle = `Paiement confirmé : ${packName}`;
-        const notifMessage = `Votre paiement de ${amountVal.toLocaleString("fr-FR")} FCFA pour le ${packName} a été confirmé avec succès par Fapshi (Réf: ${reference}). Durée de validité : ${durationMonths} mois (expiration le ${formattedExpiresAt}). Vos droits d'accès sont immédiatement actifs.`;
+        const notifMessage = `Votre paiement de ${amountVal.toLocaleString("fr-FR")} FCFA pour le ${packName} a été confirmé avec succès par Fapshi (Réf: ${reference}). Durée de validité : ${durationDays} jours (expiration le ${formattedExpiresAt}). Vos droits d'accès sont immédiatement actifs.`;
 
         await adminDb.from("notifications").insert({
           user_id: userId,
