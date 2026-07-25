@@ -78,15 +78,16 @@ function formatAuthError(err: any): string {
     } catch (e) {}
   }
 
-  if (!msg || msg === "{}" || msg === "[]" || msg === "Object") {
-    return "💡 Attention : Le serveur Supabase n'a pas pu envoyer l'e-mail de confirmation (Resend/SMTP en mode Test ou non configuré). Veuillez désactiver l'option « Confirm email » dans votre tableau de bord Supabase (Authentication > Providers > Email).";
+  if (!msg) {
+    return "Erreur d'authentification inconnue.";
   }
 
   const lower = msg.toLowerCase();
-  if (lower.includes("550") || lower.includes("testing emails") || lower.includes("resend.com/domains")) {
-    return "💡 Resend est actuellement en mode Test : l'envoi d'e-mails est limité à l'adresse du propriétaire du compte. Pour autoriser toutes les inscriptions, désactivez « Confirm email » dans Supabase (Authentication > Providers > Email) ou vérifiez votre domaine sur resend.com/domains.";
+  
+  if (lower.includes("550") || lower.includes("testing emails") || lower.includes("resend.com/domains") || lower.includes("error sending confirmation email")) {
+    return "💡 L'envoi d'e-mail a échoué (limite de test Resend). Veuillez vérifier que « Confirm email » est bien désactivé dans Supabase.";
   }
-  if (lower.includes("already registered") || lower.includes("already exists") || lower.includes("user already exists") || lower.includes("unique constraint")) {
+  if (lower.includes("already registered") || lower.includes("already exists") || lower.includes("user already exists") || lower.includes("unique constraint") || lower.includes("user_exists")) {
     return "❌ Cette adresse e-mail est déjà associée à un compte TCF Canada. Veuillez vous connecter ou utiliser une autre adresse e-mail.";
   }
   if (lower.includes("password") || lower.includes("weak") || lower.includes("at least")) {
@@ -102,7 +103,8 @@ function formatAuthError(err: any): string {
     return "🌐 Erreur de connexion au serveur d'authentification. Veuillez vérifier votre connexion Internet et réessayer.";
   }
 
-  return msg;
+  // Affiche l'erreur brute pour faciliter le débogage si elle ne correspond à aucun cas connu
+  return `Erreur: ${msg}`;
 }
 
 export default function RegisterPage() {
