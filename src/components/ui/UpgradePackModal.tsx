@@ -21,8 +21,8 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
 
   if (!isOpen) return null;
 
-  // 1. Initialisation officielle du paiement Fapshi (Mode Candidat et Mode Test Réel Admin)
-  const handleFapshiPayment = async () => {
+  // 1. Initialisation officielle du paiement Notch Pay (Mode Candidat et Mode Test Réel Admin)
+  const handleNotchPayPayment = async () => {
     setLoading(true);
     setErrorMsg(null);
     try {
@@ -30,34 +30,34 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
       const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) {
-        // Si l'utilisateur n'est pas connecté, on le redirige d'abord vers la connexion / inscription
+        // Si l'utilisateur n'est pas connecté, on le redirige vers la connexion / inscription
         onClose();
         router.push(`/login?redirect=/dashboard/payments`);
         return;
       }
 
-      // Appel à notre API serveur sécurisée qui impose les tarifs et contacte Fapshi
-      const res = await fetch("/api/fapshi/initiate", {
+      // Appel à notre API serveur sécurisée qui impose les tarifs et contacte Notch Pay
+      const res = await fetch("/api/notchpay/initiate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           pack: selectedPack,
-          redirectUrl: `${window.location.origin}/dashboard/payments?status=check&pack=${selectedPack}`
+          returnUrl: `${window.location.origin}/dashboard/payments?status=check&pack=${selectedPack}`
         })
       });
 
       const data = await res.json();
 
-      if (!res.ok || !data.link) {
-        throw new Error(data.error || "Impossible d'initialiser le paiement avec Fapshi.");
+      if (!res.ok || !data.paymentUrl) {
+        throw new Error(data.error || "Impossible d'initialiser le paiement avec Notch Pay.");
       }
 
-      // Redirection transparente et sécurisée vers la page de paiement hébergée Fapshi
-      window.location.href = data.link;
+      // Redirection transparente et sécurisée vers la page de paiement hébergée Notch Pay
+      window.location.href = data.paymentUrl;
 
     } catch (e: any) {
-      console.error("Erreur Fapshi Initiate:", e);
-      setErrorMsg(e.message || "Erreur de communication avec la passerelle de paiement.");
+      console.error("Erreur Notch Pay Initiate:", e);
+      setErrorMsg(e.message || "Erreur de communication avec la passerelle de paiement Notch Pay.");
       setLoading(false);
     }
   };
@@ -112,7 +112,7 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
             <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3 flex items-center gap-2.5 text-amber-600 dark:text-amber-400 text-xs font-semibold">
               <Sparkles className="h-4 w-4 shrink-0 animate-pulse text-amber-500" />
               <span>
-                <strong>Mode Admin :</strong> Test monétique réel Fapshi ou activation gratuite.
+                <strong>Mode Admin :</strong> Test monétique réel Notch Pay ou activation gratuite.
               </span>
             </div>
           )}
@@ -185,12 +185,12 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
             })}
           </div>
 
-          {/* Info box Fapshi */}
+          {/* Info box Notch Pay */}
           <div className="bg-slate-50 dark:bg-slate-900/80 rounded-2xl p-3.5 border border-slate-200/60 dark:border-slate-800 flex items-center gap-3 text-[11px] sm:text-xs text-slate-600 dark:text-slate-400">
             <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600 shrink-0" />
             <p className="leading-relaxed">
-              <strong className="font-bold text-slate-900 dark:text-white block">Paiement 100% sécurisé via Fapshi :</strong>
-              Accepte MTN Mobile Money, Orange Money, Moov, Wave, Visa & Mastercard. Conservation de tous vos acquis.
+              <strong className="font-bold text-slate-900 dark:text-white block">Paiement 100% sécurisé via Notch Pay :</strong>
+              Accepte MTN Mobile Money, Orange Money, Wave, Visa & Mastercard. Conservation de tous vos acquis.
             </p>
           </div>
         </div>
@@ -201,7 +201,7 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
             <div className="space-y-2">
               <button
                 type="button"
-                onClick={handleFapshiPayment}
+                onClick={handleNotchPayPayment}
                 disabled={loading}
                 className="w-full py-3 sm:py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs sm:text-sm shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
@@ -210,7 +210,7 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
                 ) : (
                   <>
                     <CreditCard className="h-4 w-4 shrink-0" />
-                    <span className="truncate">Tester le paiement Fapshi (Mode Réel)</span>
+                    <span className="truncate">Tester le paiement Notch Pay (Mode Réel)</span>
                     <ArrowRight className="h-4 w-4 shrink-0" />
                   </>
                 )}
@@ -239,19 +239,19 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
 
               <button
                 type="button"
-                onClick={handleFapshiPayment}
+                onClick={handleNotchPayPayment}
                 disabled={loading}
                 className="flex-1 py-3 sm:py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-1.5 sm:gap-2 disabled:opacity-50 overflow-hidden"
               >
                 {loading ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin text-slate-950 shrink-0" />
-                    <span className="truncate">Redirection Fapshi...</span>
+                    <span className="truncate">Redirection Notch Pay...</span>
                   </>
                 ) : (
                   <>
                     <CreditCard className="h-4 w-4 text-slate-950 shrink-0" />
-                    <span className="truncate">S'abonner via Fapshi ({PACK_CONFIGS[selectedPack].price})</span>
+                    <span className="truncate">S'abonner via Notch Pay ({PACK_CONFIGS[selectedPack].price})</span>
                     <ArrowRight className="h-4 w-4 text-slate-950 shrink-0" />
                   </>
                 )}

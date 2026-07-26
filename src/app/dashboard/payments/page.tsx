@@ -57,7 +57,7 @@ function PaymentsContent() {
   const [verifyingPayment, setVerifyingPayment] = useState(false);
   const [paymentSuccessModal, setPaymentSuccessModal] = useState<{ show: boolean; packName?: string; expiresAt?: string }>({ show: false });
 
-  // Dynamic user & Fapshi data
+  // Dynamic user & Notch Pay data
   const [userTransactions, setUserTransactions] = useState<Transaction[]>([]);
   const [activeSubscription, setActiveSubscription] = useState<Subscription | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -66,7 +66,7 @@ function PaymentsContent() {
   const [billingName, setBillingName] = useState("");
   const [billingEmail, setBillingEmail] = useState("");
   const [billingAddress, setBillingAddress] = useState("");
-  const [billingMethod, setBillingMethod] = useState("Passerelle Officielle Fapshi");
+  const [billingMethod, setBillingMethod] = useState("Passerelle Officielle Notch Pay");
 
   // Modals state
   const [showBillingModal, setShowBillingModal] = useState(false);
@@ -131,7 +131,7 @@ function PaymentsContent() {
             });
           }
 
-          // 2. Récupérer l'historique complet des transactions Fapshi dans Supabase
+          // 2. Récupérer l'historique complet des transactions Notch Pay dans Supabase
           const { data: txData } = await supabase
             .from("transactions")
             .select("*")
@@ -143,10 +143,10 @@ function PaymentsContent() {
               id: tx.id,
               reference: tx.reference,
               provider_transaction_id: tx.provider_transaction_id,
-              payment_method: tx.payment_method || "Fapshi",
+              payment_method: tx.payment_method || "Notch Pay",
               amount: tx.amount ? `${parseInt(tx.amount).toLocaleString("fr-FR")} FCFA` : "25 000 FCFA",
-              currency: tx.currency || "FCFA",
-              status: tx.status === "completed" || tx.status === "SUCCESSFUL" ? "Payé" : tx.status === "pending" ? "En attente" : "Échoué",
+              currency: tx.currency || "XAF",
+              status: tx.status === "completed" || tx.status === "complete" ? "Payé" : tx.status === "pending" ? "En attente" : "Échoué",
               created_at: new Date(tx.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }),
               title: tx.reference ? `Abonnement TCF (${tx.reference.slice(0, 15)}...)` : "Abonnement TCF Canada"
             })));
@@ -166,7 +166,7 @@ function PaymentsContent() {
           });
         }
       } catch (err) {
-        console.error("Erreur chargement paiements Fapshi:", err);
+        console.error("Erreur chargement paiements Notch Pay:", err);
       } finally {
         setLoading(false);
       }
@@ -175,32 +175,32 @@ function PaymentsContent() {
     loadData();
   }, []);
 
-  // 3. Vérification automatique au retour du paiement Fapshi (si transId est dans l'URL)
+  // 3. Vérification automatique au retour du paiement Notch Pay (si ref/reference est dans l'URL)
   useEffect(() => {
-    const transId = searchParams?.get("transId") || searchParams?.get("id");
+    const reference = searchParams?.get("ref") || searchParams?.get("reference");
     const statusParam = searchParams?.get("status");
 
-    if (transId && statusParam === "check" && !verifyingPayment) {
+    if (reference && statusParam === "check" && !verifyingPayment) {
       setVerifyingPayment(true);
-      fetch(`/api/fapshi/status/${encodeURIComponent(transId)}`)
+      fetch(`/api/notchpay/status/${encodeURIComponent(reference)}`)
         .then(res => res.json())
         .then(data => {
-          if (data.success && (data.status === "SUCCESSFUL" || data.status === "COMPLETED" || data.status === "PAYÉ")) {
+          if (data.success && (data.status === "complete" || data.status === "completed")) {
             setPaymentSuccessModal({
               show: true,
               packName: "Abonnement Premium TCF",
-              expiresAt: data.dateConfirmed ? "dans 1 ou 2 mois" : "selon le pack"
+              expiresAt: data.paid_at ? "dans 1 ou 2 mois" : "selon le pack"
             });
             // Nettoyer l'URL sans recharger la page
             router.replace("/dashboard/payments");
             // Déclencher une actualisation des accès
             window.dispatchEvent(new Event("storage_user_pack_updated"));
-          } else if (data.status === "FAILED" || data.status === "EXPIRED") {
+          } else if (data.status === "failed" || data.status === "canceled") {
             alert(`Paiement non finalisé (${data.status}). Vous pouvez réessayer à tout moment.`);
             router.replace("/dashboard/payments");
           }
         })
-        .catch(err => console.error("Erreur vérification retour Fapshi:", err))
+        .catch(err => console.error("Erreur vérification retour Notch Pay:", err))
         .finally(() => setVerifyingPayment(false));
     }
   }, [searchParams, router, verifyingPayment]);
@@ -266,12 +266,12 @@ function PaymentsContent() {
               Formule Active : {currentPackConfig.name}
             </span>
             <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-bold">
-              Passerelle Fapshi Actrice
+              Notch Pay Actif
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Gestion des Paiements & Abonnements</h1>
           <p className="text-slate-300 text-xs sm:text-sm max-w-xl">
-            Toutes vos transactions sont sécurisées par la passerelle officielle Fapshi (MTN Mobile Money, Orange Money, Visa & Mastercard).
+            Toutes vos transactions sont sécurisées par Notch Pay (MTN Mobile Money, Orange Money, Wave, Visa & Mastercard).
           </p>
         </div>
 
