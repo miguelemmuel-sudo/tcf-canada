@@ -325,20 +325,20 @@ export async function POST(request: Request) {
       await supabase.from("transactions").insert({
         user_id: userId,
         subscription_id: subscriptionId,
-        provider: "Fapshi",
+        provider: "NotchPay",
         amount: packConfig.amount.toString(),
-        currency: packConfig.currency,
+        currency: "XAF",
         reference,
         status: "pending",
         webhook_status: "unprocessed",
-        payment_method: "Agregateur_Fapshi",
+        payment_method: "NotchPay",
         created_at: now,
       });
     } catch (e) {
       console.error("[Register] Transaction error:", safeStr(e));
     }
 
-    // ── Initiation Fapshi ──
+    // ── Initiation Notch Pay ──
     const baseUrl =
       process.env.NEXT_PUBLIC_APP_URL ||
       request.headers.get("origin") ||
@@ -346,35 +346,37 @@ export async function POST(request: Request) {
     const redirectUrl = `${baseUrl}/dashboard/payments?status=check&ref=${reference}&pack=${packKey}`;
 
     try {
-      const { initiatePay } = await import("@/lib/fapshi");
-      const fapshiRes = await initiatePay({
+      const { initiatePayment } = await import("@/lib/notchpay");
+      const notchRes = await initiatePayment({
         amount: packConfig.amount,
+        currency: "XAF",
         email: cleanEmail,
-        redirectUrl,
+        reference,
+        description: `Abonnement ${packConfig.name} - TCF Canada Pro`,
+        callbackUrl: `${baseUrl}/api/webhooks/notchpay`,
+        returnUrl: redirectUrl,
         userId,
-        externalId: reference,
-        message: `Abonnement ${packConfig.name} - TCF Canada Pro`,
       });
 
-      if (fapshiRes.transId) {
+      if (notchRes.transactionRef) {
         try {
           await supabase.from("transactions")
-            .update({ provider_transaction_id: fapshiRes.transId })
+            .update({ provider_transaction_id: notchRes.transactionRef })
             .eq("reference", reference);
         } catch (e) {
-          console.error("[Register] Fapshi transId update:", safeStr(e));
+          console.error("[Register] Notch Pay transRef update:", safeStr(e));
         }
       }
 
       return NextResponse.json({
         success: true,
-        link: fapshiRes.link,
-        transId: fapshiRes.transId,
+        link: notchRes.paymentUrl,
+        transId: notchRes.transactionRef,
         reference,
         user: { id: userId, email: cleanEmail },
       });
-    } catch (fapshiErr) {
-      console.error("[Register] Fapshi error (non bloquant):", safeStr(fapshiErr));
+    } catch (notchErr) {
+      console.error("[Register] Notch Pay error (non bloquant):", safeStr(notchErr));
       return NextResponse.json({
         success: true,
         link: null,
