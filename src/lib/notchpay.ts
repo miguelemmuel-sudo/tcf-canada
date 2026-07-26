@@ -246,23 +246,42 @@ export function verifyNotchPayWebhook(
       );
       return true;
     }
+    console.error("[NotchPay Security] NOTCHPAY_HASH_SECRET manquant en production !");
     return false;
   }
 
-  if (!signatureHeader) return false;
+  if (!signatureHeader) {
+    console.warn("[NotchPay Webhook] En-tête x-notch-signature absent.");
+    return false;
+  }
 
   try {
-    const expectedSignature = crypto
-      .createHmac("sha256", NOTCHPAY_HASH_SECRET)
-      .update(rawBody)
-      .digest("hex");
+    const hmac = crypto.createHmac("sha256", NOTCHPAY_HASH_SECRET);
+    const expectedSignature = hmac.update(rawBody).digest("hex");
 
-    // Comparaison sécurisée (résistante aux timing attacks)
-    return crypto.timingSafeEqual(
-      Buffer.from(signatureHeader, "hex"),
-      Buffer.from(expectedSignature, "hex")
-    );
-  } catch {
+    console.log("[NotchPay Webhook HMAC] signature reçue:", signatureHeader.slice(0, 16) + "...");
+    console.log("[NotchPay Webhook HMAC] signature attendue:", expectedSignature.slice(0, 16) + "...");
+
+    // Le header peut être hex (64 chars) ou parfois la clé elle-même
+    // Comparaison directe en string d'abord (le plus courant avec Notch Pay)
+    if (signatureHeader === expectedSignature) {
+      return true;
+    }
+
+    // Essai comparaison via timingSafeEqual (buffers doivent avoir la même longueur)
+    const sigBuf = Buffer.from(signatureHeader, "utf-8");
+    const expBuf = Buffer.from(expectedSignature, "utf-8");
+
+    if (sigBuf.length !== expBuf.length) {
+      console.warn(
+        `[NotchPay Webhook] Longueurs signatures différentes: reçue=${sigBuf.length}, attendue=${expBuf.length}. Comparaison directe.`
+      );
+      return false;
+    }
+
+    return crypto.timingSafeEqual(sigBuf, expBuf);
+  } catch (err) {
+    console.error("[NotchPay Webhook] Erreur vérification HMAC:", err);
     return false;
   }
 }
