@@ -122,7 +122,7 @@ export default function DashboardLayout({
   }
 
 
-  if (!hasActiveSub && !isPaymentsPage) {
+  if (!hasActiveSub) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col items-center justify-center p-4">
         <div className="w-full max-w-5xl bg-white dark:bg-slate-950 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-[90vh]">

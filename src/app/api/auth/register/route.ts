@@ -359,8 +359,8 @@ export async function POST(request: Request) {
       process.env.NEXT_PUBLIC_APP_URL ||
       request.headers.get("origin") ||
       "https://griffondortcfcanada.com";
-    const redirectUrl = `${baseUrl}/dashboard/payments?status=check&ref=${reference}&pack=${packKey}`;
-    const fallbackCheckoutUrl = `${baseUrl}/dashboard/payments?pack=${packKey}&ref=${reference}&initiate=true`;
+    const redirectUrl = `${baseUrl}/payment-verify?status=check&ref=${reference}&pack=${packKey}`;
+    const fallbackCheckoutUrl = `${baseUrl}/payment-verify?pack=${packKey}&ref=${reference}&initiate=true`;
 
     try {
       const { initiateNotchPayPayment } = await import("@/lib/notchpay");

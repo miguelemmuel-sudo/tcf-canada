@@ -222,35 +222,23 @@ export default function RegisterPage() {
         return;
       }
 
-      // Succès → connexion auto et localStorage
-      const supabase = createClient();
+      // Succès → Sauvegarde temporaire pour connexion post-paiement
       try {
-        await supabase.auth.signInWithPassword({
-          email: formDataState.email,
-          password: formDataState.password,
-        });
-      } catch (_) {}
-
-      try {
-        const { clearAllUserLocalData } = await import("@/utils/sessionManager");
-        clearAllUserLocalData();
-      } catch (_) {}
-
-      // Nettoyage impératif des privilèges d'administration pour tout nouvel utilisateur
-      try {
-        localStorage.removeItem("griffon_user_is_admin");
-        localStorage.setItem("griffon_user_name", `${formDataState.firstName} ${formDataState.lastName}`.trim());
-        localStorage.setItem("griffon_user_email", formDataState.email);
-        localStorage.setItem("griffon_user_plan", selectedPlan);
-        localStorage.setItem("griffon_user_new", "true");
-
-        document.cookie = `griffon_user_email=${encodeURIComponent(formDataState.email)}; path=/; max-age=2592000`;
-        document.cookie = `tcf_logged_in=true; path=/; max-age=2592000`;
+        sessionStorage.setItem("tcf_reg_email", formDataState.email);
+        sessionStorage.setItem("tcf_reg_pwd", formDataState.password);
+        sessionStorage.setItem("tcf_reg_plan", selectedPlan);
       } catch (_) {}
 
       // Administrateur explicite -> dashboard admin direct
       if (data.admin) {
-        try { localStorage.setItem("griffon_user_is_admin", "true"); } catch (_) {}
+        const supabase = createClient();
+        try {
+          await supabase.auth.signInWithPassword({
+            email: formDataState.email,
+            password: formDataState.password,
+          });
+          localStorage.setItem("griffon_user_is_admin", "true"); 
+        } catch (_) {}
         window.location.href = "/dashboard/admin";
         return;
       }
