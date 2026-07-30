@@ -63,13 +63,13 @@ function PaymentVerifyContent() {
           } else if (normStatus === "expired") {
             setMessage("La session de paiement a expiré. Veuillez lancer un nouveau paiement.");
           } else {
-            setMessage("Une erreur technique est survenue lors du traitement du paiement. Veuillez réessayer dans quelques instants.");
+            setMessage(data.error ? `Erreur technique: ${data.error}` : "Une erreur technique est survenue lors du traitement du paiement. Veuillez réessayer dans quelques instants.");
           }
         }
       } catch (err) {
         console.error("Erreur vérification paiement:", err);
         setStatus("error");
-        setMessage("Une erreur technique est survenue lors du traitement du paiement. Veuillez réessayer dans quelques instants.");
+        setMessage(`Erreur technique (Frontend): ${err instanceof Error ? err.message : String(err)}`);
       }
     };
 
