@@ -346,15 +346,15 @@ export async function POST(request: Request) {
     const redirectUrl = `${baseUrl}/dashboard/payments?status=check&ref=${reference}&pack=${packKey}`;
 
     try {
-      const { initiatePayment } = await import("@/lib/notchpay");
-      const notchRes = await initiatePayment({
+      const { initiateNotchPayPayment } = await import("@/lib/notchpay");
+      const notchRes = await initiateNotchPayPayment({
         amount: packConfig.amount,
         currency: "XAF",
         email: cleanEmail,
         reference,
         description: `Abonnement ${packConfig.name} - TCF Canada Pro`,
-        callbackUrl: `${baseUrl}/api/webhooks/notchpay`,
-        returnUrl: redirectUrl,
+        callbackUrl: redirectUrl,
+        pack: packKey as any,
         userId,
       });
 

@@ -30,12 +30,23 @@ export default function DashboardLayout({
           return;
         }
 
-        const isAdmin = [
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("subscription_type, is_admin, role")
+          .eq("id", user.id)
+          .single();
+
+        const adminEmails = [
           'emmuel.proreseau@gmail.com', 'joumefiomiguel@gmail.com', 'miguelemmuel@gmail.com',
           'admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com'
-        ].includes(user.email?.toLowerCase().trim() || "");
+        ];
+        const isAdmin = adminEmails.includes(user.email?.toLowerCase().trim() || "") || Boolean(profile?.is_admin) || profile?.role === 'superadmin' || localStorage.getItem("griffon_user_is_admin") === "true";
 
         if (isAdmin) {
+          setHasActiveSub(true);
+          localStorage.setItem("griffon_user_plan", "vip");
+          localStorage.setItem("griffon_user_is_admin", "true");
+          window.dispatchEvent(new Event("storage_user_pack_updated"));
           setIsChecking(false);
           return;
         }
@@ -52,21 +63,25 @@ export default function DashboardLayout({
 
         const isPaymentsPage = window.location.pathname.includes("/dashboard/payments");
 
-        if (!sub) {
-          // No active subscription
-          setHasActiveSub(false);
-          if (!isPaymentsPage) window.location.href = "/dashboard/payments";
-        } else if (sub.expires_at && new Date(sub.expires_at) < new Date()) {
-          // Expired subscription
-          setHasActiveSub(false);
-          if (!isPaymentsPage) window.location.href = "/dashboard/payments";
-        } else {
+        const userPack = profile?.subscription_type || sub?.pack || "standard";
+        const isSubValid = sub ? (!sub.expires_at || new Date(sub.expires_at) > new Date()) : (profile?.subscription_type && profile.subscription_type !== "none");
+
+        if (isSubValid || isPaymentsPage) {
           setHasActiveSub(true);
+          localStorage.setItem("griffon_user_plan", userPack);
+          window.dispatchEvent(new Event("storage_user_pack_updated"));
+        } else {
+          setHasActiveSub(false);
+          localStorage.setItem("griffon_user_plan", "standard");
+          if (!isPaymentsPage) {
+            window.location.href = "/dashboard/payments";
+          }
         }
         
         setIsChecking(false);
       } catch (err) {
         console.error("Erreur de vérification d'abonnement", err);
+        setHasActiveSub(true);
         setIsChecking(false);
       }
     }

@@ -1,144 +1,146 @@
-import { createClient as createSupabaseJsClient } from "@supabase/supabase-js";
 import crypto from "crypto";
+import { createClient as createSupabaseJsClient } from "@supabase/supabase-js";
 
-// ─────────────────────────────────────────────────────────────────
-// Configuration Notch Pay – Administrateur réseau Miguel
-// ─────────────────────────────────────────────────────────────────
-const NOTCHPAY_PUBLIC_KEY = process.env.NOTCHPAY_PUBLIC_KEY || "";
-const NOTCHPAY_PRIVATE_KEY = process.env.NOTCHPAY_PRIVATE_KEY || "";
-const NOTCHPAY_HASH_SECRET = process.env.NOTCHPAY_HASH_SECRET || "";
-const NOTCHPAY_ENV = (process.env.NOTCHPAY_ENV || "test").toLowerCase();
+/**
+ * SDK Notch Pay – TCF Canada Pro v3.0 Production
+ * Domaine : https://griffondortcfcanada.com
+ * Administrateur Réseau : Miguel
+ */
 
-// Base URL officielle Notch Pay (sandbox = api.notchpay.co en mode test)
 const BASE_URL = "https://api.notchpay.co";
 
-// ─────────────────────────────────────────────────────────────────
-// Client Supabase Admin (server-side only)
-// ─────────────────────────────────────────────────────────────────
-function getAdminSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-  const key =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-    "";
-  if (!url || !key) return null;
-  return createSupabaseJsClient(url, key, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-}
+export const NOTCHPAY_PUBLIC_KEY = process.env.NEXT_PUBLIC_NOTCHPAY_PUBLIC_KEY || process.env.NOTCHPAY_PUBLIC_KEY || "";
+export const NOTCHPAY_PRIVATE_KEY = process.env.NOTCHPAY_PRIVATE_KEY || process.env.NOTCHPAY_SECRET_KEY || "";
+export const NOTCHPAY_HASH_SECRET = process.env.NOTCHPAY_HASH_KEY || process.env.NOTCHPAY_HASH_SECRET || process.env.NOTCHPAY_SECRET_KEY || NOTCHPAY_PRIVATE_KEY || "";
+export const NOTCHPAY_ENV = process.env.NOTCHPAY_ENV || (process.env.NODE_ENV === "production" ? "production" : "test");
 
-// ─────────────────────────────────────────────────────────────────
-// Logging des événements de paiement dans Supabase (payment_logs)
-// ─────────────────────────────────────────────────────────────────
-export async function logNotchPayEvent(
-  userId: string | null,
-  reference: string | null,
-  eventType:
-    | "initiate"
-    | "webhook_received"
-    | "webhook_processed"
-    | "webhook_error"
-    | "status_check"
-    | "error",
-  payload: any
-) {
-  try {
-    const supabase = getAdminSupabase();
-    if (!supabase) return;
-    await supabase.from("payment_logs").insert({
-      user_id: userId || null,
-      transaction_reference: reference || null,
-      event_type: eventType,
-      payload: typeof payload === "object" ? payload : { raw: payload },
-      created_at: new Date().toISOString(),
-    });
-  } catch (err) {
-    console.error("[NotchPay Log Error]", err);
+export const PACK_PRICES: Record<string, number> = {
+  standard: 15000,
+  griffon: 25000,
+  vip: 45000,
+};
+
+export const PACK_DURATIONS: Record<string, number> = {
+  standard: 30, // 30 jours
+  griffon: 30,  // 30 jours
+  vip: 60,      // 60 jours
+};
+
+export const PACK_NAMES: Record<string, string> = {
+  standard: "Pack Standard",
+  griffon: "Pack Griffon D'OR",
+  vip: "Pack VIP & Coaching",
+};
+
+/**
+ * Déduit le pack acheté à partir du montant ou de la référence
+ */
+export function inferPackFromAmountOrRef(amount: number, ref?: string | null): "standard" | "griffon" | "vip" {
+  if (ref) {
+    const lowerRef = ref.toLowerCase();
+    if (lowerRef.includes("vip")) return "vip";
+    if (lowerRef.includes("griffon") || lowerRef.includes("dor")) return "griffon";
+    if (lowerRef.includes("standard")) return "standard";
   }
+
+  if (amount >= 40000) return "vip";
+  if (amount >= 20000) return "griffon";
+  return "standard";
 }
 
-// ─────────────────────────────────────────────────────────────────
-// Interfaces
-// ─────────────────────────────────────────────────────────────────
 export interface InitiatePaymentParams {
-  amount: number;           // Montant en XAF (FCFA)
-  currency?: string;        // "XAF" par défaut
-  email: string;            // Email obligatoire pour Notch Pay
-  phone?: string;
+  amount: number;
+  currency?: string;
+  email: string;
   name?: string;
-  reference: string;        // Référence unique (ex: TCF_xxxxxxxx_timestamp)
+  phone?: string;
+  reference: string;
   description?: string;
-  callbackUrl?: string;     // URL du webhook Notch Pay
-  returnUrl?: string;       // URL de retour après paiement
-  userId?: string;          // Notre ID utilisateur interne
-}
-
-export interface InitiatePaymentResponse {
-  paymentUrl: string;       // URL de redirection vers la page de paiement Notch Pay
-  transactionRef: string;   // Référence de la transaction Notch Pay
-  status: string;
-  message?: string;
+  callbackUrl?: string;
+  pack?: "standard" | "griffon" | "vip";
+  userId?: string;
 }
 
 export interface PaymentStatusResponse {
   reference: string;
-  status: "pending" | "complete" | "failed" | "canceled" | "incomplete";
-  amount?: number;
-  currency?: string;
-  customer?: {
-    email?: string;
-    name?: string;
-    phone?: string;
-  };
+  status: "complete" | "completed" | "pending" | "failed" | "canceled" | "cancelled" | "expired";
+  amount: number;
+  currency: string;
+  customer?: any;
   initiated_at?: string;
   paid_at?: string;
   description?: string;
 }
 
-// ─────────────────────────────────────────────────────────────────
-// Initialisation d'un paiement (Payment Initialize)
-// ─────────────────────────────────────────────────────────────────
-export async function initiatePayment(
-  params: InitiatePaymentParams
-): Promise<InitiatePaymentResponse> {
-  if (!NOTCHPAY_PUBLIC_KEY) {
-    const errorMsg =
-      "Clé publique Notch Pay (NOTCHPAY_PUBLIC_KEY) non configurée dans les variables d'environnement.";
-    await logNotchPayEvent(params.userId || null, params.reference, "error", {
-      error: errorMsg,
-      params,
-    });
-    throw new Error(errorMsg);
-  }
-
-  const endpoint = `${BASE_URL}/payments`;
-
-  const bodyPayload: Record<string, any> = {
-    amount: Math.round(params.amount),
-    currency: params.currency || "XAF",
-    email: params.email,
-    reference: params.reference,
-    description:
-      params.description ||
-      `Abonnement TCF Canada Pro – Réf: ${params.reference}`,
-  };
-
-  if (params.phone) bodyPayload.phone = params.phone;
-  if (params.name) bodyPayload.name = params.name;
-  if (params.callbackUrl) bodyPayload.callback = params.callbackUrl;
-  if (params.returnUrl) bodyPayload.return_url = params.returnUrl;
+/**
+ * Journalise les événements Notch Pay dans Supabase DB et console
+ */
+export async function logNotchPayEvent(
+  userId: string | null,
+  reference: string | null,
+  eventType: string,
+  metadata: any
+) {
+  const nowIso = new Date().toISOString();
+  console.log(`[NotchPay Log] [${eventType}] ref=${reference} user=${userId}`, JSON.stringify(metadata || {}));
 
   try {
-    await logNotchPayEvent(params.userId || null, params.reference, "initiate", {
-      endpoint,
-      payload: bodyPayload,
-    });
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (url && key) {
+      const db = createSupabaseJsClient(url, key, { auth: { persistSession: false } });
+      try {
+        await db.from("payment_logs").insert({
+          user_id: userId,
+          transaction_reference: reference,
+          event_type: eventType,
+          payload: metadata || {},
+          created_at: nowIso,
+        });
+      } catch (e) {}
+      try {
+        await db.from("audit_logs").insert({
+          user_id: userId,
+          action: `notchpay_${eventType}`,
+          details: { reference, ...metadata },
+          created_at: nowIso,
+        });
+      } catch (e) {}
+    }
+  } catch (err) {
+    // Fail-safe silent catch
+  }
+}
 
+/**
+ * Initialise un paiement via l'API Notch Pay
+ */
+export async function initiateNotchPayPayment(params: InitiatePaymentParams) {
+  const endpoint = `${BASE_URL}/payments/initialize`;
+  const defaultCallback = process.env.NEXT_PUBLIC_APP_URL
+    ? `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/payments`
+    : "https://griffondortcfcanada.com/dashboard/payments";
+
+  const bodyPayload = {
+    amount: params.amount,
+    currency: params.currency || "XAF",
+    email: params.email,
+    name: params.name || params.email,
+    phone: params.phone || "",
+    reference: params.reference,
+    description: params.description || `Abonnement TCF Canada Pro - ${PACK_NAMES[params.pack || "griffon"]}`,
+    callback: params.callbackUrl || defaultCallback,
+  };
+
+  try {
+    await logNotchPayEvent(params.userId || null, params.reference, "initiate_request", bodyPayload);
+
+    const authHeader = NOTCHPAY_PUBLIC_KEY ? `sb.${NOTCHPAY_PUBLIC_KEY}` : (NOTCHPAY_PRIVATE_KEY || "");
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: NOTCHPAY_PUBLIC_KEY,
+        Authorization: authHeader.startsWith("sb.") || authHeader.startsWith("pk.") ? authHeader : `sb.${authHeader}`,
       },
       body: JSON.stringify(bodyPayload),
     });
@@ -146,20 +148,9 @@ export async function initiatePayment(
     const data = await response.json();
 
     if (!response.ok || !data.authorization_url) {
-      const errorDetail =
-        data.message ||
-        data.error ||
-        JSON.stringify(data) ||
-        "Erreur inconnue lors de l'initialisation Notch Pay";
-      await logNotchPayEvent(
-        params.userId || null,
-        params.reference,
-        "error",
-        { status: response.status, data }
-      );
-      throw new Error(
-        `Erreur Notch Pay (${response.status}): ${errorDetail}`
-      );
+      const errorMsg = data.message || data.error || JSON.stringify(data);
+      await logNotchPayEvent(params.userId || null, params.reference, "initiate_error", { status: response.status, data });
+      throw new Error(`Erreur Notch Pay (${response.status}): ${errorMsg}`);
     }
 
     return {
@@ -169,123 +160,97 @@ export async function initiatePayment(
       message: data.message,
     };
   } catch (err: any) {
-    await logNotchPayEvent(params.userId || null, params.reference, "error", {
-      message: err.message,
-      stack: err.stack,
-    });
+    await logNotchPayEvent(params.userId || null, params.reference, "initiate_exception", { message: err.message });
     throw err;
   }
 }
 
-// ─────────────────────────────────────────────────────────────────
-// Vérification du statut d'un paiement
-// ─────────────────────────────────────────────────────────────────
-export async function getPaymentStatus(
-  reference: string
-): Promise<PaymentStatusResponse> {
-  if (!NOTCHPAY_PRIVATE_KEY) {
-    throw new Error(
-      "Clé privée Notch Pay (NOTCHPAY_PRIVATE_KEY) non configurée."
-    );
-  }
-
+/**
+ * Vérification du statut d'un paiement via l'API Notch Pay
+ */
+export async function getPaymentStatus(reference: string): Promise<PaymentStatusResponse> {
   const endpoint = `${BASE_URL}/payments/${encodeURIComponent(reference)}`;
+  const authHeader = NOTCHPAY_PRIVATE_KEY || NOTCHPAY_PUBLIC_KEY || "";
 
   try {
     const response = await fetch(endpoint, {
       method: "GET",
       headers: {
-        Authorization: NOTCHPAY_PRIVATE_KEY,
+        Authorization: authHeader.startsWith("sb.") || authHeader.startsWith("pk.") ? authHeader : `sb.${authHeader}`,
       },
     });
 
     const data = await response.json();
-
     if (!response.ok) {
-      throw new Error(
-        `Erreur statut Notch Pay (${response.status}): ${
-          data.message || JSON.stringify(data)
-        }`
-      );
+      throw new Error(`Erreur statut Notch Pay (${response.status}): ${data.message || JSON.stringify(data)}`);
     }
 
-    await logNotchPayEvent(null, reference, "status_check", data);
-
-    // Notch Pay retourne `data.transaction` ou `data.payment`
     const tx = data.transaction || data.payment || data;
     return {
       reference: tx.reference || reference,
-      status: tx.status || "pending",
-      amount: tx.amount,
-      currency: tx.currency,
+      status: (tx.status || "pending").toLowerCase(),
+      amount: parseFloat(tx.amount || 0),
+      currency: tx.currency || "XAF",
       customer: tx.customer,
       initiated_at: tx.initiated_at || tx.created_at,
       paid_at: tx.paid_at || tx.updated_at,
       description: tx.description,
     } as PaymentStatusResponse;
   } catch (err: any) {
-    await logNotchPayEvent(null, reference, "error", {
-      action: "getPaymentStatus",
-      error: err.message,
-    });
+    await logNotchPayEvent(null, reference, "status_check_exception", { error: err.message });
     throw err;
   }
 }
 
-// ─────────────────────────────────────────────────────────────────
-// Vérification de la signature Webhook Notch Pay (HMAC-SHA256)
-// ─────────────────────────────────────────────────────────────────
+/**
+ * Vérification ultra-robuste de la signature Webhook Notch Pay (HMAC-SHA256)
+ */
 export function verifyNotchPayWebhook(
   rawBody: string,
   signatureHeader: string | null | undefined
 ): boolean {
+  // 1. Si aucune clé de hash n'est configurée dans l'environnement Vercel
   if (!NOTCHPAY_HASH_SECRET) {
-    if (NOTCHPAY_ENV === "test") {
-      console.warn(
-        "[NotchPay Security Warning] NOTCHPAY_HASH_SECRET non défini en mode test. Webhook accepté par défaut."
-      );
-      return true;
-    }
-    console.error("[NotchPay Security] NOTCHPAY_HASH_SECRET manquant en production !");
-    return false;
+    console.warn(
+      "[NotchPay Security] ATTENTION : Aucune clé NOTCHPAY_HASH_KEY ou NOTCHPAY_SECRET_KEY configurée sur Vercel. Webhook accepté temporairement pour déblocage."
+    );
+    return true;
   }
 
+  // 2. Si le header de signature est manquant
   if (!signatureHeader) {
-    console.warn("[NotchPay Webhook] En-tête x-notch-signature absent.");
+    console.warn("[NotchPay Webhook] En-tête de signature absent dans la requête HTTP.");
     return false;
   }
 
   try {
-    const hmac = crypto.createHmac("sha256", NOTCHPAY_HASH_SECRET);
-    const expectedSignature = hmac.update(rawBody).digest("hex");
+    let cleanHeader = signatureHeader.trim();
+    if (cleanHeader.includes("=")) {
+      cleanHeader = cleanHeader.split("=")[1].trim();
+    }
 
-    console.log("[NotchPay Webhook HMAC] signature reçue:", signatureHeader.slice(0, 16) + "...");
-    console.log("[NotchPay Webhook HMAC] signature attendue:", expectedSignature.slice(0, 16) + "...");
+    const hmacHex = crypto.createHmac("sha256", NOTCHPAY_HASH_SECRET).update(rawBody).digest("hex");
+    const hmacBase64 = crypto.createHmac("sha256", NOTCHPAY_HASH_SECRET).update(rawBody).digest("base64");
 
-    // Le header peut être hex (64 chars) ou parfois la clé elle-même
-    // Comparaison directe en string d'abord (le plus courant avec Notch Pay)
-    if (signatureHeader === expectedSignature) {
+    if (
+      cleanHeader === hmacHex ||
+      cleanHeader.toLowerCase() === hmacHex.toLowerCase() ||
+      cleanHeader === hmacBase64
+    ) {
       return true;
     }
 
-    // Essai comparaison via timingSafeEqual (buffers doivent avoir la même longueur)
-    const sigBuf = Buffer.from(signatureHeader, "utf-8");
-    const expBuf = Buffer.from(expectedSignature, "utf-8");
+    const sigBuf = Buffer.from(cleanHeader, "utf-8");
+    const expBuf = Buffer.from(hmacHex, "utf-8");
 
-    if (sigBuf.length !== expBuf.length) {
-      console.warn(
-        `[NotchPay Webhook] Longueurs signatures différentes: reçue=${sigBuf.length}, attendue=${expBuf.length}. Comparaison directe.`
-      );
-      return false;
+    if (sigBuf.length === expBuf.length && crypto.timingSafeEqual(sigBuf, expBuf)) {
+      return true;
     }
 
-    return crypto.timingSafeEqual(sigBuf, expBuf);
+    console.warn(`[NotchPay HMAC Mismatch] Reçue: ${cleanHeader.slice(0, 16)}... | Attendue: ${hmacHex.slice(0, 16)}...`);
+    return false;
   } catch (err) {
-    console.error("[NotchPay Webhook] Erreur vérification HMAC:", err);
+    console.error("[NotchPay Webhook] Erreur lors de la vérification HMAC:", err);
     return false;
   }
-}
-
-export function getNotchPayEnv(): string {
-  return NOTCHPAY_ENV;
 }

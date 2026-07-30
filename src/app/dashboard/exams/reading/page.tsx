@@ -10,6 +10,7 @@ import { ResumeSessionModal } from "@/components/ui/ResumeSessionModal";
 import { saveSessionState } from "@/utils/sessionManager";
 import { getCurrentUserPack, PACK_CONFIGS, getExamDurationSecondsForPack } from "@/utils/subscriptionEngine";
 import { generateExamPassagesForPack } from "@/utils/courseGenerator";
+import { createClient } from "@/utils/supabase/client";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Question {
@@ -200,9 +201,34 @@ export default function ReadingExamPage() {
     setAllAnswers((prev) => ({ ...prev, [qId]: optionIndex }));
   };
 
-  const handleFinishTest = () => {
+  const handleFinishTest = async () => {
     localStorage.removeItem("tcf_session_reading_exam");
     setShowResult(true);
+
+    const scoreVal = allQuestions.filter((q) => allAnswers[q.id] === q.correct).length;
+    const ratio = scoreVal / totalQuestions;
+    const percentage = Math.round(ratio * 100);
+
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from("exam_sessions").insert({
+          user_id: user.id,
+          exam_type: "reading",
+          status: "completed",
+          score: percentage,
+          answers: allAnswers,
+          ai_feedback: {
+            correctCount: scoreVal,
+            totalQuestions,
+            percentage
+          }
+        });
+      }
+    } catch (err) {
+      console.warn("Notice enregistrement résultat lecture:", err);
+    }
   };
 
   const score = showResult

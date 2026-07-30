@@ -119,6 +119,7 @@ export function getPackPermissions(pack?: PackType): PackPermissions {
 }
 
 export function isFeatureAccessible(feature: "coaching" | "reservations" | "messages" | "ai_advanced" | "ai_premium", pack?: PackType): boolean {
+  if (isUserAdmin()) return true;
   const config = getPackPermissions(pack);
   switch (feature) {
     case "coaching":

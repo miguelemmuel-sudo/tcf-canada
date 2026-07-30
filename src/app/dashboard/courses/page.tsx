@@ -188,8 +188,17 @@ export default function CoursesPage() {
   };
 
   useEffect(() => {
-    refreshCourseData();
-    setLoading(false);
+    const fetchUserAndProgress = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { loadCoursesProgressFromSupabase } = await import('@/utils/courseTracker');
+        await loadCoursesProgressFromSupabase(user.id);
+      }
+      refreshCourseData();
+      setLoading(false);
+    };
+    fetchUserAndProgress();
 
     // Event Listeners for real-time updates
     const handleUpdate = () => refreshCourseData();

@@ -11,6 +11,7 @@ import { saveSessionState } from "@/utils/sessionManager";
 import { getCurrentUserPack, PACK_CONFIGS, getExamDurationSecondsForPack } from "@/utils/subscriptionEngine";
 import { generateExamWritingTasksForPack } from "@/utils/courseGenerator";
 import { evaluateUserResponse } from "@/utils/aiEvaluationEngine";
+import { createClient } from "@/utils/supabase/client";
 
 // ─── Tâches d'Expression Écrite ──────────────────────────────────────────────
 const BASE_TASKS = [
@@ -245,6 +246,24 @@ export default function WritingExamPage() {
   const wordCount = countWords(texts[currentTask]);
   const wordStatus = wordCount < task.minWords ? "under" : wordCount > task.maxWords ? "over" : "ok";
 
+  const handleSubmit = async () => {
+    setSubmitted(true);
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from("exam_sessions").insert({
+          user_id: user.id,
+          exam_type: "writing",
+          status: "completed",
+          answers: texts
+        });
+      }
+    } catch (err) {
+      console.warn("Erreur sauvegarde db:", err);
+    }
+  };
+
   if (submitted) {
     return (
       <div className="max-w-2xl mx-auto">
@@ -327,7 +346,7 @@ export default function WritingExamPage() {
             <Clock className="h-4 w-4" />
             <Timer seconds={timeLeft} />
           </div>
-          <Button variant="outline" size="sm" onClick={() => setSubmitted(true)} className="rounded-xl">
+          <Button variant="outline" size="sm" onClick={handleSubmit} className="rounded-xl">
             Soumettre
           </Button>
           <Button
@@ -460,7 +479,7 @@ export default function WritingExamPage() {
         </Button>
         {currentTask < TASKS.length - 1
           ? <Button onClick={() => setCurrentTask((t) => t + 1)}><span className="hidden sm:inline">Tâche suivante</span> <ChevronRight className="h-4 w-4 sm:ml-1" /></Button>
-          : <Button onClick={() => setSubmitted(true)} className="bg-emerald-600 hover:bg-emerald-700"><CheckCircle2 className="h-4 w-4 mr-1" /> Soumettre les résultats</Button>
+          : <Button onClick={handleSubmit} className="bg-emerald-600 hover:bg-emerald-700"><CheckCircle2 className="h-4 w-4 mr-1" /> Soumettre les résultats</Button>
         }
       </div>
     </div>

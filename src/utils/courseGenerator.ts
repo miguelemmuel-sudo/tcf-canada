@@ -9,6 +9,7 @@ import { listeningQuestions, readingPassages, writingTasks, speakingTasks } from
 import { THEMATIC_BANK, UniquenessValidator, generateUniqueLesson, CECRLevel, SkillType, TCFProceduralLibrary } from "./tcfContentEngine";
 import { AudioRotationEngine, AUDIO_SCENARIO_DATABASE, VOICE_PROFILES } from "./audioContentEngine";
 import { QcmUniqueBankEngine } from "./qcmUniqueBankEngine";
+import { sanitizeLessonOrExam } from "./textSanitizer";
 
 /**
  * Filtre stérile et rigoureux du cahier des charges par Pack :
@@ -211,7 +212,7 @@ export function generateLessonsForPack(
       exercises: normalizedQuestions,
       done: !!l.done
     };
-  });
+  }).map((item: any) => sanitizeLessonOrExam(item));
 }
 
 /**
@@ -319,7 +320,7 @@ export function generateExamQuestionsForPack(
       errorAnalysis: qItem.errorAnalysis,
       cecrEvaluation: qItem.cecrEvaluation
     };
-  });
+  }).map((item: any) => sanitizeLessonOrExam(item));
 }
 
 /**
@@ -422,7 +423,7 @@ export function generateExamPassagesForPack(
         };
       }
     })
-  }));
+  })).map((item: any) => sanitizeLessonOrExam(item));
 }
 
 /**
@@ -475,5 +476,5 @@ export function generateExamWritingTasksForPack(
       errorAnalysis: t.errorAnalysis || "Attention à la ponctuation et à la fluidité.",
       cecrEvaluation: t.cecrEvaluation || "Niveau visé : B2 (NCLC 7-8)."
     };
-  });
+  }).map((item: any) => sanitizeLessonOrExam(item));
 }

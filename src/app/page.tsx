@@ -322,7 +322,7 @@ export default function Home() {
               <Card className="border-border/50 bg-white dark:bg-slate-900 shadow-sm">
                 <CardHeader className="text-center pb-8">
                   <CardTitle className="text-2xl mb-2 text-[#0e2238] dark:text-white">Pack Standard</CardTitle>
-                  <div className="text-4xl font-bold">15.000<span className="text-lg text-muted-foreground font-normal"> FCFA</span></div>
+                  <div className="text-4xl font-bold text-amber-600">15.000<span className="text-lg text-muted-foreground font-normal"> FCFA</span></div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <ul className="space-y-3 text-sm">
@@ -334,11 +334,11 @@ export default function Home() {
                 </CardContent>
               </Card>
 
-              <Card className="border-amber-500 shadow-xl shadow-amber-500/10 bg-white dark:bg-slate-900 relative scale-105 z-10">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                  <Badge className="bg-amber-600 text-white uppercase tracking-wider px-3 py-1 font-bold">Le plus populaire</Badge>
+              <Card className="border-amber-500 shadow-xl shadow-amber-500/10 bg-white dark:bg-slate-900 relative scale-105 z-10 overflow-visible mt-6 md:mt-0">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                  <Badge className="bg-amber-600 text-white uppercase tracking-wider px-3 py-1 font-bold whitespace-nowrap">Le plus populaire</Badge>
                 </div>
-                <CardHeader className="text-center pb-8 pt-8">
+                <CardHeader className="text-center pb-8 pt-10">
                   <CardTitle className="text-2xl mb-2 text-[#0e2238] dark:text-white">Pack Griffon d'Or</CardTitle>
                   <div className="text-4xl font-bold text-amber-600">25.000<span className="text-lg text-muted-foreground font-normal"> FCFA</span></div>
                 </CardHeader>
@@ -357,7 +357,7 @@ export default function Home() {
               <Card className="border-border/50 bg-white dark:bg-slate-900 shadow-sm">
                 <CardHeader className="text-center pb-8">
                   <CardTitle className="text-2xl mb-2 text-[#0e2238] dark:text-white">Pack VIP & Coaching</CardTitle>
-                  <div className="text-4xl font-bold">100.000<span className="text-lg text-muted-foreground font-normal"> FCFA</span></div>
+                  <div className="text-4xl font-bold text-amber-600">100.000<span className="text-lg text-muted-foreground font-normal"> FCFA</span></div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <ul className="space-y-3 text-sm">

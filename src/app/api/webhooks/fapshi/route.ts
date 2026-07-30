@@ -10,6 +10,6 @@ export async function POST(req: Request) {
   return webhookPost(req);
 }
 
-export async function GET(req: Request) {
-  return webhookGet(req);
+export async function GET() {
+  return webhookGet();
 }

@@ -35,7 +35,7 @@ const subscriptionPlans = [
     features: [
       "Accès plateforme 30 jours",
       "Simulations et tests de 1h 30",
-      "Corrections IA + Formateurs humains",
+      "Corrections IA avancées",
       "Messagerie directe avec Coach",
       "Support personnalisé 7j/7",
     ],

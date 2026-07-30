@@ -49,7 +49,7 @@ export default function LoginPage() {
           localStorage.setItem("griffon_user_plan", "vip");
           localStorage.setItem("griffon_user_is_admin", "true");
 
-          router.push("/dashboard");
+          router.push("/dashboard/admin");
           return;
         }
 
@@ -58,29 +58,41 @@ export default function LoginPage() {
         return;
       }
 
+      let isSuperAdmin = false;
+
       if (data.user) {
         const { clearAllUserLocalData } = await import("@/utils/sessionManager");
         clearAllUserLocalData();
 
         const { data: profile } = await supabase
           .from("profiles")
-          .select("full_name, subscription_type, is_admin")
+          .select("full_name, subscription_type, is_admin, role")
           .eq("id", data.user.id)
           .single();
 
+        const adminEmails = [
+          'emmuel.proreseau@gmail.com', 'joumefiomiguel@gmail.com', 'miguelemmuel@gmail.com',
+          'admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com'
+        ];
+        isSuperAdmin = adminEmails.includes(email.toLowerCase().trim()) || Boolean(profile?.is_admin) || profile?.role === 'superadmin';
+
         localStorage.setItem("griffon_user_name", profile?.full_name || data.user.user_metadata?.full_name || email);
         localStorage.setItem("griffon_user_email", email);
-        if (profile?.subscription_type) {
-          localStorage.setItem("griffon_user_plan", profile.subscription_type);
-        }
-        if (profile?.is_admin || ['emmuel.proreseau@gmail.com', 'joumefiomiguel@gmail.com', 'miguelemmuel@gmail.com', 'admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com'].includes(email.toLowerCase().trim())) {
+
+        if (isSuperAdmin) {
+          localStorage.setItem("griffon_user_plan", "vip");
           localStorage.setItem("griffon_user_is_admin", "true");
         } else {
+          localStorage.setItem("griffon_user_plan", profile?.subscription_type || "standard");
           localStorage.removeItem("griffon_user_is_admin");
         }
       }
 
-      router.push("/dashboard");
+      if (isSuperAdmin) {
+        router.push("/dashboard/admin");
+      } else {
+        router.push("/dashboard");
+      }
     } catch (err: any) {
       setError(err?.message || "Une erreur de connexion est survenue.");
       setLoading(false);

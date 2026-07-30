@@ -1,11 +1,12 @@
-﻿import { NextResponse } from "next/server";
-import { verifyNotchPayWebhook, logNotchPayEvent } from "@/lib/notchpay";
+import { NextResponse } from "next/server";
+import { verifyNotchPayWebhook, logNotchPayEvent, PACK_DURATIONS, PACK_NAMES, inferPackFromAmountOrRef } from "@/lib/notchpay";
 import { createClient as createSupabaseJsClient } from "@supabase/supabase-js";
 
 /**
- * Webhook Notch Pay – TCF Canada Pro v2.0
- * Administrateur réseau Miguel
- * Flux : HMAC verify → parse → Supabase lookup → idempotence → activate → notify
+ * Webhook Notch Pay – TCF Canada Pro v3.0 Production
+ * Domaine : https://griffondortcfcanada.com
+ * Administrateur réseau : Miguel
+ * Synchronisation automatique des statuts, abonnements, notifications et profils
  */
 
 function getAdminSupabase() {
@@ -15,226 +16,364 @@ function getAdminSupabase() {
   return createSupabaseJsClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 
-const PACK_DURATIONS: Record<string, number> = { standard: 30, griffon: 30, vip: 60 };
-const PACK_NAMES: Record<string, string> = {
-  standard: "Pack Standard",
-  griffon: "Pack Griffon D'OR",
-  vip: "Pack VIP & Coaching",
-};
-
-function inferPackFromAmount(amount: number): string {
-  if (amount >= 90000) return "vip";
-  if (amount >= 20000) return "griffon";
-  return "standard";
-}
-
 export async function POST(request: Request) {
-  const reqId = `wh_${Date.now()}`;
-  console.log(`\n[NP Webhook] ===== START ${reqId} =====`);
+  const reqId = `wh_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+  console.log(`\n[NP Webhook] ===== DEBUT ${reqId} =====`);
 
   try {
-    // ETAPE 1 : corps brut pour HMAC
+    // 1. Extraction du corps brut et du header de signature HMAC
     const rawBody = await request.text();
-    console.log(`[NP Webhook ${reqId}] Corps: ${rawBody.length} chars`);
-
     const sig = request.headers.get("x-notch-signature")
       || request.headers.get("X-Notch-Signature")
       || request.headers.get("x-webhook-signature")
       || null;
 
-    console.log(`[NP Webhook ${reqId}] Signature: ${sig ? sig.slice(0, 20) + "..." : "ABSENTE"}`);
+    console.log(`[NP Webhook ${reqId}] Signature transmise: ${sig ? sig.slice(0, 20) + "..." : "NON SPECIFIEE"}`);
 
-    // ETAPE 2 : Verification HMAC
+    // 2. Vérification HMAC
     const isValid = verifyNotchPayWebhook(rawBody, sig);
-    console.log(`[NP Webhook ${reqId}] Signature valide: ${isValid}`);
-
     if (!isValid) {
-      await logNotchPayEvent(null, null, "webhook_error", { reqId, error: "Signature invalide", sig: sig ? sig.slice(0, 20) : null });
-      // Retourner 200 pour eviter les rejeux Notch Pay
+      console.warn(`[NP Webhook ${reqId}] Échec validation signature HMAC`);
+      await logNotchPayEvent(null, null, "webhook_error", { reqId, error: "Signature HMAC invalide", sig });
+      // Renvoyer HTTP 200 pour éviter les retentatives en boucle de Notch Pay
       return NextResponse.json({ received: true, warning: "Invalid signature" }, { status: 200 });
     }
 
-    // ETAPE 3 : Parsing JSON
+    await logNotchPayEvent(null, null, "webhook_signature_verified", { reqId });
+
+    // 3. Parsing Payload JSON
     let payload: any;
-    try { payload = JSON.parse(rawBody); } catch {
-      return NextResponse.json({ received: true, error: "Invalid JSON" }, { status: 200 });
+    try {
+      payload = JSON.parse(rawBody);
+    } catch (err: any) {
+      console.error(`[NP Webhook ${reqId}] Payload JSON invalide :`, err.message);
+      return NextResponse.json({ received: true, error: "Invalid JSON format" }, { status: 200 });
     }
 
-    // ETAPE 4 : Extraction transaction
-    // Notch Pay : { event, data: { payment: {...} } } ou { data: { transaction: {...} } }
-    const event = payload.event || payload.type || "unknown";
+    // 4. Extraction structurée de l'événement et des données
+    const eventType = (payload.event || payload.type || "payment.complete").toLowerCase();
     const dataSection = payload.data || {};
     const transaction = dataSection.payment || dataSection.transaction || payload.payment || payload.transaction || dataSection || {};
 
-    const reference = transaction.reference || transaction.externalId || transaction.external_id || dataSection.reference || null;
-    const status = (transaction.status || "").toLowerCase();
-    const amount = parseFloat(transaction.amount) || 0;
-    const customer = transaction.customer || {};
-    const payerEmail = customer.email || null;
+    const reference = transaction.reference 
+      || transaction.merchant_reference 
+      || transaction.externalId 
+      || transaction.external_id 
+      || dataSection.reference 
+      || dataSection.merchant_reference
+      || payload.reference
+      || null;
 
-    console.log(`[NP Webhook ${reqId}] event=${event} | ref=${reference} | status=${status} | amount=${amount}`);
+    const rawStatus = (transaction.status || dataSection.status || payload.status || "").toLowerCase();
+    const amount = parseFloat(transaction.amount || dataSection.amount || payload.amount || 0);
+    const customer = transaction.customer || dataSection.customer || payload.customer || {};
+    const payerEmail = (customer.email || payload.email || "").toLowerCase().trim();
+    const paymentChannel = transaction.channel || transaction.payment_method || dataSection.channel || "NotchPay";
+    const providerTxId = transaction.id || transaction.provider_transaction_id || reference;
 
-    await logNotchPayEvent(null, reference, "webhook_received", { reqId, event, status, reference, amount, payerEmail });
+    console.log(`[NP Webhook ${reqId}] Evénement=${eventType} | Réf=${reference} | StatutBrut=${rawStatus} | Montant=${amount} FCFA | Email=${payerEmail}`);
 
-    // ETAPE 5 : Supabase
+    await logNotchPayEvent(null, reference, "webhook_received", {
+      reqId,
+      eventType,
+      rawStatus,
+      reference,
+      amount,
+      payerEmail,
+      paymentChannel,
+    });
+
+    // 5. Instancier le client d'administration Supabase
     const adminDb = getAdminSupabase();
     if (!adminDb) {
-      console.error(`[NP Webhook ${reqId}] CRITIQUE: Supabase non configure`);
-      await logNotchPayEvent(null, reference, "webhook_error", { reqId, error: "Supabase indisponible" });
-      return NextResponse.json({ received: true }, { status: 200 });
+      console.error(`[NP Webhook ${reqId}] Supabase Admin non disponible !`);
+      await logNotchPayEvent(null, reference, "webhook_error", { reqId, error: "Supabase Admin indisponible" });
+      return NextResponse.json({ received: true, error: "Database client unavailable" }, { status: 200 });
     }
 
-    // ETAPE 6 : Lookup transaction Supabase
+    // 6. Recherche de la transaction dans Supabase
     let tx: any = null;
     if (reference) {
-      const { data: txList, error: txErr } = await adminDb.from("transactions").select("*")
+      const { data: txList } = await adminDb.from("transactions").select("*")
         .or(`reference.eq.${reference},provider_transaction_id.eq.${reference}`)
-        .order("created_at", { ascending: false }).limit(1);
-      if (txErr) console.error(`[NP Webhook ${reqId}] Erreur lookup tx:`, txErr);
+        .order("created_at", { ascending: false })
+        .limit(1);
       tx = txList && txList.length > 0 ? txList[0] : null;
     }
-    console.log(`[NP Webhook ${reqId}] Tx Supabase: ${tx ? "TROUVEE id=" + tx.id : "NON TROUVEE"}`);
 
-    const userId: string | null = tx?.user_id || null;
+    // Recherche de secours par email si la référence directe n'a pas renvoyé de résultat
+    if (!tx && payerEmail) {
+      const { data: profiles } = await adminDb.from("profiles").select("id, email").eq("email", payerEmail).limit(1);
+      if (profiles && profiles.length > 0) {
+        const foundUserId = profiles[0].id;
+        const { data: recentPending } = await adminDb.from("transactions").select("*")
+          .eq("user_id", foundUserId)
+          .eq("status", "pending")
+          .order("created_at", { ascending: false })
+          .limit(1);
+        if (recentPending && recentPending.length > 0) {
+          tx = recentPending[0];
+          console.log(`[NP Webhook ${reqId}] Transaction pending retrouvée via email utilisateur : ${tx.reference}`);
+        }
+      }
+    }
+
+    // Déterminer l'ID Utilisateur Supabase
+    let userId: string | null = tx?.user_id || null;
+    if (!userId && payerEmail) {
+      const { data: userProfiles } = await adminDb.from("profiles").select("id").eq("email", payerEmail).limit(1);
+      if (userProfiles && userProfiles.length > 0) {
+        userId = userProfiles[0].id;
+      }
+    }
+
+    console.log(`[NP Webhook ${reqId}] Supabase Transaction: ${tx ? "TROUVÉE (id=" + tx.id + ")" : "NON TROUVÉE en BDD"}`);
+
     const txReference = tx?.reference || reference || `NOTCHPAY_${Date.now()}`;
     const amountVal = amount || (tx ? parseFloat(tx.amount) : 0);
 
-    // Resolution du pack : Supabase > montant
-    const resolvedPack = tx?.pack || inferPackFromAmount(amountVal);
-    const packName = PACK_NAMES[resolvedPack] || "Abonnement TCF";
+    // Déduction du Pack (Standard = 30j, Griffon D'OR = 30j, VIP & Coaching = 60j)
+    const resolvedPack = tx?.pack || inferPackFromAmountOrRef(amountVal, txReference);
+    const packName = PACK_NAMES[resolvedPack] || "Pack TCF Canada Pro";
     const durationDays = PACK_DURATIONS[resolvedPack] || 30;
 
-    console.log(`[NP Webhook ${reqId}] Pack: ${resolvedPack} (${tx?.pack ? "depuis DB" : "infere montant"}) | ${durationDays}j`);
+    // Normalisation stricte du statut Notch Pay vers le domaine Supabase
+    let normalizedStatus: "completed" | "cancelled" | "expired" | "failed" | "pending" = "pending";
 
-    // ETAPE 7 : Idempotence
-    if (tx && (tx.status === "completed" || tx.status === "complete")) {
-      console.log(`[NP Webhook ${reqId}] Deja traite – skip`);
-      return NextResponse.json({ received: true, message: "Already processed" }, { status: 200 });
+    if (
+      ["complete", "completed", "payment.complete", "charge.complete", "transaction.complete", "success", "successful"].includes(rawStatus)
+      || eventType.includes("complete")
+      || eventType.includes("success")
+    ) {
+      normalizedStatus = "completed";
+    } else if (
+      ["canceled", "cancelled", "payment.cancelled", "charge.cancelled", "transaction.cancelled"].includes(rawStatus)
+      || eventType.includes("cancel")
+    ) {
+      normalizedStatus = "cancelled";
+    } else if (
+      ["expired", "payment.expired", "charge.expired", "transaction.expired"].includes(rawStatus)
+      || eventType.includes("expire")
+    ) {
+      normalizedStatus = "expired";
+    } else if (
+      ["failed", "payment.failed", "charge.failed", "transaction.failed", "rejected"].includes(rawStatus)
+      || eventType.includes("fail")
+    ) {
+      normalizedStatus = "failed";
     }
 
-    // ETAPE 8 : Traitement selon statut
-    if (status === "complete" || status === "completed") {
-      console.log(`[NP Webhook ${reqId}] PAIEMENT CONFIRME → activation ${resolvedPack}`);
+    // 7. Idempotence : si la transaction est déjà complétée et traitée
+    if (tx && tx.status === "completed" && tx.webhook_status === "processed" && normalizedStatus === "completed") {
+      console.log(`[NP Webhook ${reqId}] Idempotence : Transaction déjà validée en BDD. Passage sans ré-exécution.`);
+      return NextResponse.json({ received: true, message: "Transaction already processed" }, { status: 200 });
+    }
 
-      const now = new Date();
-      const expiresAt = new Date(now.getTime() + durationDays * 24 * 3600 * 1000);
-      const formattedExpires = expiresAt.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+    const now = new Date();
+    const nowIso = now.toISOString();
+
+    // 8. TRAITEMENT DE PAIEMENT CONFIRMÉ (COMPLETED)
+    if (normalizedStatus === "completed") {
+      console.log(`[NP Webhook ${reqId}] ✅ PAIEMENT CONFIRMÉ ! Activation du ${packName} (${durationDays} jours)`);
 
       if (userId) {
-        // A. Archiver anciens abonnements
-        const { error: archErr } = await adminDb.from("subscriptions")
-          .update({ status: "replaced", updated_at: now.toISOString() })
-          .eq("user_id", userId).eq("status", "active");
-        if (archErr) console.warn(`[NP Webhook ${reqId}] Archivage warn:`, archErr.message);
-        else console.log(`[NP Webhook ${reqId}] ✓ Anciens abonnements archives`);
+        // A. Calcul de la période de validité (Renouvellement vs Nouvel Abonnement)
+        const { data: existingActiveSub } = await adminDb.from("subscriptions")
+          .select("*")
+          .eq("user_id", userId)
+          .eq("status", "active")
+          .order("expires_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
-        // B. Creer nouvel abonnement
+        let startDate = now;
+        let expiresAt = new Date(now.getTime() + durationDays * 24 * 3600 * 1000);
+
+        // Si l'utilisateur possède déjà un abonnement actif non expiré -> Prolonger la période
+        if (existingActiveSub && existingActiveSub.expires_at) {
+          const currentExpiry = new Date(existingActiveSub.expires_at);
+          if (currentExpiry > now) {
+            expiresAt = new Date(currentExpiry.getTime() + durationDays * 24 * 3600 * 1000);
+            console.log(`[NP Webhook ${reqId}] 🔄 Prolongation d'abonnement détectée. Nouvelle expiration : ${expiresAt.toISOString()}`);
+          }
+        }
+
+        const formattedExpires = expiresAt.toLocaleDateString("fr-FR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        });
+
+        // B. Marquer les anciens abonnements comme remplacés
+        await adminDb.from("subscriptions")
+          .update({ status: "replaced", updated_at: nowIso })
+          .eq("user_id", userId)
+          .eq("status", "active");
+
+        // C. Créer le nouvel abonnement actif dans `subscriptions`
         const { data: newSub, error: subErr } = await adminDb.from("subscriptions").insert({
-          user_id: userId, pack: resolvedPack, amount: amountVal.toString(), currency: "XAF",
-          status: "active", started_at: now.toISOString(), expires_at: expiresAt.toISOString(),
-          created_at: now.toISOString(), updated_at: now.toISOString(),
+          user_id: userId,
+          pack: resolvedPack,
+          amount: amountVal.toString(),
+          currency: "XAF",
+          status: "active",
+          started_at: startDate.toISOString(),
+          expires_at: expiresAt.toISOString(),
+          created_at: nowIso,
+          updated_at: nowIso,
         }).select("id").single();
 
-        if (subErr) console.error(`[NP Webhook ${reqId}] ERREUR creation abo:`, subErr);
-        else console.log(`[NP Webhook ${reqId}] ✓ Abonnement cree id=${newSub?.id} expire=${formattedExpires}`);
+        if (subErr) {
+          console.error(`[NP Webhook ${reqId}] Erreur création abonnement Supabase:`, subErr);
+        } else {
+          console.log(`[NP Webhook ${reqId}] ✓ Nouvel abonnement créé (ID=${newSub?.id})`);
+        }
 
         const subscriptionId = newSub?.id || null;
 
-        // C. Mettre a jour profil
+        // D. Mise à jour immédiate du profil utilisateur (`profiles`) -> Déblocage des droits du SaaS
         const { error: profErr } = await adminDb.from("profiles")
-          .update({ subscription_type: resolvedPack, updated_at: now.toISOString() })
+          .update({
+            subscription_type: resolvedPack,
+            updated_at: nowIso,
+          })
           .eq("id", userId);
-        if (profErr) console.error(`[NP Webhook ${reqId}] Erreur profil:`, profErr);
-        else console.log(`[NP Webhook ${reqId}] ✓ Profil mis a jour: subscription_type=${resolvedPack}`);
 
-        // D. Mettre a jour / creer transaction
-        if (tx) {
-          const { error: txUpErr } = await adminDb.from("transactions").update({
-            status: "completed", webhook_status: "processed",
-            payment_method: transaction.channel || "NotchPay",
-            pack: resolvedPack, subscription_id: subscriptionId,
-            provider_transaction_id: reference || tx.provider_transaction_id,
-            updated_at: now.toISOString(),
-          }).eq("id", tx.id);
-          if (txUpErr) console.error(`[NP Webhook ${reqId}] Erreur update tx:`, txUpErr);
-          else console.log(`[NP Webhook ${reqId}] ✓ Transaction: completed`);
+        if (profErr) {
+          console.error(`[NP Webhook ${reqId}] Erreur mise à jour du profil utilisateur:`, profErr);
         } else {
-          await adminDb.from("transactions").insert({
-            user_id: userId, subscription_id: subscriptionId, provider: "NotchPay",
-            provider_transaction_id: reference, payment_method: transaction.channel || "NotchPay",
-            amount: amountVal.toString(), currency: "XAF", pack: resolvedPack,
-            reference: txReference, status: "completed", webhook_status: "processed",
-            created_at: now.toISOString(), updated_at: now.toISOString(),
-          });
-          console.log(`[NP Webhook ${reqId}] ✓ Transaction creee (orpheline)`);
+          console.log(`[NP Webhook ${reqId}] ✓ Profil utilisateur mis à jour: subscription_type = ${resolvedPack}`);
         }
 
-        // E. Notification utilisateur
-        const { error: notifErr } = await adminDb.from("notifications").insert({
-          user_id: userId,
-          title: `✅ Paiement confirmé – ${packName}`,
-          message: `Votre paiement de ${amountVal.toLocaleString("fr-FR")} FCFA pour le ${packName} a été confirmé via Notch Pay (Réf: ${txReference}). Droits actifs pour ${durationDays} jours (jusqu'au ${formattedExpires}).`,
-          type: "payment_success", is_read: false, created_at: now.toISOString(),
-        });
-        if (notifErr) console.warn(`[NP Webhook ${reqId}] Notification non insérée (table manquante?):`, notifErr.message);
-        else console.log(`[NP Webhook ${reqId}] ✓ Notification creee`);
+        // E. Mise à jour de la table `transactions`
+        if (tx) {
+          await adminDb.from("transactions").update({
+            status: "completed",
+            webhook_status: "processed",
+            paid_at: nowIso,
+            payment_method: paymentChannel,
+            pack: resolvedPack,
+            subscription_id: subscriptionId,
+            provider_transaction_id: providerTxId,
+            updated_at: nowIso,
+          }).eq("id", tx.id);
+          console.log(`[NP Webhook ${reqId}] ✓ Transaction Supabase mise à jour (status=completed, webhook_status=processed)`);
+        } else {
+          await adminDb.from("transactions").insert({
+            user_id: userId,
+            subscription_id: subscriptionId,
+            provider: "NotchPay",
+            provider_transaction_id: providerTxId,
+            payment_method: paymentChannel,
+            amount: amountVal.toString(),
+            currency: "XAF",
+            pack: resolvedPack,
+            reference: txReference,
+            status: "completed",
+            webhook_status: "processed",
+            paid_at: nowIso,
+            created_at: nowIso,
+            updated_at: nowIso,
+          });
+          console.log(`[NP Webhook ${reqId}] ✓ Transaction créée et marquée COMPLETED`);
+        }
 
-        await logNotchPayEvent(userId, txReference, "webhook_processed", {
-          reqId, result: "SUCCESS", pack: resolvedPack, packName, durationDays,
-          expiresAt: expiresAt.toISOString(), subscriptionId, payerEmail,
+        // F. Notification automatique dans le tableau de bord
+        try {
+          await adminDb.from("notifications").insert({
+            user_id: userId,
+            title: `✅ Paiement confirmé – ${packName}`,
+            message: `Votre paiement de ${amountVal.toLocaleString("fr-FR")} FCFA a été confirmé. Votre abonnement est actif jusqu'au ${formattedExpires}.`,
+            type: "payment_success",
+            is_read: false,
+            created_at: nowIso,
+          });
+        } catch (e: any) {
+          console.warn(`[NP Webhook ${reqId}] Erreur insertion notification:`, e?.message);
+        }
+
+        await logNotchPayEvent(userId, txReference, "webhook_processed_completed", {
+          reqId,
+          result: "SUCCESS",
+          pack: resolvedPack,
+          packName,
+          durationDays,
+          expiresAt: expiresAt.toISOString(),
+          subscriptionId,
         });
 
-        console.log(`[NP Webhook ${reqId}] ===== FIN OK – ${resolvedPack} active =====`);
+        console.log(`[NP Webhook ${reqId}] ===== SUCCÈS : ${packName} ACTIF ET SYNCHRONISÉ =====`);
 
       } else {
-        console.error(`[NP Webhook ${reqId}] ERREUR: userId introuvable pour ref=${reference}`);
-        await logNotchPayEvent(null, txReference, "webhook_error", { reqId, error: "userId introuvable", reference, payerEmail });
+        console.error(`[NP Webhook ${reqId}] ERREUR : Aucun utilisateur associé trouvé pour la référence ${reference}`);
+        await logNotchPayEvent(null, txReference, "webhook_error_no_user", { reqId, reference });
       }
 
-    } else if (["failed", "canceled", "cancelled", "expired"].includes(status)) {
-      console.log(`[NP Webhook ${reqId}] Paiement ${status}`);
+    // 9. TRAITEMENT DES ÉCHECS, ANNULATIONS ET EXPIRATIONS
+    } else if (["cancelled", "expired", "failed"].includes(normalizedStatus)) {
+      console.log(`[NP Webhook ${reqId}] ❌ Statut transaction mis à jour vers : ${normalizedStatus}`);
+
       if (tx) {
         await adminDb.from("transactions").update({
-          status: status === "cancelled" ? "canceled" : status,
-          webhook_status: "processed", updated_at: new Date().toISOString(),
+          status: normalizedStatus,
+          webhook_status: "processed",
+          updated_at: nowIso,
         }).eq("id", tx.id);
       }
-      if (userId) {
-        const title = status === "canceled" || status === "cancelled" ? "Paiement annulé"
-          : status === "expired" ? "Paiement expiré" : "Paiement non finalisé";
-        await adminDb.from("notifications").insert({
-          user_id: userId, title,
-          message: `Votre tentative (Réf: ${txReference}) n'a pas abouti (${status.toUpperCase()}). Réessayez depuis le tableau de bord.`,
-          type: "payment_failed", is_read: false, created_at: new Date().toISOString(),
-        }).catch(e => console.warn("[NP Webhook] Notif echec:", e.message));
-      }
-      await logNotchPayEvent(userId, txReference, "webhook_processed", { reqId, result: status.toUpperCase() });
 
+      if (userId) {
+        const titleMap: Record<string, string> = {
+          cancelled: "Paiement annulé",
+          expired: "Paiement expiré",
+          failed: "Échec du paiement",
+        };
+        try {
+          await adminDb.from("notifications").insert({
+            user_id: userId,
+            title: titleMap[normalizedStatus] || "Mise à jour transaction",
+            message: `Votre transaction (Réf: ${txReference}) est passée au statut ${normalizedStatus.toUpperCase()}. Vous pouvez réessayer à tout moment depuis votre espace.`,
+            type: "payment_failed",
+            is_read: false,
+            created_at: nowIso,
+          });
+        } catch (e: any) {
+          // Fail-safe notification catch
+        }
+      }
+
+      await logNotchPayEvent(userId, txReference, `webhook_processed_${normalizedStatus}`, { reqId, status: normalizedStatus });
     } else {
-      // Statut intermediaire
-      console.log(`[NP Webhook ${reqId}] Statut intermediaire: ${status || "inconnu"}`);
-      if (tx && status) {
-        await adminDb.from("transactions").update({ status, updated_at: new Date().toISOString() }).eq("id", tx.id);
+      console.log(`[NP Webhook ${reqId}] Statut intermédiaire reçu: ${rawStatus}`);
+      if (tx) {
+        await adminDb.from("transactions").update({
+          status: rawStatus,
+          updated_at: nowIso,
+        }).eq("id", tx.id);
       }
     }
 
-    return NextResponse.json({ received: true, processedStatus: status }, { status: 200 });
+    return NextResponse.json({
+      received: true,
+      status: normalizedStatus,
+      reference: txReference,
+      timestamp: nowIso,
+    }, { status: 200 });
 
   } catch (err: any) {
-    console.error("[NP Webhook FATAL]", err.message, err.stack?.split("\n").slice(0, 3).join(" | "));
-    await logNotchPayEvent(null, null, "error", { message: err.message, stack: err.stack?.slice(0, 300) }).catch(() => {});
-    return NextResponse.json({ received: true, error: "Internal error" }, { status: 200 });
+    console.error("[NP Webhook FATAL ERROR]", err.message, err.stack);
+    await logNotchPayEvent(null, null, "fatal_error", { message: err.message, stack: err.stack }).catch(() => {});
+    return NextResponse.json({ received: true, error: "Internal server error" }, { status: 200 });
   }
 }
 
 export async function GET() {
   return NextResponse.json({
     status: "active",
-    service: "Passerelle Webhook Notch Pay – TCF-Canada Pro",
-    message: "Webhook Notch Pay actif et prêt.",
-    webhookUrl: "https://tcf-canada-olive.vercel.app/api/webhooks/notchpay",
-    environment: process.env.NOTCHPAY_ENV || "test",
+    service: "Passerelle Webhook Notch Pay – TCF Canada Pro",
+    domain: "https://griffondortcfcanada.com",
+    webhookUrl: "https://griffondortcfcanada.com/api/webhooks/notchpay",
+    environment: process.env.NOTCHPAY_ENV || "production",
     admin: "Administrateur réseau Miguel",
-    version: "2.0.0",
+    version: "3.1.0",
   }, { status: 200 });
 }

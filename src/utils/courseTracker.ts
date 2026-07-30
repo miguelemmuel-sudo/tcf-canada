@@ -31,6 +31,29 @@ export function saveStoredCoursesData(data: Record<string, CourseProgressData>) 
     offlineDb.saveAppSetting(COURSES_PROGRESS_KEY, data).catch(() => {});
     window.dispatchEvent(new Event("storage_course_progress_updated"));
 
+    // Async save to Supabase
+    (async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        for (const courseId of Object.keys(data)) {
+          const item = data[courseId];
+          const pct = item.totalLessons > 0 ? Math.min(100, Math.round((item.completedLessons.length / item.totalLessons) * 100)) : 0;
+          
+          await supabase.from("course_progress").upsert(
+            {
+              user_id: user.id,
+              course_id: courseId,
+              current_lesson: JSON.stringify(item.completedLessons),
+              completion_percentage: pct,
+              updated_at: new Date().toISOString()
+            },
+            { onConflict: 'user_id, course_id' }
+          );
+        }
+      }
+    })();
+
     for (const courseId of Object.keys(data)) {
       const item = data[courseId];
       const pct = item.totalLessons > 0 ? Math.min(100, Math.round((item.completedLessons.length / item.totalLessons) * 100)) : 0;

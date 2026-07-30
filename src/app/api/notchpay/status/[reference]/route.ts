@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getPaymentStatus, logNotchPayEvent } from "@/lib/notchpay";
+import { getPaymentStatus, logNotchPayEvent, PACK_DURATIONS, PACK_NAMES, inferPackFromAmountOrRef } from "@/lib/notchpay";
 import { createClient as createSupabaseJsClient } from "@supabase/supabase-js";
 
 function getAdminSupabase() {
@@ -12,20 +12,6 @@ function getAdminSupabase() {
   return createSupabaseJsClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-}
-
-function getPackInfo(
-  amountNum: number,
-  reference: string = ""
-): { key: string; name: string; durationDays: number } {
-  const refLower = reference.toLowerCase();
-  if (amountNum >= 90000 || refLower.includes("vip")) {
-    return { key: "vip", name: "Pack VIP & Coaching", durationDays: 60 };
-  } else if (amountNum >= 20000 || refLower.includes("griffon")) {
-    return { key: "griffon", name: "Pack Griffon D'OR", durationDays: 30 };
-  } else {
-    return { key: "standard", name: "Pack Standard", durationDays: 30 };
-  }
 }
 
 export async function GET(
@@ -47,8 +33,8 @@ export async function GET(
     const notchStatus = await getPaymentStatus(reference);
     const statusNorm = (notchStatus.status || "").toLowerCase();
 
-    // 2. Synchronisation Supabase en cas de succès (fallback si webhook retardé)
-    if (statusNorm === "complete" || statusNorm === "completed") {
+    // 2. Synchronisation Supabase en cas de succès (fallback si le webhook accuse un léger retard)
+    if (["complete", "completed", "payment.complete", "success"].includes(statusNorm)) {
       const adminDb = getAdminSupabase();
       if (adminDb) {
         const { data: transactions } = await adminDb
@@ -61,26 +47,40 @@ export async function GET(
         const tx =
           transactions && transactions.length > 0 ? transactions[0] : null;
 
-        // Activer l'abonnement seulement si le webhook n'a pas encore traité
+        // Activer l'abonnement seulement si la transaction n'est pas encore marquée comme complétée
         if (tx && tx.status !== "completed") {
           const userId = tx.user_id;
           const amountVal = notchStatus.amount || parseFloat(tx.amount) || 0;
-          const {
-            key: packKey,
-            name: packName,
-            durationDays,
-          } = getPackInfo(amountVal, tx.reference);
+          const packKey = tx.pack || inferPackFromAmountOrRef(amountVal, tx.reference);
+          const packName = PACK_NAMES[packKey] || "Pack TCF Canada Pro";
+          const durationDays = PACK_DURATIONS[packKey] || 30;
 
           const now = new Date();
-          const expiresAt = new Date(
-            now.getTime() + durationDays * 24 * 60 * 60 * 1000
-          );
+          const nowIso = now.toISOString();
 
           if (userId) {
+            // Vérifier s'il a un abonnement actif sur le même pack pour extension
+            const { data: existingActiveSub } = await adminDb
+              .from("subscriptions")
+              .select("*")
+              .eq("user_id", userId)
+              .eq("status", "active")
+              .order("expires_at", { ascending: false })
+              .limit(1)
+              .maybeSingle();
+
+            let expiresAt = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000);
+            if (existingActiveSub && existingActiveSub.pack === packKey && existingActiveSub.expires_at) {
+              const curExpiry = new Date(existingActiveSub.expires_at);
+              if (curExpiry > now) {
+                expiresAt = new Date(curExpiry.getTime() + durationDays * 24 * 60 * 60 * 1000);
+              }
+            }
+
             // Désactiver anciens abonnements
             await adminDb
               .from("subscriptions")
-              .update({ status: "replaced", updated_at: now.toISOString() })
+              .update({ status: "replaced", updated_at: nowIso })
               .eq("user_id", userId)
               .eq("status", "active");
 
@@ -93,20 +93,20 @@ export async function GET(
                 amount: amountVal.toString(),
                 currency: "XAF",
                 status: "active",
-                started_at: now.toISOString(),
+                started_at: nowIso,
                 expires_at: expiresAt.toISOString(),
-                created_at: now.toISOString(),
-                updated_at: now.toISOString(),
+                created_at: nowIso,
+                updated_at: nowIso,
               })
               .select("id")
               .single();
 
-            // Mettre à jour le profil
+            // Mettre à jour le profil (activation immédiate)
             await adminDb
               .from("profiles")
               .update({
                 subscription_type: packKey,
-                updated_at: now.toISOString(),
+                updated_at: nowIso,
               })
               .eq("id", userId);
 
@@ -118,25 +118,28 @@ export async function GET(
                 webhook_status: "processed",
                 payment_method: "NotchPay",
                 subscription_id: newSub?.id || null,
-                updated_at: now.toISOString(),
+                updated_at: nowIso,
               })
               .eq("id", tx.id);
 
-            // Créer une notification utilisateur
-            await adminDb.from("notifications").insert({
-              user_id: userId,
-              title: `Paiement confirmé : ${packName}`,
-              message: `Votre paiement de ${amountVal.toLocaleString(
-                "fr-FR"
-              )} FCFA pour le ${packName} a été confirmé via Notch Pay (Réf: ${reference}). Valide ${durationDays} jours.`,
-              type: "payment_success",
-              is_read: false,
-              created_at: now.toISOString(),
-            });
+            // Créer la notification utilisateur
+            try {
+              await adminDb.from("notifications").insert({
+                user_id: userId,
+                title: `✅ Paiement confirmé : ${packName}`,
+                message: `Votre paiement de ${amountVal.toLocaleString(
+                  "fr-FR"
+                )} FCFA pour le ${packName} a été confirmé via Notch Pay. Valide ${durationDays} jours.`,
+                type: "payment_success",
+                is_read: false,
+                created_at: nowIso,
+              });
+            } catch (e) {}
 
             await logNotchPayEvent(userId, reference, "status_check", {
               info: "Activé via GET /status fallback",
               reference,
+              pack: packKey,
             });
           }
         }
@@ -146,7 +149,7 @@ export async function GET(
     return NextResponse.json({
       success: true,
       reference: notchStatus.reference,
-      status: statusNorm,
+      status: statusNorm === "complete" ? "completed" : statusNorm,
       amount: notchStatus.amount,
       currency: notchStatus.currency,
       paid_at: notchStatus.paid_at,
@@ -159,3 +162,4 @@ export async function GET(
     );
   }
 }
+

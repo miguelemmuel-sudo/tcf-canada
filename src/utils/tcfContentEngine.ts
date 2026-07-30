@@ -2,6 +2,8 @@
 // Conçu par le comité d'experts FLE pour garantir une conformité totale au cahier des charges officiel en production :
 // 0% de boucles, 0% de répétitions, 0% de reformulation stérile, 100% de contenus authentiques et progressifs (A1 -> C2).
 
+import { sanitizeLessonOrExam } from "./textSanitizer";
+
 export type CECRLevel = "A1" | "A2" | "B1" | "B2" | "C1" | "C2" | "Transversal";
 export type SkillType = "listening" | "reading" | "writing" | "speaking";
 
@@ -926,7 +928,7 @@ export class TCFProceduralLibrary {
       }
     }
 
-    return {
+    return sanitizeLessonOrExam({
       id,
       title: tpl.title,
       content: tpl.text,
@@ -934,7 +936,7 @@ export class TCFProceduralLibrary {
       level,
       timerMinutes: 15,
       questions
-    };
+    });
   }
 
   public static generateWritingExamTask(id: number, level: string) {
@@ -976,7 +978,7 @@ export class TCFProceduralLibrary {
 
     const uniqueInstructions = `**[Sujet Officiel TCF Canada - Session EE #${id} - Code Évaluation : ${inst.slice(0, 8).toUpperCase()}-${city.slice(0, 5).toUpperCase()}-${topicIdx}]**\n\n${instructions}`;
 
-    return {
+    return sanitizeLessonOrExam({
       id,
       title: `Épreuve Officielle d'Expression Écrite #${id} : ${topic.category} (${topic.shortName})`,
       type: taskType.includes("Tâche 1") ? "courriel" : taskType.includes("Tâche 2") ? "article" : "essai",
@@ -991,7 +993,7 @@ export class TCFProceduralLibrary {
       detailedCorrection: `Conseil du jury FLE : Pour obtenir une note NCLC 8+, intégrez naturellement les termes officiels tels que « ${topic.vocab[0]} » et « ${topic.vocab[1]} ». Respectez scrupuleusement le plafond de ${maxW} mots.`,
       errorAnalysis: "Piège classique : Ne rédigez pas une introduction générique hors-sujet. Entrez directement dans le vif du thème canadien demandé.",
       cecrEvaluation: `Évaluation : Ce sujet valide le palier ${level} (NCLC ${level === "C1" || level === "C2" ? "9-10" : "7-8"}).`
-    };
+    });
   }
 
   public static generateSpeakingExamTask(id: number, level: string) {
@@ -1032,7 +1034,7 @@ export class TCFProceduralLibrary {
 
     const uniquePromptText = `**[Épreuve Orale Officielle TCF Canada - Session EO #${id} - Centre : ${city} (${inst.slice(0, 8)}) - Thématique #${topicIdx}]**\n\n${promptText}`;
 
-    return {
+    return sanitizeLessonOrExam({
       id,
       title: `Épreuve Officielle d'Expression Orale #${id} : ${topic.category} (${topic.shortName})`,
       type: taskType.includes("Tâche 2") ? "interaction" : "monologue",
@@ -1052,7 +1054,7 @@ export class TCFProceduralLibrary {
       detailedCorrection: `Conseil d'expert FLE : N'apprenez pas de textes par cœur. L'examinateur évalue votre authenticité et votre capacité à interagir sur le thème de ${topic.shortName.toLowerCase()}.`,
       errorAnalysis: "Erreur fréquente : Les hésitations prolongées ou les phrases inachevées pénalisent la fluidité. Si vous cherchez un mot, reformulez simplement en français.",
       cecrEvaluation: `Niveau d'évaluation : Palier cible ${level} (NCLC ${level === "C1" || level === "C2" ? "9-10" : "7-8"}).`
-    };
+    });
   }
 
   public static generateListeningAudioScenario(id: number, synthCounter: number, level: string, voiceProfile1: any, voiceProfile2: any) {
@@ -1311,5 +1313,5 @@ export function generateUniqueLesson(id: number, moduleId: number, cecrLevel: st
   };
 
   UniquenessValidator.register(title, questionObj.q);
-  return lessonObj;
+  return sanitizeLessonOrExam(lessonObj);
 }

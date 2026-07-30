@@ -17,7 +17,10 @@ import {
   Settings,
   LogOut,
   Lock,
-  Crown
+  Crown,
+  Zap,
+  History,
+  Award
 } from "lucide-react";
 import { getCurrentUserPack, isFeatureAccessible, getPackPermissions, PackType, isUserAdmin } from "@/utils/subscriptionEngine";
 import { UpgradePackModal } from "@/components/ui/UpgradePackModal";
@@ -26,6 +29,9 @@ const navItems = [
   { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
   { href: "/dashboard/courses", label: "Mes cours", icon: BookOpen },
   { href: "/dashboard/exams", label: "Tests pratiques", icon: FileCheck2 },
+  { href: "/dashboard/quiz", label: "Quiz Express", icon: Zap },
+  { href: "/dashboard/history", label: "Historique", icon: History },
+  { href: "/dashboard/certificates", label: "Certificats", icon: Award },
   { href: "/dashboard/results", label: "Résultats", icon: BarChart3 },
   { href: "/dashboard/coaching", label: "Coaching", icon: UserCheck, featureKey: "coaching" as const },
   { href: "/dashboard/reservations", label: "Mes réservations", icon: Calendar, featureKey: "reservations" as const },
