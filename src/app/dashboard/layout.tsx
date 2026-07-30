@@ -90,10 +90,6 @@ export default function DashboardLayout({
               activePack = sub.pack || profile?.subscription_type || "standard";
             }
           }
-        }
-
-        const isPaymentsPage = window.location.pathname.includes("/dashboard/payments");
-
         if (isPaidSubActive || isPaymentsPage) {
           setHasActiveSub(true);
           localStorage.setItem("griffon_user_plan", activePack);
