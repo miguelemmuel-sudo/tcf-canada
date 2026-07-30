@@ -92,8 +92,18 @@ function PaymentVerifyContent() {
             </div>
             
             <p className="text-xs text-slate-500 mt-2">
-              Si vous avez déjà payé, veuillez vous connecter manuellement.
+              Si vous avez déjà payé, veuillez patienter ou vous connecter manuellement.
             </p>
+            <button
+              onClick={() => {
+                const plan = localStorage.getItem("tcf_reg_plan") || searchParams?.get("pack") || "standard";
+                const ref = searchParams?.get("ref") || searchParams?.get("reference");
+                window.location.href = `/api/notchpay/retry?ref=${ref}&pack=${plan}`;
+              }}
+              className="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold transition-colors w-full"
+            >
+              Réessayer le paiement
+            </button>
             <button
               onClick={() => router.push("/login")}
               className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-colors w-full"

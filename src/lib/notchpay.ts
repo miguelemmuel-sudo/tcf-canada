@@ -135,12 +135,13 @@ export async function initiateNotchPayPayment(params: InitiatePaymentParams) {
   try {
     await logNotchPayEvent(params.userId || null, params.reference, "initiate_request", bodyPayload);
 
-    const authHeader = NOTCHPAY_PUBLIC_KEY ? `sb.${NOTCHPAY_PUBLIC_KEY}` : (NOTCHPAY_PRIVATE_KEY || "");
+    const authHeader = NOTCHPAY_PUBLIC_KEY || NOTCHPAY_PRIVATE_KEY || "";
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
+        Accept: "application/json",
         "Content-Type": "application/json",
-        Authorization: authHeader.startsWith("sb.") || authHeader.startsWith("pk.") ? authHeader : `sb.${authHeader}`,
+        Authorization: authHeader,
       },
       body: JSON.stringify(bodyPayload),
     });
@@ -176,7 +177,8 @@ export async function getPaymentStatus(reference: string): Promise<PaymentStatus
     const response = await fetch(endpoint, {
       method: "GET",
       headers: {
-        Authorization: authHeader.startsWith("sb.") || authHeader.startsWith("pk.") ? authHeader : `sb.${authHeader}`,
+        Accept: "application/json",
+        Authorization: authHeader,
       },
     });
 
