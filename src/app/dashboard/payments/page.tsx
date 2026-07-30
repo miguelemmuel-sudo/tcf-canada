@@ -177,7 +177,7 @@ function PaymentsContent() {
 
   // 3. Vérification automatique au retour du paiement Notch Pay (si ref/reference est dans l'URL)
   useEffect(() => {
-    const reference = searchParams?.get("ref") || searchParams?.get("reference");
+    const reference = searchParams?.get("reference") || searchParams?.get("trxref") || searchParams?.get("ref");
     const statusParam = searchParams?.get("status");
 
     if (reference && statusParam === "check" && !verifyingPayment) {

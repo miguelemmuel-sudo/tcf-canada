@@ -12,7 +12,10 @@ function PaymentVerifyContent() {
   const [message, setMessage] = useState("Vérification de votre paiement en cours...");
 
   useEffect(() => {
-    const reference = searchParams?.get("ref") || searchParams?.get("reference");
+    // Notch Pay renvoie sa propre référence dans ?reference=...
+    // On priorise 'reference' (Notch Pay) sur 'ref' (notre ref locale)
+    const reference = searchParams?.get("reference") || searchParams?.get("trxref") || searchParams?.get("ref");
+    
     if (!reference) {
       setStatus("error");
       setMessage("Référence de paiement introuvable.");
