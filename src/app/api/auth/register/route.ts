@@ -21,19 +21,24 @@ const ADMIN_EMAILS = [
 ];
 
 function safeStr(err: unknown): string {
-  if (!err) return "Erreur inconnue";
-  if (typeof err === "string") return err;
+  if (!err) return "";
+  if (typeof err === "string") {
+    const trimmed = err.trim();
+    if (trimmed && trimmed !== "{}" && trimmed !== "[]") return trimmed;
+    return "";
+  }
   if (typeof err === "object") {
     const e = err as Record<string, unknown>;
-    if (typeof e.message === "string" && e.message) return e.message;
-    if (typeof e.msg === "string" && e.msg) return e.msg;
-    if (typeof e.error_description === "string" && e.error_description) return e.error_description;
+    if (typeof e.message === "string" && e.message.trim() && e.message.trim() !== "{}") return e.message.trim();
+    if (typeof e.msg === "string" && e.msg.trim() && e.msg.trim() !== "{}") return e.msg.trim();
+    if (typeof e.error_description === "string" && e.error_description.trim() && e.error_description.trim() !== "{}") return e.error_description.trim();
+    if (typeof e.error === "string" && e.error.trim() && e.error.trim() !== "{}") return e.error.trim();
     try {
       const s = JSON.stringify(e);
-      if (s && s !== "{}") return s;
+      if (s && s !== "{}" && s !== "[]" && s !== '{"message":""}') return s;
     } catch (_) {}
   }
-  return "Erreur serveur inattendue";
+  return "";
 }
 
 /** Hash bcrypt-compatible via crypto (utilisé par Supabase en interne) */
@@ -216,21 +221,21 @@ export async function POST(request: Request) {
       if (signUpError) {
         const msg = safeStr(signUpError);
         const lower = msg.toLowerCase();
-        console.error("[Register] signUp error:", msg);
+        console.error("[Register] signUp error:", msg, signUpError);
 
-        if (lower.includes("already") || lower.includes("exists") || lower.includes("user_exists")) {
+        if (lower.includes("already") || lower.includes("exists") || lower.includes("user_exists") || lower.includes("unique")) {
           return NextResponse.json({
-            error: "Cette adresse e-mail est déjà utilisée. Veuillez vous connecter."
+            error: "Cette adresse e-mail est déjà associée à un compte TCF Canada. Veuillez vous connecter."
           }, { status: 400 });
         }
         if (lower.includes("rate limit") || lower.includes("too many")) {
           return NextResponse.json({
-            error: "Trop de tentatives. Veuillez patienter quelques minutes."
+            error: "Trop de tentatives d'inscription. Veuillez patienter quelques minutes avant de réessayer."
           }, { status: 429 });
         }
-        if (lower.includes("smtp") || lower.includes("email") || lower.includes("sending") || lower.includes("500")) {
-          // SMTP en panne → essai de récupérer l'ID si le user a quand même été créé
-          console.warn("[Register] SMTP échoué mais l'utilisateur existe peut-être...");
+
+        // Essai de récupération de l'ID si le compte a été créé en BDD malgré l'erreur d'envoi d'e-mail
+        try {
           const { data: existingUser } = await supabase
             .from("profiles")
             .select("id")
@@ -238,12 +243,16 @@ export async function POST(request: Request) {
             .maybeSingle();
           if (existingUser?.id) {
             userId = existingUser.id;
-            console.log("[Register] ✅ User déjà en base via profiles:", userId);
+            console.log("[Register] ✅ Utilisateur récupéré dans profiles après incident auth:", userId);
           }
-        }
+        } catch (_) {}
+
         if (!userId) {
+          const displayMsg = (msg && msg !== "{}" && !msg.includes("{}"))
+            ? msg
+            : "Une erreur est survenue lors de l'inscription. Veuillez vérifier vos informations et réessayer.";
           return NextResponse.json({
-            error: `Erreur inscription: ${msg}`
+            error: displayMsg
           }, { status: 400 });
         }
       } else if (signUpData?.user?.id) {

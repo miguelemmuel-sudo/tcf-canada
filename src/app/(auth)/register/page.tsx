@@ -213,8 +213,11 @@ export default function RegisterPage() {
 
       // Erreur HTTP → afficher le message serveur
       if (!response.ok) {
-        const msg = safeErrorMsg(data?.error) || safeErrorMsg(data?.message) || safeErrorMsg(data);
-        setError(`❌ ${msg || "Une erreur est survenue lors de l'inscription. Veuillez réessayer."}`);
+        let msg = safeErrorMsg(data?.error) || safeErrorMsg(data?.message);
+        if (!msg || msg === "{}" || msg.includes("{}") || msg === "Erreur: {}" || msg === "❌ {}") {
+          msg = "Une erreur est survenue lors de l'inscription. Veuillez vérifier vos informations et réessayer.";
+        }
+        setError(msg.startsWith("❌") ? msg : `❌ ${msg}`);
         setLoading(false);
         return;
       }
