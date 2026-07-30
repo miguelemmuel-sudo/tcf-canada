@@ -47,26 +47,31 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // Admin route check
-  if (user && pathname.startsWith('/admin')) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role, is_admin')
-      .eq('id', user.id)
-      .single()
+  // Admin route check - Contrôle serveur strict des rôles (Admin vs User)
+  if (pathname.startsWith('/admin') || pathname.startsWith('/dashboard/admin')) {
+    let isUserAdminRole = false;
+    if (user) {
+      const email = user.email?.toLowerCase().trim() || '';
+      const isAdminEmail = [
+        'emmuel.proreseau@gmail.com', 
+        'joumefiomiguel@gmail.com', 
+        'miguelemmuel@gmail.com', 
+        'admin.miguel@griffondor.com', 
+        'miguel.admin@griffondor.com', 
+        'admin@griffondor.com', 
+        'miguel@griffondor.com'
+      ].includes(email);
 
-    const email = user.email?.toLowerCase().trim() || ''
-    const isAdminEmail = [
-      'emmuel.proreseau@gmail.com', 
-      'joumefiomiguel@gmail.com', 
-      'miguelemmuel@gmail.com', 
-      'admin.miguel@griffondor.com', 
-      'miguel.admin@griffondor.com', 
-      'admin@griffondor.com', 
-      'miguel@griffondor.com'
-    ].includes(email);
-      
-    if (profile?.role !== 'superadmin' && !profile?.is_admin && !isAdminEmail) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role, is_admin')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      isUserAdminRole = isAdminEmail || Boolean(profile?.is_admin) || profile?.role === 'superadmin';
+    }
+
+    if (!isUserAdminRole) {
       const url = request.nextUrl.clone()
       url.pathname = '/dashboard'
       return NextResponse.redirect(url)
