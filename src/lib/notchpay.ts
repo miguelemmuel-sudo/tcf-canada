@@ -138,6 +138,7 @@ export async function initiateNotchPayPayment(params: InitiatePaymentParams) {
     const authHeader = NOTCHPAY_PUBLIC_KEY || NOTCHPAY_PRIVATE_KEY || "";
     const response = await fetch(endpoint, {
       method: "POST",
+      cache: "no-store",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
@@ -176,6 +177,7 @@ export async function getPaymentStatus(reference: string): Promise<PaymentStatus
   try {
     const response = await fetch(endpoint, {
       method: "GET",
+      cache: "no-store",
       headers: {
         Accept: "application/json",
         Authorization: authHeader,
