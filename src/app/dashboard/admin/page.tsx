@@ -546,7 +546,7 @@ export default function AdminFinancePage() {
                 </span>
               </div>
               <p className="font-mono text-xs text-indigo-200 font-semibold break-all">
-                https://tcf-canada-olive.vercel.app/api/webhooks/notchpay
+                https://griffondortcfcanada.com/api/webhooks/notchpay
               </p>
             </div>
             <div className="text-[11px] bg-slate-800/80 p-2.5 rounded-xl border border-slate-700/60 font-mono space-y-0.5 shrink-0">
