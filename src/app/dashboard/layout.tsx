@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { Topbar } from "@/components/dashboard/Topbar";
+import { usePathname } from "next/navigation";
 
 export default function DashboardLayout({
   children,
@@ -13,6 +14,8 @@ export default function DashboardLayout({
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
   const [hasActiveSub, setHasActiveSub] = useState(false);
+  const pathname = usePathname();
+  const isPaymentsPage = pathname?.includes("/dashboard/payments");
 
   useEffect(() => {
     // Read user name from localStorage
@@ -28,10 +31,9 @@ export default function DashboardLayout({
         const localEmail = localStorage.getItem("griffon_user_email") || "";
         const localName = localStorage.getItem("griffon_user_name") || "";
         const localIsAdmin = localStorage.getItem("griffon_user_is_admin") === "true";
-        const isPaymentsPage = window.location.pathname.includes("/dashboard/payments");
 
         // Ne pas rediriger vers /login si un utilisateur s'est inscrit ou a une session locale active
-        if (!user && !localEmail && !localName && !isPaymentsPage) {
+        if (!user && !localEmail && !localName) {
           window.location.href = "/login";
           return;
         }
@@ -92,7 +94,7 @@ export default function DashboardLayout({
           }
         }
 
-        if (isPaidSubActive || isPaymentsPage) {
+        if (isPaidSubActive) {
           setHasActiveSub(true);
           localStorage.setItem("griffon_user_plan", activePack);
           window.dispatchEvent(new Event("storage_user_pack_updated"));
@@ -120,7 +122,7 @@ export default function DashboardLayout({
   }
 
 
-  if (!hasActiveSub) {
+  if (!hasActiveSub && !isPaymentsPage) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col items-center justify-center p-4">
         <div className="w-full max-w-5xl bg-white dark:bg-slate-950 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-[90vh]">

@@ -30,7 +30,6 @@ const navItems = [
   { href: "/dashboard/courses", label: "Mes cours", icon: BookOpen },
   { href: "/dashboard/exams", label: "Tests pratiques", icon: FileCheck2 },
   { href: "/dashboard/quiz", label: "Quiz Express", icon: Zap },
-  { href: "/dashboard/certificates", label: "Certificats", icon: Award },
   { href: "/dashboard/results", label: "Résultats", icon: BarChart3 },
   { href: "/dashboard/coaching", label: "Coaching", icon: UserCheck, featureKey: "coaching" as const },
   { href: "/dashboard/reservations", label: "Mes réservations", icon: Calendar, featureKey: "reservations" as const },
