@@ -56,7 +56,7 @@ export async function GET(request: Request) {
     request.headers.get("origin") ||
     "https://griffondortcfcanada.com";
 
-  const redirectUrl = `${baseUrl}/payment-verify?status=check&ref=${newRef}&pack=${pack}`;
+  const redirectUrl = `${baseUrl}/payment-verify?status=check&ref=${newRef}&pack=${pack}&_t=${Date.now()}`;
 
   try {
     const notchRes = await initiateNotchPayPayment({
