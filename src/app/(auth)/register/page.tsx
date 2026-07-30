@@ -222,11 +222,11 @@ export default function RegisterPage() {
         return;
       }
 
-      // Succès → Sauvegarde temporaire pour connexion post-paiement
+      // Succès → Sauvegarde temporaire pour connexion post-paiement (localStorage pour survivre aux redirections cross-tabs/mobiles NotchPay)
       try {
-        sessionStorage.setItem("tcf_reg_email", formDataState.email);
-        sessionStorage.setItem("tcf_reg_pwd", formDataState.password);
-        sessionStorage.setItem("tcf_reg_plan", selectedPlan);
+        localStorage.setItem("tcf_reg_email", formDataState.email);
+        localStorage.setItem("tcf_reg_pwd", formDataState.password);
+        localStorage.setItem("tcf_reg_plan", selectedPlan);
       } catch (_) {}
 
       // Administrateur explicite -> dashboard admin direct
@@ -244,7 +244,7 @@ export default function RegisterPage() {
       }
 
       // Candidat -> Redirection OBLIGATOIRE vers Notch Pay / Checkout de paiement
-      const checkoutUrl = data.link || data.redirectTo || `/dashboard/payments?pack=${selectedPlan}&initiate=true`;
+      const checkoutUrl = data.link || data.redirectTo || `/payment-verify?pack=${selectedPlan}&initiate=true`;
       console.log("[Inscription] Redirection vers paiement obligatoire:", checkoutUrl);
       window.location.href = checkoutUrl;
 

@@ -28,17 +28,17 @@ function PaymentVerifyContent() {
           setStatus("success");
           setMessage("Paiement confirmé ! Création de votre session en cours...");
 
-          // Récupérer les identifiants depuis le sessionStorage
-          const email = sessionStorage.getItem("tcf_reg_email");
-          const password = sessionStorage.getItem("tcf_reg_pwd");
-          const plan = sessionStorage.getItem("tcf_reg_plan") || "standard";
+          // Récupérer les identifiants depuis le localStorage
+          const email = localStorage.getItem("tcf_reg_email");
+          const password = localStorage.getItem("tcf_reg_pwd");
+          const plan = localStorage.getItem("tcf_reg_plan") || "standard";
 
           if (email && password) {
             const supabase = createClient();
             await supabase.auth.signInWithPassword({ email, password });
             
             // Nettoyage et initialisation locale
-            sessionStorage.removeItem("tcf_reg_pwd");
+            localStorage.removeItem("tcf_reg_pwd");
             localStorage.setItem("griffon_user_email", email);
             localStorage.setItem("griffon_user_plan", plan);
             document.cookie = `griffon_user_email=${encodeURIComponent(email)}; path=/; max-age=2592000`;
