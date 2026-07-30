@@ -358,8 +358,9 @@ export async function POST(request: Request) {
     const baseUrl =
       process.env.NEXT_PUBLIC_APP_URL ||
       request.headers.get("origin") ||
-      "https://tcf-canada-olive.vercel.app";
+      "https://griffondortcfcanada.com";
     const redirectUrl = `${baseUrl}/dashboard/payments?status=check&ref=${reference}&pack=${packKey}`;
+    const fallbackCheckoutUrl = `${baseUrl}/dashboard/payments?pack=${packKey}&ref=${reference}&initiate=true`;
 
     try {
       const { initiateNotchPayPayment } = await import("@/lib/notchpay");
@@ -386,19 +387,20 @@ export async function POST(request: Request) {
 
       return NextResponse.json({
         success: true,
-        link: notchRes.paymentUrl,
-        transId: notchRes.transactionRef,
+        link: notchRes.paymentUrl || fallbackCheckoutUrl,
+        transId: notchRes.transactionRef || reference,
         reference,
         user: { id: userId, email: cleanEmail },
       });
     } catch (notchErr) {
-      console.error("[Register] Notch Pay error (non bloquant):", safeStr(notchErr));
+      console.error("[Register] Notch Pay initiation error:", safeStr(notchErr));
       return NextResponse.json({
         success: true,
-        link: null,
-        redirectTo: `/dashboard/payments?pack=${packKey}&initiate=true`,
+        link: fallbackCheckoutUrl,
+        transId: reference,
+        reference,
         user: { id: userId, email: cleanEmail },
-        message: "Compte créé. Veuillez finaliser le paiement.",
+        message: "Compte créé avec succès. Veuillez procéder au paiement.",
       });
     }
   } catch (err) {

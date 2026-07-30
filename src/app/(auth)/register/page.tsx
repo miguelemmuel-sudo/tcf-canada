@@ -236,7 +236,9 @@ export default function RegisterPage() {
         clearAllUserLocalData();
       } catch (_) {}
 
+      // Nettoyage impératif des privilèges d'administration pour tout nouvel utilisateur
       try {
+        localStorage.removeItem("griffon_user_is_admin");
         localStorage.setItem("griffon_user_name", `${formDataState.firstName} ${formDataState.lastName}`.trim());
         localStorage.setItem("griffon_user_email", formDataState.email);
         localStorage.setItem("griffon_user_plan", selectedPlan);
@@ -246,21 +248,17 @@ export default function RegisterPage() {
         document.cookie = `tcf_logged_in=true; path=/; max-age=2592000`;
       } catch (_) {}
 
-      // Admin → dashboard direct
+      // Administrateur explicite -> dashboard admin direct
       if (data.admin) {
         try { localStorage.setItem("griffon_user_is_admin", "true"); } catch (_) {}
-        window.location.href = "/dashboard";
+        window.location.href = "/dashboard/admin";
         return;
       }
 
-      // Redirection vers Fapshi ou page de paiement
-      if (data.link) {
-        window.location.href = data.link;
-      } else if (data.redirectTo) {
-        router.push(data.redirectTo);
-      } else {
-        router.push(`/dashboard/payments?pack=${selectedPlan}&initiate=true`);
-      }
+      // Candidat -> Redirection OBLIGATOIRE vers Notch Pay / Checkout de paiement
+      const checkoutUrl = data.link || data.redirectTo || `/dashboard/payments?pack=${selectedPlan}&initiate=true`;
+      console.log("[Inscription] Redirection vers paiement obligatoire:", checkoutUrl);
+      window.location.href = checkoutUrl;
 
     } catch (err: any) {
       console.error("[Inscription] Erreur globale:", err);

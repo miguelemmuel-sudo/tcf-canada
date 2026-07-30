@@ -53,7 +53,9 @@ export default function DashboardLayout({
           'emmuel.proreseau@gmail.com', 'joumefiomiguel@gmail.com', 'miguelemmuel@gmail.com',
           'admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com'
         ];
-        const isAdmin = adminEmails.includes(effectiveEmail) || Boolean(profile?.is_admin) || profile?.role === 'superadmin' || localIsAdmin;
+        
+        // Un utilisateur n'est admin QUE SI son email est un email admin officiel OU si profile.is_admin === true / role === 'superadmin'
+        const isAdmin = adminEmails.includes(effectiveEmail) || Boolean(profile?.is_admin) || profile?.role === 'superadmin';
 
         if (isAdmin) {
           setHasActiveSub(true);
@@ -64,11 +66,43 @@ export default function DashboardLayout({
           return;
         }
 
-        // Accès accordé pour tout candidat enregistré
-        const userPack = profile?.subscription_type || localStorage.getItem("griffon_user_plan") || "standard";
-        setHasActiveSub(true);
-        localStorage.setItem("griffon_user_plan", userPack);
-        window.dispatchEvent(new Event("storage_user_pack_updated"));
+        // Pour tout utilisateur normal : nettoyer impérativement les privilèges d'admin du localStorage
+        localStorage.removeItem("griffon_user_is_admin");
+
+        // Vérification stricte en base de données de l'abonnement actif payé non expiré
+        let isPaidSubActive = false;
+        let activePack = profile?.subscription_type || "standard";
+
+        if (user?.id) {
+          const { data: sub } = await supabase
+            .from("subscriptions")
+            .select("pack, status, expires_at")
+            .eq("user_id", user.id)
+            .eq("status", "active")
+            .order("expires_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (sub && sub.status === "active" && sub.expires_at) {
+            const expDate = new Date(sub.expires_at);
+            if (expDate > new Date()) {
+              isPaidSubActive = true;
+              activePack = sub.pack || profile?.subscription_type || "standard";
+            }
+          }
+        }
+
+        const isPaymentsPage = window.location.pathname.includes("/dashboard/payments");
+
+        if (isPaidSubActive || isPaymentsPage) {
+          setHasActiveSub(true);
+          localStorage.setItem("griffon_user_plan", activePack);
+          window.dispatchEvent(new Event("storage_user_pack_updated"));
+        } else {
+          setHasActiveSub(false);
+          localStorage.setItem("griffon_user_plan", activePack);
+        }
+
         setIsChecking(false);
       } catch (err) {
         console.error("Erreur de vérification d'abonnement", err);
