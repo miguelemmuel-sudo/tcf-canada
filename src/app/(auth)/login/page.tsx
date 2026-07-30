@@ -82,17 +82,42 @@ export default function LoginPage() {
         if (isSuperAdmin) {
           localStorage.setItem("griffon_user_plan", "vip");
           localStorage.setItem("griffon_user_is_admin", "true");
+          router.push("/dashboard/admin");
+          return;
         } else {
-          localStorage.setItem("griffon_user_plan", profile?.subscription_type || "standard");
           localStorage.removeItem("griffon_user_is_admin");
+          const userPack = profile?.subscription_type && profile.subscription_type !== "none" ? profile.subscription_type : "standard";
+          localStorage.setItem("griffon_user_plan", userPack);
+
+          // Vérification stricte en BDD de l'abonnement payé et actif non expiré
+          let hasValidPaidSub = false;
+          try {
+            const { data: sub } = await supabase
+              .from("subscriptions")
+              .select("status, expires_at, pack")
+              .eq("user_id", data.user.id)
+              .eq("status", "active")
+              .order("expires_at", { ascending: false })
+              .limit(1)
+              .maybeSingle();
+
+            if (sub && sub.status === "active" && sub.expires_at) {
+              hasValidPaidSub = new Date(sub.expires_at) > new Date();
+            }
+          } catch (_) {}
+
+          if (hasValidPaidSub) {
+            console.log("[Login] Abonnement confirmé actif -> Accès Espace Candidat");
+            router.push("/dashboard");
+          } else {
+            console.log("[Login] Aucun abonnement actif payé -> Redirection paiement Notch Pay");
+            router.push(`/dashboard/payments?pack=${userPack}&initiate=true`);
+          }
+          return;
         }
       }
 
-      if (isSuperAdmin) {
-        router.push("/dashboard/admin");
-      } else {
-        router.push("/dashboard");
-      }
+      router.push("/dashboard/payments");
     } catch (err: any) {
       setError(err?.message || "Une erreur de connexion est survenue.");
       setLoading(false);
