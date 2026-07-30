@@ -25,22 +25,35 @@ export default function DashboardLayout({
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
-        if (!user) {
+        const localEmail = localStorage.getItem("griffon_user_email") || "";
+        const localName = localStorage.getItem("griffon_user_name") || "";
+        const localIsAdmin = localStorage.getItem("griffon_user_is_admin") === "true";
+        const isPaymentsPage = window.location.pathname.includes("/dashboard/payments");
+
+        // Ne pas rediriger vers /login si un utilisateur s'est inscrit ou a une session locale active
+        if (!user && !localEmail && !localName && !isPaymentsPage) {
           window.location.href = "/login";
           return;
         }
 
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("subscription_type, is_admin, role")
-          .eq("id", user.id)
-          .single();
+        let profile: any = null;
+        if (user?.id) {
+          try {
+            const { data: p } = await supabase
+              .from("profiles")
+              .select("subscription_type, is_admin, role")
+              .eq("id", user.id)
+              .maybeSingle();
+            profile = p;
+          } catch (_) {}
+        }
 
+        const effectiveEmail = (user?.email || localEmail).toLowerCase().trim();
         const adminEmails = [
           'emmuel.proreseau@gmail.com', 'joumefiomiguel@gmail.com', 'miguelemmuel@gmail.com',
           'admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com'
         ];
-        const isAdmin = adminEmails.includes(user.email?.toLowerCase().trim() || "") || Boolean(profile?.is_admin) || profile?.role === 'superadmin' || localStorage.getItem("griffon_user_is_admin") === "true";
+        const isAdmin = adminEmails.includes(effectiveEmail) || Boolean(profile?.is_admin) || profile?.role === 'superadmin' || localIsAdmin;
 
         if (isAdmin) {
           setHasActiveSub(true);
@@ -51,33 +64,11 @@ export default function DashboardLayout({
           return;
         }
 
-        // Check active subscription
-        const { data: sub } = await supabase
-          .from("subscriptions")
-          .select("*")
-          .eq("user_id", user.id)
-          .eq("status", "active")
-          .order("expires_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        const isPaymentsPage = window.location.pathname.includes("/dashboard/payments");
-
-        const userPack = profile?.subscription_type || sub?.pack || "standard";
-        const isSubValid = sub ? (!sub.expires_at || new Date(sub.expires_at) > new Date()) : (profile?.subscription_type && profile.subscription_type !== "none");
-
-        if (isSubValid || isPaymentsPage) {
-          setHasActiveSub(true);
-          localStorage.setItem("griffon_user_plan", userPack);
-          window.dispatchEvent(new Event("storage_user_pack_updated"));
-        } else {
-          setHasActiveSub(false);
-          localStorage.setItem("griffon_user_plan", "standard");
-          if (!isPaymentsPage) {
-            window.location.href = "/dashboard/payments";
-          }
-        }
-        
+        // Accès accordé pour tout candidat enregistré
+        const userPack = profile?.subscription_type || localStorage.getItem("griffon_user_plan") || "standard";
+        setHasActiveSub(true);
+        localStorage.setItem("griffon_user_plan", userPack);
+        window.dispatchEvent(new Event("storage_user_pack_updated"));
         setIsChecking(false);
       } catch (err) {
         console.error("Erreur de vérification d'abonnement", err);

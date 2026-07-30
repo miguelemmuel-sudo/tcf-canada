@@ -241,6 +241,9 @@ export default function RegisterPage() {
         localStorage.setItem("griffon_user_email", formDataState.email);
         localStorage.setItem("griffon_user_plan", selectedPlan);
         localStorage.setItem("griffon_user_new", "true");
+
+        document.cookie = `griffon_user_email=${encodeURIComponent(formDataState.email)}; path=/; max-age=2592000`;
+        document.cookie = `tcf_logged_in=true; path=/; max-age=2592000`;
       } catch (_) {}
 
       // Admin → dashboard direct

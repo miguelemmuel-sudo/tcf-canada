@@ -35,11 +35,16 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
-  // Protected routes check
-  if (!user && (pathname.startsWith('/dashboard') || pathname.startsWith('/admin'))) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
+  const hasLocalCookie = request.cookies.get('griffon_user_email')?.value || request.cookies.get('tcf_logged_in')?.value;
+  const isPaymentRoute = pathname.startsWith('/dashboard/payments');
+
+  // Protected routes check: ne pas bloquer les candidats en cours de paiement ou inscrits
+  if (!user && !hasLocalCookie && !isPaymentRoute) {
+    if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      return NextResponse.redirect(url)
+    }
   }
 
   // Admin route check
