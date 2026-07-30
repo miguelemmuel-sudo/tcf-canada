@@ -144,6 +144,18 @@ export async function GET(
           }
         }
       }
+    } else {
+      // Pour les autres statuts (failed, cancelled, expired, etc.), on met à jour la transaction
+      const adminDb = getAdminSupabase();
+      if (adminDb && ["failed", "canceled", "cancelled", "expired"].includes(statusNorm)) {
+        await adminDb
+          .from("transactions")
+          .update({
+            status: statusNorm === "canceled" ? "cancelled" : statusNorm,
+            updated_at: new Date().toISOString(),
+          })
+          .or(`reference.eq.${reference},provider_transaction_id.eq.${reference}`);
+      }
     }
 
     return NextResponse.json({

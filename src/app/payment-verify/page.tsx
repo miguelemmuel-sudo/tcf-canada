@@ -52,12 +52,21 @@ function PaymentVerifyContent() {
           }
         } else {
           setStatus("error");
-          setMessage(`Le paiement n'est pas finalisé (${data.status || "Inconnu"}).`);
+          const normStatus = (data.status || "").toLowerCase();
+          if (normStatus === "failed") {
+            setMessage("Paiement refusé. Votre accès ne peut pas être activé tant que le paiement n'a pas été effectué avec succès. Veuillez réessayer.");
+          } else if (normStatus === "canceled" || normStatus === "cancelled") {
+            setMessage("Vous avez annulé le paiement. Veuillez réessayer pour accéder à votre abonnement.");
+          } else if (normStatus === "expired") {
+            setMessage("La session de paiement a expiré. Veuillez lancer un nouveau paiement.");
+          } else {
+            setMessage("Une erreur technique est survenue lors du traitement du paiement. Veuillez réessayer dans quelques instants.");
+          }
         }
       } catch (err) {
         console.error("Erreur vérification paiement:", err);
         setStatus("error");
-        setMessage("Une erreur est survenue lors de la vérification.");
+        setMessage("Une erreur technique est survenue lors du traitement du paiement. Veuillez réessayer dans quelques instants.");
       }
     };
 

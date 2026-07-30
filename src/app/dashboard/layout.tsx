@@ -101,12 +101,20 @@ export default function DashboardLayout({
         } else {
           setHasActiveSub(false);
           localStorage.setItem("griffon_user_plan", activePack);
+          if (!pathname?.includes("/dashboard/payments")) {
+            window.location.href = "/dashboard/payments";
+            return;
+          }
         }
 
         setIsChecking(false);
       } catch (err) {
         console.error("Erreur de vérification d'abonnement", err);
         setHasActiveSub(false);
+        if (!pathname?.includes("/dashboard/payments")) {
+          window.location.href = "/dashboard/payments";
+          return;
+        }
         setIsChecking(false);
       }
     }
