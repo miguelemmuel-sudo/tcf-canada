@@ -9,6 +9,7 @@ import { Clock, ChevronLeft, ChevronRight, CheckCircle2, BookOpen, XCircle } fro
 import { ResumeSessionModal } from "@/components/ui/ResumeSessionModal";
 import { saveSessionState } from "@/utils/sessionManager";
 import { getCurrentUserPack, PACK_CONFIGS, getExamDurationSecondsForPack } from "@/utils/subscriptionEngine";
+import { useUserPack } from "@/hooks/useUserPack";
 import { generateExamPassagesForPack } from "@/utils/courseGenerator";
 import { createClient } from "@/utils/supabase/client";
 
@@ -92,6 +93,9 @@ function Timer({ seconds }: { seconds: number }) {
   const mins = Math.floor(seconds / 60).toString().padStart(2, "0");
   const secs = (seconds % 60).toString().padStart(2, "0");
   const isLow = seconds < 300;
+
+  if (!mounted) return null;
+
   return (
     <div className={`flex items-center gap-1.5 font-mono text-lg font-bold tabular-nums ${isLow ? "text-red-500 animate-pulse" : ""}`}>
       <Clock className="h-4 w-4" />
@@ -101,13 +105,12 @@ function Timer({ seconds }: { seconds: number }) {
 }
 
 export default function ReadingExamPage() {
-  const [pack, setPack] = useState(getCurrentUserPack());
-  const [timeLeft, setTimeLeft] = useState(() => getExamDurationSecondsForPack(getCurrentUserPack(), TOTAL_TIME));
+  const { pack, mounted } = useUserPack();
+  if (!mounted) return null;
+  const [timeLeft, setTimeLeft] = useState(() => getExamDurationSecondsForPack("griffon", TOTAL_TIME));
   useEffect(() => {
-    const p = getCurrentUserPack();
-    setPack(p);
-    setTimeLeft(getExamDurationSecondsForPack(p, TOTAL_TIME));
-  }, []);
+    setTimeLeft(getExamDurationSecondsForPack(pack, TOTAL_TIME));
+  }, [pack]);
   const PASSAGES = React.useMemo<typeof BASE_PASSAGES>(() => generateExamPassagesForPack(BASE_PASSAGES, pack, PACK_CONFIGS[pack]), [pack]);
 
   const [currentPassage, setCurrentPassage] = useState(0);

@@ -11,6 +11,7 @@ import { saveSessionState } from "@/utils/sessionManager";
 
 import { markCourseStarted, markLessonCompleted, addLearningTimeSeconds } from "@/utils/courseTracker";
 import { getCurrentUserPack, PACK_CONFIGS } from "@/utils/subscriptionEngine";
+import { useUserPack } from "@/hooks/useUserPack";
 import { generateLessonsForPack } from "@/utils/courseGenerator";
 import { playMultiSpeakerDialogue, AudioScenario, AudioVoiceProfile } from "@/utils/audioContentEngine";
 
@@ -98,7 +99,7 @@ const AI_TIPS = [
 ];
 
 export default function ListeningCoursePage() {
-  const [pack, setPack] = useState(getCurrentUserPack());
+  const { pack, mounted } = useUserPack();
   useEffect(() => setPack(getCurrentUserPack()), []);
   const LESSONS = React.useMemo(() => generateLessonsForPack(BASE_LESSONS, pack, PACK_CONFIGS[pack], "listening"), [pack]);
 
@@ -205,7 +206,10 @@ export default function ListeningCoursePage() {
 
   useEffect(() => {
     stopAudio();
-    return () => stopAudio();
+
+  if (!mounted) return null;
+
+  return () => stopAudio();
   }, [currentLesson]);
 
   const score = (lesson.questions || []).filter((q: any, i: number) => answers[i] === (typeof q.answer === "number" ? q.answer : q.correct)).length;

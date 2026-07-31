@@ -19,6 +19,7 @@ import {
   PlusCircle
 } from "lucide-react";
 import { isFeatureAccessible, getCurrentUserPack } from "@/utils/subscriptionEngine";
+import { useUserPack } from "@/hooks/useUserPack";
 import { LockedFeatureBanner } from "@/components/ui/LockedFeatureBanner";
 import { createClient } from "@/utils/supabase/client";
 import { generateTcfGuideHtml, generateGrammarExercisesHtml } from "@/utils/coachingResources";
@@ -37,7 +38,7 @@ export default function CoachingPage() {
   const [activeTab, setActiveTab] = useState("Mes coachings");
   const [isNewUser, setIsNewUser] = useState(false);
   const [downloadingResource, setDownloadingResource] = useState<string | null>(null);
-  const [pack, setPack] = useState(getCurrentUserPack());
+  const { pack, mounted } = useUserPack();
 
   // Identification et données strictement par utilisateur
   const [userEmail, setUserEmail] = useState("candidat@email.com");
@@ -221,6 +222,8 @@ export default function CoachingPage() {
       grammarProgress: newGrammar
     }));
   };
+
+  if (!mounted) return null;
 
   return (
     <div className="space-y-6 pb-12">

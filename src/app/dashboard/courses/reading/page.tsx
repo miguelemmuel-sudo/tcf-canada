@@ -10,6 +10,7 @@ import { saveSessionState } from "@/utils/sessionManager";
 
 import { markCourseStarted, markLessonCompleted, addLearningTimeSeconds } from "@/utils/courseTracker";
 import { getCurrentUserPack, PACK_CONFIGS } from "@/utils/subscriptionEngine";
+import { useUserPack } from "@/hooks/useUserPack";
 import { generateLessonsForPack } from "@/utils/courseGenerator";
 
 const BASE_LESSONS = [
@@ -62,7 +63,7 @@ const AI_TIPS = [
 ];
 
 export default function ReadingCoursePage() {
-  const [pack, setPack] = useState(getCurrentUserPack());
+  const { pack, mounted } = useUserPack();
   
   useEffect(() => {
     setPack(getCurrentUserPack());
@@ -85,7 +86,10 @@ export default function ReadingCoursePage() {
     const timer = setInterval(() => {
       addLearningTimeSeconds(1);
     }, 1000);
-    return () => clearInterval(timer);
+
+  if (!mounted) return null;
+
+  return () => clearInterval(timer);
   }, []);
 
   // Detect Saved Session on Mount

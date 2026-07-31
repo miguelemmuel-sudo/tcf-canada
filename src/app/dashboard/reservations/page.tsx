@@ -11,13 +11,14 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabaseClient";
 import { isFeatureAccessible, getCurrentUserPack } from "@/utils/subscriptionEngine";
+import { useUserPack } from "@/hooks/useUserPack";
 import { LockedFeatureBanner } from "@/components/ui/LockedFeatureBanner";
 
 export default function ReservationsPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("Toutes");
   const [reservations, setReservations] = useState<any[]>([]);
-  const [pack, setPack] = useState(getCurrentUserPack());
+  const { pack, mounted } = useUserPack();
 
   useEffect(() => {
     setPack(getCurrentUserPack());
@@ -60,7 +61,10 @@ export default function ReservationsPage() {
   }, []);
 
   if (loading) {
-    return (
+
+  if (!mounted) return null;
+
+  return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-3 text-slate-500">
           <Loader2 className="h-8 w-8 animate-spin text-blue-600" />

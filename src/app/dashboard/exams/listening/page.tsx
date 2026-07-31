@@ -13,6 +13,7 @@ import { createClient } from "@/lib/supabaseClient";
 import { ResumeSessionModal } from "@/components/ui/ResumeSessionModal";
 import { saveSessionState } from "@/utils/sessionManager";
 import { getCurrentUserPack, PACK_CONFIGS, getExamDurationSecondsForPack } from "@/utils/subscriptionEngine";
+import { useUserPack } from "@/hooks/useUserPack";
 import { generateExamQuestionsForPack } from "@/utils/courseGenerator";
 import { playMultiSpeakerDialogue, AudioScenario, AudioVoiceProfile } from "@/utils/audioContentEngine";
 
@@ -140,6 +141,9 @@ function Timer({ seconds }: { seconds: number }) {
   const mins = Math.floor(seconds / 60).toString().padStart(2, "0");
   const secs = (seconds % 60).toString().padStart(2, "0");
   const isLow = seconds < 300;
+
+  if (!mounted) return null;
+
   return (
     <div className={`flex items-center gap-1.5 font-mono text-lg font-bold tabular-nums ${isLow ? "text-red-500 animate-pulse" : "text-foreground"}`}>
       <Clock className="h-4 w-4" />
@@ -150,13 +154,12 @@ function Timer({ seconds }: { seconds: number }) {
 
 // ─── Page principale ──────────────────────────────────────────────────────────
 export default function ListeningExamPage() {
-  const [pack, setPack] = useState(getCurrentUserPack());
-  const [timeLeft, setTimeLeft] = useState(() => getExamDurationSecondsForPack(getCurrentUserPack(), TOTAL_TIME));
+  const { pack, mounted } = useUserPack();
+  if (!mounted) return null;
+  const [timeLeft, setTimeLeft] = useState(() => getExamDurationSecondsForPack("griffon", TOTAL_TIME));
   useEffect(() => {
-    const p = getCurrentUserPack();
-    setPack(p);
-    setTimeLeft(getExamDurationSecondsForPack(p, TOTAL_TIME));
-  }, []);
+    setTimeLeft(getExamDurationSecondsForPack(pack, TOTAL_TIME));
+  }, [pack]);
   const QUESTIONS = React.useMemo<Question[]>(() => generateExamQuestionsForPack(DEMO_QUESTIONS, pack, PACK_CONFIGS[pack], "listening"), [pack]);
 
   const [currentQ, setCurrentQ] = useState(0);

@@ -10,6 +10,7 @@ import { ResumeSessionModal } from "@/components/ui/ResumeSessionModal";
 import { saveSessionState } from "@/utils/sessionManager";
 import { markCourseStarted, markLessonCompleted, addLearningTimeSeconds } from "@/utils/courseTracker";
 import { getCurrentUserPack, PACK_CONFIGS } from "@/utils/subscriptionEngine";
+import { useUserPack } from "@/hooks/useUserPack";
 import { generateLessonsForPack } from "@/utils/courseGenerator";
 import { evaluateUserResponse } from "@/utils/aiEvaluationEngine";
 
@@ -48,7 +49,7 @@ const AI_ORAL_FEEDBACK = [
 type RecordState = "idle" | "recording" | "done";
 
 export default function SpeakingCoursePage() {
-  const [pack, setPack] = useState(getCurrentUserPack());
+  const { pack, mounted } = useUserPack();
   
   useEffect(() => {
     setPack(getCurrentUserPack());
@@ -115,7 +116,10 @@ export default function SpeakingCoursePage() {
     const timer = setInterval(() => {
       addLearningTimeSeconds(1);
     }, 1000);
-    return () => clearInterval(timer);
+
+  if (!mounted) return null;
+
+  return () => clearInterval(timer);
   }, []);
 
   const lesson = LESSONS[currentLesson];

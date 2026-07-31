@@ -14,6 +14,7 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { isFeatureAccessible, getCurrentUserPack } from "@/utils/subscriptionEngine";
+import { useUserPack } from "@/hooks/useUserPack";
 import { LockedFeatureBanner } from "@/components/ui/LockedFeatureBanner";
 import { generateStructuredAssistantReply } from "@/utils/aiCoachAssistant";
 
@@ -35,7 +36,7 @@ interface Message {
 }
 
 export default function MessagesPage() {
-  const [pack, setPack] = useState(getCurrentUserPack());
+  const { pack, mounted } = useUserPack();
 
   useEffect(() => {
     setPack(getCurrentUserPack());
@@ -96,6 +97,8 @@ export default function MessagesPage() {
       setIsAiTyping(false);
     }, 1000);
   };
+
+  if (!mounted) return null;
 
   return (
     <div className="space-y-4 pb-6">

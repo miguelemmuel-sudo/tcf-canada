@@ -12,6 +12,7 @@ import {
 import { ResumeSessionModal } from "@/components/ui/ResumeSessionModal";
 import { saveSessionState } from "@/utils/sessionManager";
 import { getCurrentUserPack, PACK_CONFIGS, getExamDurationSecondsForPack } from "@/utils/subscriptionEngine";
+import { useUserPack } from "@/hooks/useUserPack";
 import { generateExamWritingTasksForPack } from "@/utils/courseGenerator";
 import { evaluateUserResponse } from "@/utils/aiEvaluationEngine";
 import { createClient } from "@/utils/supabase/client";
@@ -80,6 +81,9 @@ type RecordState = "idle" | "prep" | "recording" | "done" | "playing";
 function Timer({ seconds, color = "text-foreground" }: { seconds: number; color?: string }) {
   const mins = Math.floor(seconds / 60).toString().padStart(2, "0");
   const secs = (seconds % 60).toString().padStart(2, "0");
+
+  if (!mounted) return null;
+
   return (
     <span className={`font-mono font-bold tabular-nums ${color} ${seconds < 10 ? "animate-pulse" : ""}`}>
       {mins}:{secs}
@@ -88,7 +92,8 @@ function Timer({ seconds, color = "text-foreground" }: { seconds: number; color?
 }
 
 export default function SpeakingExamPage() {
-  const [pack, setPack] = useState(getCurrentUserPack());
+  const { pack, mounted } = useUserPack();
+  if (!mounted) return null;
   const [globalTimeLeft, setGlobalTimeLeft] = useState(() => getExamDurationSecondsForPack(getCurrentUserPack(), 40 * 60));
   useEffect(() => {
     const p = getCurrentUserPack();

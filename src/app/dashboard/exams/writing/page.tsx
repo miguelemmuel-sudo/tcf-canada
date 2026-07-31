@@ -9,6 +9,7 @@ import { Clock, PenTool, BrainCircuit, ChevronLeft, ChevronRight, CheckCircle2, 
 import { ResumeSessionModal } from "@/components/ui/ResumeSessionModal";
 import { saveSessionState } from "@/utils/sessionManager";
 import { getCurrentUserPack, PACK_CONFIGS, getExamDurationSecondsForPack } from "@/utils/subscriptionEngine";
+import { useUserPack } from "@/hooks/useUserPack";
 import { generateExamWritingTasksForPack } from "@/utils/courseGenerator";
 import { evaluateUserResponse } from "@/utils/aiEvaluationEngine";
 import { createClient } from "@/utils/supabase/client";
@@ -93,6 +94,9 @@ const TOTAL_TIME = 60 * 60;
 function Timer({ seconds }: { seconds: number }) {
   const mins = Math.floor(seconds / 60).toString().padStart(2, "0");
   const secs = (seconds % 60).toString().padStart(2, "0");
+
+  if (!mounted) return null;
+
   return (
     <div className={`flex items-center gap-1.5 font-mono text-lg font-bold tabular-nums ${seconds < 300 ? "text-red-500 animate-pulse" : ""}`}>
       <Clock className="h-4 w-4" /> {mins}:{secs}
@@ -105,13 +109,12 @@ function countWords(text: string): number {
 }
 
 export default function WritingExamPage() {
-  const [pack, setPack] = useState(getCurrentUserPack());
-  const [timeLeft, setTimeLeft] = useState(() => getExamDurationSecondsForPack(getCurrentUserPack(), TOTAL_TIME));
+  const { pack, mounted } = useUserPack();
+  if (!mounted) return null;
+  const [timeLeft, setTimeLeft] = useState(() => getExamDurationSecondsForPack("griffon", TOTAL_TIME));
   useEffect(() => {
-    const p = getCurrentUserPack();
-    setPack(p);
-    setTimeLeft(getExamDurationSecondsForPack(p, TOTAL_TIME));
-  }, []);
+    setTimeLeft(getExamDurationSecondsForPack(pack, TOTAL_TIME));
+  }, [pack]);
   const TASKS = React.useMemo<typeof BASE_TASKS>(() => generateExamWritingTasksForPack(BASE_TASKS, pack, PACK_CONFIGS[pack], "writing"), [pack]);
 
   const [currentTask, setCurrentTask] = useState(0);
