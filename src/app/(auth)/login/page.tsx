@@ -74,7 +74,7 @@ export default function LoginPage() {
           'emmuel.proreseau@gmail.com', 'joumefiomiguel@gmail.com', 'miguelemmuel@gmail.com',
           'admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com'
         ];
-        isSuperAdmin = adminEmails.includes(email.toLowerCase().trim()) || Boolean(profile?.is_admin) || profile?.role === 'superadmin';
+        isSuperAdmin = adminEmails.includes(email.toLowerCase().trim()) || email.toLowerCase().trim().endsWith('@griffondor.com') || Boolean(profile?.is_admin) || profile?.role === 'superadmin' || profile?.role === 'admin';
 
         localStorage.setItem("griffon_user_name", profile?.full_name || data.user.user_metadata?.full_name || email);
         localStorage.setItem("griffon_user_email", email);

@@ -56,8 +56,8 @@ export default function DashboardLayout({
           'admin.miguel@griffondor.com', 'miguel.admin@griffondor.com', 'admin@griffondor.com', 'miguel@griffondor.com'
         ];
         
-        // Un utilisateur n'est admin QUE SI son email est un email admin officiel OU si profile.is_admin === true / role === 'superadmin'
-        const isAdmin = adminEmails.includes(effectiveEmail) || Boolean(profile?.is_admin) || profile?.role === 'superadmin';
+        // Un utilisateur n'est admin QUE SI son email est un email admin officiel, s'il a un domaine @griffondor.com, ou si profile.is_admin === true / role === 'superadmin' / 'admin'
+        const isAdmin = adminEmails.includes(effectiveEmail) || effectiveEmail.endsWith('@griffondor.com') || Boolean(profile?.is_admin) || profile?.role === 'superadmin' || profile?.role === 'admin';
 
         if (isAdmin) {
           setHasActiveSub(true);
