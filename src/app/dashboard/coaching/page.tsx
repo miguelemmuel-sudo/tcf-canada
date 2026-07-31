@@ -62,9 +62,6 @@ export default function CoachingPage() {
 
   useEffect(() => {
     async function loadUserData() {
-      const storedPack = getCurrentUserPack();
-      setPack(storedPack);
-
       let currentEmail = (localStorage.getItem("griffon_user_email") || "").toLowerCase().trim();
       let currentName = localStorage.getItem("griffon_user_name") || "Candidat TCF";
 
