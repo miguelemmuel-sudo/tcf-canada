@@ -13,7 +13,7 @@ export function SiteFooter() {
             </span>
           </Link>
           <p className="text-xs text-slate-500 leading-relaxed">
-            La plateforme n°1 pour préparer et réussir votre test de connaissance du français pour l'immigration canadienne.
+            La plateforme d'entraînement n°1 pour préparer, optimiser et réussir votre Test de Connaissance du Français (TCF Canada). Atteignez le niveau NCLC 9 pour maximiser vos points dans le bassin Entrée Express et réussir votre immigration canadienne.
           </p>
         </div>
 

@@ -27,7 +27,7 @@ export interface PackPermissions {
 
 export const PACK_CONFIGS: Record<PackType, PackPermissions> = {
   standard: {
-    name: "Pack Standard",
+    name: "Pack Standard - Test TCF",
     price: "15.000 FCFA",
     modulesCount: 2,
     coursesCount: 20, // 2 modules x 10 cours exactement = 20 cours au total
@@ -43,14 +43,14 @@ export const PACK_CONFIGS: Record<PackType, PackPermissions> = {
     coachingActive: false,
     reservationsActive: false,
     messagingActive: false,
-    upsellBannerText: "Passez au Pack Griffon D'OR pour accéder à plus de 500 cours par module, des examens de plus de 80 questions et aux corrections IA avancées.",
+    upsellBannerText: "Passez au Pack Griffon D'OR pour multiplier vos chances d'immigrer au Canada : accédez à plus de 500 cours par compétence, des examens blancs de 80 questions et aux corrections IA pour l'Expression Orale et Écrite du TCF.",
     nextPack: "griffon",
-    nextPackName: "Pack Griffon D'OR",
+    nextPackName: "Pack Griffon D'OR TCF",
   },
   griffon: {
-    name: "Pack Griffon D'OR",
+    name: "Pack Griffon D'OR - Préparation TCF Canada",
     price: "25.000 FCFA",
-    badge: "Le plus populaire",
+    badge: "Le plus populaire pour Entrée Express",
     modulesCount: 10,
     coursesCount: 50, // Reduced from 5000 to prevent client-side generation freezing/OOM
     testsCount: 30, // Reduced from 80 for client performance
@@ -65,14 +65,14 @@ export const PACK_CONFIGS: Record<PackType, PackPermissions> = {
     coachingActive: false,
     reservationsActive: false,
     messagingActive: true,
-    upsellBannerText: "Passez au Pack VIP & Coaching pour bénéficier d'un accompagnement personnalisé, de 20 modules (10 000 cours), d'examens de 100 questions et d'un coaching individuel.",
+    upsellBannerText: "Passez au Pack VIP & Coaching pour bénéficier d'un accompagnement personnalisé vers le niveau NCLC 9. Accédez à la préparation TCF la plus complète : simulateur d'examinateur IA, 10 000 cours et examens blancs certifiés.",
     nextPack: "vip",
-    nextPackName: "Pack VIP & Coaching",
+    nextPackName: "Pack VIP & Coaching TCF",
   },
   vip: {
-    name: "Pack VIP & Coaching",
+    name: "Pack VIP & Coaching - Réussite Entrée Express",
     price: "100.000 FCFA",
-    badge: "Offre Premium",
+    badge: "Offre Premium TCF Canada",
     modulesCount: 20,
     coursesCount: 100, // Reduced from 10000 to prevent client-side generation freezing/OOM
     testsCount: 50, // Reduced from 100 for client performance

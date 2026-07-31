@@ -11,9 +11,9 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "TCF Canada Pro - Préparez votre TCF Canada avec intelligence",
-  description: "Réussissez votre examen grâce à une plateforme complète comprenant des examens blancs, une IA correctrice, des statistiques avancées et un suivi personnalisé.",
-  keywords: ["TCF Canada", "Test de connaissance du français", "immigration Canada", "préparation TCF", "PWA hors ligne"],
+  title: "TCF Canada Pro - Préparation Complète et Officielle au TCF Canada",
+  description: "Réussissez votre TCF Canada et accélérez votre projet d'immigration canadienne (Entrée express). Plateforme d'entraînement avec plus de 10 000 cours, examens blancs, et correction par intelligence artificielle. Atteignez les niveaux NCLC 7, NCLC 8 ou NCLC 9.",
+  keywords: ["TCF Canada", "Test de connaissance du français pour le Canada", "immigration Canada", "préparation TCF", "examens blancs TCF", "NCLC", "Entrée Express", "EE", "expression orale TCF", "compréhension orale TCF", "compréhension écrite TCF", "expression écrite TCF"],
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

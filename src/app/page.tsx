@@ -61,8 +61,9 @@ export default function Home() {
                 </motion.h1>
 
                 <motion.p variants={fadeIn} className="text-slate-600 dark:text-slate-300 text-base md:text-lg leading-relaxed font-medium">
-                  Cours pratiques – Tests réels – Coaching personnalisé<br/>
-                  Atteignez vos objectifs d'immigration ou d'études au Canada.
+                  Boostez votre score au <strong>Test de Connaissance du Français (TCF Canada)</strong>.<br/>
+                  Cours intensifs, examens blancs officiels (Compréhension et Expression) et coaching personnalisé.<br/>
+                  Atteignez les niveaux NCLC 7+ pour votre projet d'immigration Entrée Express ou vos études au Canada.
                 </motion.p>
 
                 <motion.div variants={fadeIn} className="flex flex-col sm:flex-row items-center gap-4 pt-2">
@@ -129,9 +130,9 @@ export default function Home() {
                     <BookOpen className="h-6 w-6 text-amber-500 dark:text-yellow-400 drop-shadow-[0_0_10px_rgba(245,158,11,0.6)]" />
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-amber-600 dark:text-yellow-400 text-base drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]">Cours complets</h3>
+                    <h2 className="font-extrabold text-amber-600 dark:text-yellow-400 text-base drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]">Préparation TCF Intensive</h2>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                      Des cours structurés pour maîtriser toutes les compétences du TCF Canada.
+                      Plus de 10 000 cours progressifs pour maîtriser l'expression et la compréhension du français canadien.
                     </p>
                   </div>
                 </div>
@@ -141,9 +142,9 @@ export default function Home() {
                     <FileCheck2 className="h-6 w-6 text-amber-500 dark:text-yellow-400 drop-shadow-[0_0_10px_rgba(245,158,11,0.6)]" />
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-amber-600 dark:text-yellow-400 text-base drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]">Tests réels</h3>
+                    <h2 className="font-extrabold text-amber-600 dark:text-yellow-400 text-base drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]">Examens Blancs Officiels</h2>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                      Entraînez-vous avec des tests réels et des examens blancs corrigés.
+                      Simulateur d'examen TCF en conditions réelles (Compréhension Orale, Écrite, etc.) avec chrono.
                     </p>
                   </div>
                 </div>
@@ -153,9 +154,9 @@ export default function Home() {
                     <UserCheck className="h-6 w-6 text-amber-500 dark:text-yellow-400 drop-shadow-[0_0_10px_rgba(245,158,11,0.6)]" />
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-amber-600 dark:text-yellow-400 text-base drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]">Coaching personnalisé</h3>
+                    <h2 className="font-extrabold text-amber-600 dark:text-yellow-400 text-base drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]">Coaching Immigration</h2>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                      Bénéficiez d'un suivi individuel pour progresser efficacement.
+                      Un suivi individuel pour cibler vos lacunes linguistiques et viser le niveau NCLC 9.
                     </p>
                   </div>
                 </div>
@@ -165,9 +166,9 @@ export default function Home() {
                     <Trophy className="h-6 w-6 text-amber-500 dark:text-yellow-400 drop-shadow-[0_0_10px_rgba(245,158,11,0.6)]" />
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-amber-600 dark:text-yellow-400 text-base drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]">Réussite garantie</h3>
+                    <h2 className="font-extrabold text-amber-600 dark:text-yellow-400 text-base drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]">Objectif Entrée Express</h2>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                      Notre méthode efficace pour maximiser vos chances de réussite.
+                      La méthode prouvée pour décrocher vos points et réussir votre projet d'immigration canadienne.
                     </p>
                   </div>
                 </div>
@@ -232,12 +233,12 @@ export default function Home() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {[
-                { title: "Plus de 5000 questions", icon: BookOpen, desc: "Une base de données exhaustive couvrant tous les niveaux du CECRL." },
-                { title: "IA Correctrice (Écrit)", icon: PenTool, desc: "Correction instantanée de vos productions écrites avec suggestions de vocabulaire." },
-                { title: "IA Évaluatrice (Oral)", icon: Mic, desc: "Simulez l'épreuve orale. L'IA écoute, transcrit et évalue votre prononciation." },
-                { title: "Simulations Officielles", icon: Award, desc: "Des examens blancs chronométrés reproduisant les conditions réelles." },
-                { title: "Tableau de Progression", icon: BarChart3, desc: "Suivez votre évolution grâce à des graphiques et des statistiques détaillées." },
-                { title: "Correction IA Détaillée", icon: BrainCircuit, desc: "Comprenez vos erreurs grâce aux explications fournies par notre assistant virtuel." }
+                { title: "Banque de +10 000 Questions TCF", icon: BookOpen, desc: "Une base de données exhaustive couvrant tous les niveaux du CECRL (A1 à C2) pour l'immigration canadienne." },
+                { title: "IA Correctrice (Expression Écrite)", icon: PenTool, desc: "Correction instantanée de vos textes avec suggestions de vocabulaire pour atteindre le niveau NCLC 9+." },
+                { title: "Simulateur IA (Expression Orale)", icon: Mic, desc: "Simulez l'épreuve orale TCF Canada. L'IA écoute, transcrit et évalue votre prononciation et votre aisance." },
+                { title: "Simulations TCF Officielles", icon: Award, desc: "Des examens blancs chronométrés reproduisant fidèlement les conditions réelles d'Entrée Express." },
+                { title: "Tableau de Progression NCLC", icon: BarChart3, desc: "Suivez votre évolution grâce à des graphiques détaillés pour cibler vos points faibles avant l'examen." },
+                { title: "Correction IA Détaillée", icon: BrainCircuit, desc: "Comprenez vos erreurs grâce aux explications fournies par notre examinateur IA virtuel." }
               ].map((feature, i) => (
                 <motion.div
                   key={i}
