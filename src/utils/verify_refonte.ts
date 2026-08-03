@@ -30,7 +30,8 @@ for (const pack of packs) {
     let textDupes = 0;
     let titleDupes = 0;
 
-    for (const l of lessons) {
+    for (let i = 0; i < lessons.length; i++) {
+      const l = lessons[i];
       const normText = (l.text || l.audioText || "").toLowerCase().replace(/[^a-z0-9]/g, "").substring(0, 150);
       const normTitle = (l.title || "").toLowerCase().replace(/[^a-z0-9]/g, "").substring(0, 100);
       
@@ -55,7 +56,8 @@ for (const pack of packs) {
     totalExams += items.length;
     const seen = new Set<string>();
     let dupes = 0;
-    for (const item of items) {
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
       const val = (item[field] || "").toString().toLowerCase().replace(/[^a-z0-9]/g, "").substring(0, 150);
       if (seen.has(val)) dupes++;
       else seen.add(val);

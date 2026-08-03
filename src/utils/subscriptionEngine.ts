@@ -52,9 +52,9 @@ export const PACK_CONFIGS: Record<PackType, PackPermissions> = {
     price: "100 FCFA", // TEMP TEST
     badge: "Le plus populaire pour Entrée Express",
     modulesCount: 10,
-    coursesCount: 50, // Reduced from 5000 to prevent client-side generation freezing/OOM
-    testsCount: 30, // Reduced from 80 for client performance
-    questionsPerExam: 30, // Reduced from 80 for client performance
+    coursesCount: 5000,
+    testsCount: 80,
+    questionsPerExam: 80,
     aiWrittenCorrection: true,
     aiOralCorrection: true,
     aiGrammarAnalysis: true,
@@ -74,9 +74,9 @@ export const PACK_CONFIGS: Record<PackType, PackPermissions> = {
     price: "100.000 FCFA",
     badge: "Offre Premium TCF Canada",
     modulesCount: 20,
-    coursesCount: 100, // Reduced from 10000 to prevent client-side generation freezing/OOM
-    testsCount: 50, // Reduced from 100 for client performance
-    questionsPerExam: 40, // Reduced from 100 for client performance
+    coursesCount: 10000,
+    testsCount: 100,
+    questionsPerExam: 100,
     aiWrittenCorrection: true,
     aiOralCorrection: true,
     aiGrammarAnalysis: true,

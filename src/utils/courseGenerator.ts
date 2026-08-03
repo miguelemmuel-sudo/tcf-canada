@@ -49,29 +49,9 @@ export function generateLessonsForPack(
   // et SURTOUT SANS AUCUNE BOUCLE NI RÉPÉTITION :
   // Le système utilise le générateur procédural thématique officiel (17 thèmes TCF, progression CECR A1->C2, unicité contrôlée).
   const targetCount = packConfig.coursesCount;
-  const progressiveLessons = [...filtered];
-  let nextId = Math.max(...filtered.map((l: any) => l.id || 0), 0) + 1;
-  let synthIndex = 0;
   
-  while (progressiveLessons.length < targetCount) {
-    const modIndex = (progressiveLessons.length % allowedModules.length);
-    const mod = allowedModules[modIndex];
-    
-    // Génération d'une leçon 100% unique via le moteur thématique
-    const uniqueLesson = generateUniqueLesson(
-      nextId,
-      mod.id,
-      mod.cecrLevel as CECRLevel,
-      type as SkillType,
-      synthIndex++
-    );
-    
-    progressiveLessons.push(uniqueLesson);
-    nextId++;
-  }
-
-  // Normalisation rigoureuse de toutes les propriétés pour garantir une compatibilité universelle avec les interfaces UI
-  return progressiveLessons.slice(0, targetCount).map((l: any, idx: number) => {
+  // Extract normalization logic to apply to both base and lazy items
+  const normalizeLesson = (l: any, idx: number) => {
     const isBaseLesson = baseLessons && idx < baseLessons.length;
     let audioMetadata: any = {};
 
@@ -121,7 +101,6 @@ export function generateLessonsForPack(
       }
     ];
 
-    // Utilitaires de rotation locaux (uniquement pour les options déjà cohérentes)
     function rotatePos(lessonId: number, qIndex: number): number {
       return (lessonId * 11 + qIndex * 17 + 3) % 4;
     }
@@ -136,7 +115,6 @@ export function generateLessonsForPack(
       const qText = q.q || q.question || `Question #${qIdx + 1} : Quelle est l'idée principale abordée dans ce document ?`;
       const baseCorr = typeof q.answer === "number" ? q.answer : typeof q.correct === "number" ? q.correct : 0;
 
-      // Détecter si les options sont authentiques (cohérentes avec la question) ou des placeholders
       const hasAuthenticOptions = q.options &&
         Array.isArray(q.options) &&
         q.options.length === 4 &&
@@ -146,8 +124,6 @@ export function generateLessonsForPack(
         !q.options[0]?.includes("Hors sujet D");
 
       if (hasAuthenticOptions) {
-        // CONSERVER les options originales cohérentes avec la question
-        // Appliquer seulement la rotation de position de la bonne réponse
         const newPos = rotatePos(idx + 1, qIdx + 1);
         const rotatedOpts = swapToPos(q.options, newPos, baseCorr);
         return {
@@ -212,7 +188,55 @@ export function generateLessonsForPack(
       exercises: normalizedQuestions,
       done: !!l.done
     };
-  }).map((item: any) => sanitizeLessonOrExam(item));
+  };
+  // Retourner un Proxy Array pour générer paresseusement (lazy loading) les cours
+  // Cela permet d'afficher 5000+ cours sans crasher ou bloquer le navigateur
+  const lazyArray = new Proxy(filtered, {
+    get(target, prop) {
+      if (prop === "length") return targetCount;
+      if (typeof prop === "string" && !isNaN(Number(prop))) {
+        const idx = Number(prop);
+        if (idx < targetCount) {
+          if (idx < target.length) {
+            // S'il est déjà généré ou fait partie des données de base
+            let baseItem = target[idx];
+            if (!baseItem._normalized) {
+              baseItem = normalizeLesson(baseItem, idx);
+              baseItem._normalized = true;
+              target[idx] = sanitizeLessonOrExam(baseItem);
+            }
+            return target[idx];
+          }
+          
+          // Génération paresseuse (à la volée)
+          const synthIndex = idx - target.length;
+          const modIndex = (idx % allowedModules.length);
+          const mod = allowedModules[modIndex];
+          
+          const uniqueLesson = generateUniqueLesson(
+            idx + 1,
+            mod.id,
+            mod.cecrLevel as CECRLevel,
+            type as SkillType,
+            synthIndex
+          );
+          
+          const normalized = normalizeLesson(uniqueLesson, idx);
+          normalized._normalized = true;
+          const sanitized = sanitizeLessonOrExam(normalized);
+          
+          // Mettre en cache
+          target[idx] = sanitized;
+          return sanitized;
+        }
+      }
+      // Support for map, filter, etc. which some UI components might use:
+      // Note: mapping over 5000 items still might be slow, so UI should be paginated
+      return Reflect.get(target, prop);
+    }
+  });
+
+  return lazyArray;
 }
 
 /**
