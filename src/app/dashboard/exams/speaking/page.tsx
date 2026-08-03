@@ -82,8 +82,6 @@ function Timer({ seconds, color = "text-foreground" }: { seconds: number; color?
   const mins = Math.floor(seconds / 60).toString().padStart(2, "0");
   const secs = (seconds % 60).toString().padStart(2, "0");
 
-  if (!mounted) return null;
-
   return (
     <span className={`font-mono font-bold tabular-nums ${color} ${seconds < 10 ? "animate-pulse" : ""}`}>
       {mins}:{secs}
@@ -97,7 +95,6 @@ export default function SpeakingExamPage() {
   const [globalTimeLeft, setGlobalTimeLeft] = useState(() => getExamDurationSecondsForPack(getCurrentUserPack(), 40 * 60));
   useEffect(() => {
     const p = getCurrentUserPack();
-    setPack(p);
     setGlobalTimeLeft(getExamDurationSecondsForPack(p, 40 * 60));
   }, []);
   const ORAL_TASKS = React.useMemo<typeof BASE_ORAL_TASKS>(() => generateExamWritingTasksForPack(BASE_ORAL_TASKS, pack, PACK_CONFIGS[pack], "speaking"), [pack]);

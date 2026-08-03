@@ -222,7 +222,7 @@ export default function RegisterPage() {
         return;
       }
 
-      // Succès → Sauvegarde temporaire pour connexion post-paiement (localStorage pour survivre aux redirections cross-tabs/mobiles NotchPay)
+      // Succès → Sauvegarde temporaire pour connexion post-paiement (localStorage pour survivre aux redirections cross-tabs/mobiles Fapshi)
       try {
         localStorage.setItem("tcf_reg_email", formDataState.email);
         localStorage.setItem("tcf_reg_pwd", formDataState.password);
@@ -243,7 +243,7 @@ export default function RegisterPage() {
         return;
       }
 
-      // Candidat -> Redirection OBLIGATOIRE vers Notch Pay / Checkout de paiement
+      // Candidat -> Redirection OBLIGATOIRE vers Fapshi / Checkout de paiement
       const checkoutUrl = data.link || data.redirectTo || `/payment-verify?pack=${selectedPlan}&initiate=true`;
       console.log("[Inscription] Redirection vers paiement obligatoire:", checkoutUrl);
       window.location.href = checkoutUrl;

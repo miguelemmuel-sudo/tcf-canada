@@ -95,8 +95,6 @@ function Timer({ seconds }: { seconds: number }) {
   const mins = Math.floor(seconds / 60).toString().padStart(2, "0");
   const secs = (seconds % 60).toString().padStart(2, "0");
 
-  if (!mounted) return null;
-
   return (
     <div className={`flex items-center gap-1.5 font-mono text-lg font-bold tabular-nums ${seconds < 300 ? "text-red-500 animate-pulse" : ""}`}>
       <Clock className="h-4 w-4" /> {mins}:{secs}

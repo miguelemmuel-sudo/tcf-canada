@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { initiateNotchPayPayment, logNotchPayEvent, PACK_PRICES, PACK_NAMES } from "@/lib/notchpay";
+import { initiateFapshiPayment, logFapshiEvent, PACK_PRICES, PACK_NAMES } from "@/lib/fapshi";
 import { createClient as createSupabaseJsClient } from "@supabase/supabase-js";
 
 /**
- * Route d'initialisation de paiement Notch Pay
+ * Route d'initialisation de paiement Fapshi
  * Domaine : https://griffondortcfcanada.com
  * Administrateur réseau : Miguel
  */
@@ -61,7 +61,6 @@ export async function POST(request: Request) {
     const reference = `TCF_${selectedPackKey.toUpperCase()}_${user.id.slice(0, 8)}_${timestamp}`;
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.headers.get("origin") || "https://griffondortcfcanada.com";
-    const callbackUrl = `${baseUrl}/api/webhooks/notchpay`;
     const finalReturnUrl = returnUrl || `${baseUrl}/dashboard/payments?status=check&ref=${reference}&pack=${selectedPackKey}`;
 
     const adminDb = getAdminSupabase();
@@ -70,42 +69,41 @@ export async function POST(request: Request) {
     if (adminDb) {
       await adminDb.from("transactions").insert({
         user_id: user.id,
-        provider: "NotchPay",
+        provider: "Fapshi",
         amount: amount.toString(),
         currency: currency,
         reference: reference,
         pack: selectedPackKey,
         status: "pending",
         webhook_status: "unprocessed",
-        payment_method: "NotchPay",
+        payment_method: "Fapshi",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       });
     }
 
-    // 2. Initialisation auprès de Notch Pay
-    const notchRes = await initiateNotchPayPayment({
+    // 2. Initialisation auprès de Fapshi
+    const fapshiRes = await initiateFapshiPayment({
       amount: amount,
-      currency: currency,
       email: user.email || bodyEmail || "",
-      reference: reference,
-      description: customMessage || `Abonnement ${packConfig.name} – TCF Canada Pro`,
-      callbackUrl: finalReturnUrl,
+      externalId: reference,
+      message: customMessage || `Abonnement ${packConfig.name} – TCF Canada Pro`,
+      redirectUrl: finalReturnUrl,
       pack: selectedPackKey as any,
       userId: user.id,
     });
 
-    if (adminDb && notchRes.transactionRef) {
+    if (adminDb && fapshiRes.transId) {
       await adminDb
         .from("transactions")
-        .update({ provider_transaction_id: notchRes.transactionRef, updated_at: new Date().toISOString() })
+        .update({ provider_transaction_id: fapshiRes.transId, updated_at: new Date().toISOString() })
         .eq("reference", reference);
     }
 
     return NextResponse.json({
       success: true,
-      paymentUrl: notchRes.paymentUrl,
-      transactionRef: notchRes.transactionRef,
+      paymentUrl: fapshiRes.paymentUrl,
+      transactionRef: fapshiRes.transId,
       reference: reference,
       amount: amount,
       currency: currency,
@@ -114,7 +112,7 @@ export async function POST(request: Request) {
     }, { status: 200 });
 
   } catch (err: any) {
-    console.error("[NotchPay Initiate Error]", err.message);
+    console.error("[Fapshi Initiate Error]", err.message);
     return NextResponse.json({ error: err.message || "Erreur lors de l'initialisation du paiement." }, { status: 500 });
   }
 }

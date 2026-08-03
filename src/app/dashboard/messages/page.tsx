@@ -38,9 +38,7 @@ interface Message {
 export default function MessagesPage() {
   const { pack, mounted } = useUserPack();
 
-  useEffect(() => {
-    setPack(getCurrentUserPack());
-  }, []);
+
 
   if (!isFeatureAccessible("messages", pack)) {
     return <LockedFeatureBanner featureName="Messagerie directe avec votre Coach" />;

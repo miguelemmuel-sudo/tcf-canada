@@ -20,9 +20,7 @@ export default function ReservationsPage() {
   const [reservations, setReservations] = useState<any[]>([]);
   const { pack, mounted } = useUserPack();
 
-  useEffect(() => {
-    setPack(getCurrentUserPack());
-  }, []);
+
 
   if (!isFeatureAccessible("reservations", pack)) {
     return <LockedFeatureBanner featureName="Réservation de créneaux avec un Coach" />;

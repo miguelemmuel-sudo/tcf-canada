@@ -51,9 +51,7 @@ type RecordState = "idle" | "recording" | "done";
 export default function SpeakingCoursePage() {
   const { pack, mounted } = useUserPack();
   
-  useEffect(() => {
-    setPack(getCurrentUserPack());
-  }, []);
+
 
   const LESSONS = React.useMemo<typeof BASE_LESSONS>(() => generateLessonsForPack(BASE_LESSONS, pack, PACK_CONFIGS[pack], "speaking"), [pack]);
 
@@ -117,10 +115,10 @@ export default function SpeakingCoursePage() {
       addLearningTimeSeconds(1);
     }, 1000);
 
-  if (!mounted) return null;
-
   return () => clearInterval(timer);
   }, []);
+
+  if (!mounted) return null;
 
   const lesson = LESSONS[currentLesson];
 

@@ -12,9 +12,9 @@ function PaymentVerifyContent() {
   const [message, setMessage] = useState("Vérification de votre paiement en cours...");
 
   useEffect(() => {
-    // Notch Pay renvoie sa propre référence dans ?reference=...
-    // On priorise 'reference' (Notch Pay) sur 'ref' (notre ref locale)
-    const reference = searchParams?.get("reference") || searchParams?.get("trxref") || searchParams?.get("ref");
+    // Fapshi ou Notch Pay renvoie sa propre référence dans ?reference=... ou ?transId=...
+    // On priorise 'transId' (Fapshi) sur 'reference'
+    const reference = searchParams?.get("transId") || searchParams?.get("reference") || searchParams?.get("trxref") || searchParams?.get("ref");
     
     if (!reference) {
       setStatus("error");
@@ -24,7 +24,7 @@ function PaymentVerifyContent() {
 
     const checkPayment = async () => {
       try {
-        const res = await fetch(`/api/notchpay/status/${encodeURIComponent(reference)}`);
+        const res = await fetch(`/api/fapshi/status/${encodeURIComponent(reference)}`);
         const data = await res.json();
 
         if (data.success && (data.status === "complete" || data.status === "completed")) {
@@ -110,7 +110,7 @@ function PaymentVerifyContent() {
               onClick={() => {
                 const plan = localStorage.getItem("tcf_reg_plan") || searchParams?.get("pack") || "standard";
                 const ref = searchParams?.get("ref") || searchParams?.get("reference");
-                window.location.href = `/api/notchpay/retry?ref=${ref}&pack=${plan}`;
+                window.location.href = `/api/fapshi/retry?ref=${ref}&pack=${plan}`;
               }}
               className="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold transition-colors w-full"
             >

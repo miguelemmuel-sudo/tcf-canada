@@ -133,9 +133,9 @@ export default function AdminFinancePage() {
         if (txList) {
           setTransactions(txList.map(tx => ({
             id: tx.id,
-            reference: tx.reference || "TX_NOTCHPAY",
+            reference: tx.reference || "TX_FAPSHI",
             provider_transaction_id: tx.provider_transaction_id,
-            payment_method: tx.payment_method || "Notch Pay Mobile / Carte",
+            payment_method: tx.payment_method || "Fapshi Mobile / Carte",
             amount: tx.amount ? `${parseInt(tx.amount).toLocaleString("fr-FR")} FCFA` : "25 000 FCFA",
             currency: tx.currency || "XAF",
             status: tx.status || "pending",
@@ -165,7 +165,7 @@ export default function AdminFinancePage() {
           })));
         }
 
-        // C. Charger les journaux Notch Pay (payment_logs)
+        // C. Charger les journaux Fapshi (payment_logs)
         const { data: logList } = await supabase
           .from("payment_logs")
           .select("*")
@@ -238,7 +238,7 @@ export default function AdminFinancePage() {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-3 text-slate-400">
           <RefreshCw className="h-8 w-8 animate-spin text-amber-500" />
-          <p className="text-sm font-bold">Chargement de l'espace Finance & Notch Pay...</p>
+          <p className="text-sm font-bold">Chargement de l'espace Finance & Fapshi...</p>
         </div>
       </div>
     );
@@ -250,7 +250,7 @@ export default function AdminFinancePage() {
         <ShieldAlert className="h-14 w-14 text-red-600 mx-auto" />
         <h2 className="text-xl font-black text-slate-900 dark:text-white">Accès Réservé - Direction & Administration</h2>
         <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-          Cette section est strictement confidentielle et réservée au contrôle de gestion des abonnements SaaS et de la passerelle Notch Pay. Votre compte ne possède pas les habilitations de Super Administrateur.
+          Cette section est strictement confidentielle et réservée au contrôle de gestion des abonnements SaaS et de la passerelle Fapshi. Votre compte ne possède pas les habilitations de Super Administrateur.
         </p>
       </div>
     );
@@ -268,12 +268,12 @@ export default function AdminFinancePage() {
             </span>
             <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold flex items-center gap-1">
               <Activity className="h-3.5 w-3.5 animate-pulse" />
-              Notch Pay Live Ready
+              Fapshi Live Ready
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Bonjour Administrateur Réseau Miguel 👋</h1>
           <p className="text-slate-400 text-xs sm:text-sm max-w-2xl leading-relaxed">
-            Bienvenue dans votre centre de contrôle financier et monétique. Supervisez les transactions Notch Pay (MTN, Orange Money, Wave, Visa), gérez le cycle de vie des abonnés et inspectez les journaux d'audit Webhook en temps réel.
+            Bienvenue dans votre centre de contrôle financier et monétique. Supervisez les transactions Fapshi (MTN, Orange Money, Wave, Visa), gérez le cycle de vie des abonnés et inspectez les journaux d'audit Webhook en temps réel.
           </p>
         </div>
 
@@ -311,7 +311,7 @@ export default function AdminFinancePage() {
           <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
             {totalRevenueNum.toLocaleString("fr-FR")} <span className="text-sm font-bold text-emerald-600">FCFA</span>
           </div>
-          <p className="text-[11px] text-slate-400 font-medium">Cumul réel des paiements Notch Pay</p>
+          <p className="text-[11px] text-slate-400 font-medium">Cumul réel des paiements Fapshi</p>
         </div>
 
         <div className="bg-white dark:bg-slate-950 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2">
@@ -359,7 +359,7 @@ export default function AdminFinancePage() {
           }`}
         >
           <CreditCard className="h-4 w-4" />
-          <span>Transactions Notch Pay ({transactions.length})</span>
+          <span>Transactions Fapshi ({transactions.length})</span>
         </button>
 
         <button
@@ -395,7 +395,7 @@ export default function AdminFinancePage() {
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Rechercher par référence, email ou ID Notch Pay..."
+                placeholder="Rechercher par référence, email ou ID Fapshi..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"
@@ -431,10 +431,10 @@ export default function AdminFinancePage() {
                   <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 font-extrabold uppercase tracking-wider text-[11px]">
                     <th className="pb-3.5">Date & Heure</th>
                     <th className="pb-3.5">Candidat (Email)</th>
-                    <th className="pb-3.5">Référence TCF / Notch Pay</th>
+                    <th className="pb-3.5">Référence TCF / Fapshi</th>
                     <th className="pb-3.5">Moyen</th>
                     <th className="pb-3.5">Montant</th>
-                    <th className="pb-3.5 text-right">Statut Notch Pay</th>
+                    <th className="pb-3.5 text-right">Statut Fapshi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-semibold">
@@ -529,29 +529,29 @@ export default function AdminFinancePage() {
             <div>
               <h3 className="font-extrabold text-base text-slate-900 dark:text-white flex items-center gap-2">
                 <Terminal className="h-5 w-5 text-indigo-600" />
-                Journal Technique Notch Pay (Audit & Traçabilité API)
+                Journal Technique Fapshi (Audit & Traçabilité API)
               </h3>
               <p className="text-xs text-slate-500">Enregistrement brut et inaltérable de tous les appels sortants et notifications Webhook reçues en temps réel.</p>
             </div>
           </div>
 
-          {/* Notch Pay Live Configuration Banner */}
+          {/* Fapshi Live Configuration Banner */}
           <div className="bg-gradient-to-r from-indigo-950 via-slate-900 to-slate-950 p-4 sm:p-5 rounded-2xl border border-indigo-500/30 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span className="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-mono text-[10px] font-bold">WEBHOOK CONFIGURÉ</span>
                 <span className="text-xs font-bold text-emerald-400 flex items-center gap-1">
                   <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping inline-block" />
-                  Prêt pour Notch Pay
+                  Prêt pour Fapshi
                 </span>
               </div>
               <p className="font-mono text-xs text-indigo-200 font-semibold break-all">
-                https://griffondortcfcanada.com/api/webhooks/notchpay
+                https://griffondortcfcanada.com/api/webhooks/fapshi
               </p>
             </div>
             <div className="text-[11px] bg-slate-800/80 p-2.5 rounded-xl border border-slate-700/60 font-mono space-y-0.5 shrink-0">
-              <div className="text-slate-400">Environnement: <span className="text-amber-400 font-bold">{process.env.NOTCHPAY_ENV || "test"}</span></div>
-              <div className="text-slate-400">Signature Webhook: <span className="text-emerald-400 font-bold">x-notch-signature</span></div>
+              <div className="text-slate-400">Environnement: <span className="text-amber-400 font-bold">{process.env.FAPSHI_ENV || "test"}</span></div>
+              <div className="text-slate-400">Signature Webhook: <span className="text-emerald-400 font-bold">x-wh-secret</span></div>
             </div>
           </div>
 
@@ -596,7 +596,7 @@ export default function AdminFinancePage() {
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
                 <Database className="h-5 w-5 text-indigo-600" />
-                Payload de l'événement Notch Pay (Format JSON)
+                Payload de l'événement Fapshi (Format JSON)
               </h3>
               <button onClick={() => setSelectedLogPayload(null)} className="p-1 text-slate-400 hover:text-slate-600">
                 ✕

@@ -65,9 +65,7 @@ const AI_TIPS = [
 export default function ReadingCoursePage() {
   const { pack, mounted } = useUserPack();
   
-  useEffect(() => {
-    setPack(getCurrentUserPack());
-  }, []);
+
 
   const LESSONS = React.useMemo<typeof BASE_LESSONS>(() => generateLessonsForPack(BASE_LESSONS, pack, PACK_CONFIGS[pack], "reading"), [pack]);
 
@@ -87,10 +85,10 @@ export default function ReadingCoursePage() {
       addLearningTimeSeconds(1);
     }, 1000);
 
-  if (!mounted) return null;
-
   return () => clearInterval(timer);
   }, []);
+
+  if (!mounted) return null;
 
   // Detect Saved Session on Mount
   useEffect(() => {

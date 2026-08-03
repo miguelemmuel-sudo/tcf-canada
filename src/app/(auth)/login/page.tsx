@@ -110,7 +110,7 @@ export default function LoginPage() {
             console.log("[Login] Abonnement confirmé actif -> Accès Espace Candidat");
             router.push("/dashboard");
           } else {
-            console.log("[Login] Aucun abonnement actif payé -> Redirection paiement Notch Pay");
+            console.log("[Login] Aucun abonnement actif payé -> Redirection paiement Fapshi");
             router.push(`/dashboard/payments?pack=${userPack}&initiate=true`);
           }
           return;

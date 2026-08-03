@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient as createSupabaseJsClient } from "@supabase/supabase-js";
-import { initiateNotchPayPayment, PACK_NAMES, PACK_PRICES } from "@/lib/notchpay";
+import { initiateFapshiPayment, PACK_NAMES, PACK_PRICES } from "@/lib/fapshi";
 
 function getAdminSupabase() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
@@ -59,30 +59,29 @@ export async function GET(request: Request) {
   const redirectUrl = `${baseUrl}/payment-verify?status=check&ref=${newRef}&pack=${pack}&_t=${Date.now()}`;
 
   try {
-    const notchRes = await initiateNotchPayPayment({
+    const fapshiRes = await initiateFapshiPayment({
       amount: amount,
-      currency: "XAF",
       email: profile.email,
-      reference: newRef,
-      description: `Abonnement ${PACK_NAMES[pack] || pack} - TCF Canada Pro`,
-      callbackUrl: redirectUrl,
+      externalId: newRef,
+      message: `Abonnement ${PACK_NAMES[pack] || pack} - TCF Canada Pro`,
+      redirectUrl: redirectUrl,
       pack: pack as any,
       userId: txData.user_id,
     });
 
-    if (notchRes.transactionRef) {
+    if (fapshiRes.transId) {
       await adminDb.from("transactions")
-        .update({ provider_transaction_id: notchRes.transactionRef })
+        .update({ provider_transaction_id: fapshiRes.transId })
         .eq("reference", newRef);
     }
 
-    if (notchRes.paymentUrl) {
-      return NextResponse.redirect(notchRes.paymentUrl);
+    if (fapshiRes.paymentUrl) {
+      return NextResponse.redirect(fapshiRes.paymentUrl);
     }
     
     return NextResponse.redirect(new URL(`/payment-verify?status=error&ref=${newRef}`, request.url));
   } catch (err) {
-    console.error("[NotchPay Retry Error]:", err);
+    console.error("[Fapshi Retry Error]:", err);
     return NextResponse.redirect(new URL(`/payment-verify?status=error&ref=${newRef}`, request.url));
   }
 }

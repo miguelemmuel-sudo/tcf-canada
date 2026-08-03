@@ -57,7 +57,7 @@ function PaymentsContent() {
   const [verifyingPayment, setVerifyingPayment] = useState(false);
   const [paymentSuccessModal, setPaymentSuccessModal] = useState<{ show: boolean; packName?: string; expiresAt?: string }>({ show: false });
 
-  // Dynamic user & Notch Pay data
+  // Dynamic user & Fapshi data
   const [userTransactions, setUserTransactions] = useState<Transaction[]>([]);
   const [activeSubscription, setActiveSubscription] = useState<Subscription | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -66,7 +66,7 @@ function PaymentsContent() {
   const [billingName, setBillingName] = useState("");
   const [billingEmail, setBillingEmail] = useState("");
   const [billingAddress, setBillingAddress] = useState("");
-  const [billingMethod, setBillingMethod] = useState("Passerelle Officielle Notch Pay");
+  const [billingMethod, setBillingMethod] = useState("Passerelle Officielle Fapshi");
 
   // Modals state
   const [showBillingModal, setShowBillingModal] = useState(false);
@@ -131,7 +131,7 @@ function PaymentsContent() {
             });
           }
 
-          // 2. Récupérer l'historique complet des transactions Notch Pay dans Supabase
+          // 2. Récupérer l'historique complet des transactions Fapshi dans Supabase
           const { data: txData } = await supabase
             .from("transactions")
             .select("*")
@@ -143,7 +143,7 @@ function PaymentsContent() {
               id: tx.id,
               reference: tx.reference,
               provider_transaction_id: tx.provider_transaction_id,
-              payment_method: tx.payment_method || "Notch Pay",
+              payment_method: tx.payment_method || "Fapshi",
               amount: tx.amount ? `${parseInt(tx.amount).toLocaleString("fr-FR")} FCFA` : "25 000 FCFA",
               currency: tx.currency || "XAF",
               status: tx.status === "completed" || tx.status === "complete" ? "Payé" : tx.status === "pending" ? "En attente" : "Échoué",
@@ -166,7 +166,7 @@ function PaymentsContent() {
           });
         }
       } catch (err) {
-        console.error("Erreur chargement paiements Notch Pay:", err);
+        console.error("Erreur chargement paiements Fapshi:", err);
       } finally {
         setLoading(false);
       }
@@ -175,14 +175,14 @@ function PaymentsContent() {
     loadData();
   }, []);
 
-  // 3. Vérification automatique au retour du paiement Notch Pay (si ref/reference est dans l'URL)
+  // 3. Vérification automatique au retour du paiement Fapshi
   useEffect(() => {
     const reference = searchParams?.get("reference") || searchParams?.get("trxref") || searchParams?.get("ref");
     const statusParam = searchParams?.get("status");
 
     if (reference && statusParam === "check" && !verifyingPayment) {
       setVerifyingPayment(true);
-      fetch(`/api/notchpay/status/${encodeURIComponent(reference)}`)
+      fetch(`/api/fapshi/status/${encodeURIComponent(reference)}`)
         .then(res => res.json())
         .then(data => {
           if (data.success && (data.status === "complete" || data.status === "completed")) {
@@ -200,7 +200,7 @@ function PaymentsContent() {
             router.replace("/dashboard/payments");
           }
         })
-        .catch(err => console.error("Erreur vérification retour Notch Pay:", err))
+        .catch(err => console.error("Erreur vérification retour Fapshi:", err))
         .finally(() => setVerifyingPayment(false));
     }
   }, [searchParams, router, verifyingPayment]);
@@ -266,12 +266,12 @@ function PaymentsContent() {
               Formule Active : {currentPackConfig.name}
             </span>
             <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-bold">
-              Notch Pay Actif
+              Fapshi Actif
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Gestion des Paiements & Abonnements</h1>
           <p className="text-slate-300 text-xs sm:text-sm max-w-xl">
-            Toutes vos transactions sont sécurisées par Notch Pay (MTN Mobile Money, Orange Money, Wave, Visa & Mastercard).
+            Toutes vos transactions sont sécurisées par Fapshi (MTN Mobile Money, Orange Money).
           </p>
         </div>
 

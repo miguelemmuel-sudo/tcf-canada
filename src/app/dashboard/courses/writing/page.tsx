@@ -66,9 +66,7 @@ function countWords(text: string) {
 export default function WritingCoursePage() {
   const { pack, mounted } = useUserPack();
   
-  useEffect(() => {
-    setPack(getCurrentUserPack());
-  }, []);
+
 
   const LESSONS = React.useMemo<typeof BASE_LESSONS>(() => generateLessonsForPack(BASE_LESSONS, pack, PACK_CONFIGS[pack], "writing"), [pack]);
 
@@ -131,10 +129,10 @@ export default function WritingCoursePage() {
       addLearningTimeSeconds(1);
     }, 1000);
 
-  if (!mounted) return null;
-
   return () => clearInterval(timer);
   }, []);
+
+  if (!mounted) return null;
 
   const lesson = LESSONS[currentLesson];
   const wordCount = countWords(text);
