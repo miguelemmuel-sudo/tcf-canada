@@ -61,6 +61,7 @@ function PaymentsContent() {
   const [userTransactions, setUserTransactions] = useState<Transaction[]>([]);
   const [activeSubscription, setActiveSubscription] = useState<Subscription | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [targetUpgradePack, setTargetUpgradePack] = useState<PackType | undefined>(undefined);
 
   // Billing info state
   const [billingName, setBillingName] = useState("");
@@ -146,9 +147,10 @@ function PaymentsContent() {
               payment_method: tx.payment_method || "Fapshi",
               amount: tx.amount ? `${parseInt(tx.amount).toLocaleString("fr-FR")} FCFA` : "25 000 FCFA",
               currency: tx.currency || "XAF",
-              status: tx.status === "completed" || tx.status === "complete" ? "Payé" : tx.status === "pending" ? "En attente" : "Échoué",
+              status: tx.status === "completed" || tx.status === "complete" ? "Payé" : tx.status === "pending" ? "Paiement inachevé" : "Échoué",
               created_at: new Date(tx.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }),
-              title: tx.reference ? `Abonnement TCF (${tx.reference.slice(0, 15)}...)` : "Abonnement TCF Canada"
+              title: tx.reference ? `Abonnement TCF (${tx.reference.slice(0, 15)}...)` : "Abonnement TCF Canada",
+              pack: tx.pack || "griffon"
             })));
           } else {
             setUserTransactions([]);
@@ -276,7 +278,10 @@ function PaymentsContent() {
         </div>
 
         <button
-          onClick={() => setShowUpgradeModal(true)}
+          onClick={() => {
+            setTargetUpgradePack(undefined);
+            setShowUpgradeModal(true);
+          }}
           className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-sm shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 transition-all shrink-0 z-10 group"
         >
           <Sparkles className="h-4 w-4 text-slate-950 group-hover:scale-110 transition-transform" />
@@ -403,7 +408,10 @@ function PaymentsContent() {
           <div className="flex gap-3 pt-2">
             <button 
               type="button"
-              onClick={() => setShowUpgradeModal(true)}
+              onClick={() => {
+                setTargetUpgradePack(undefined);
+                setShowUpgradeModal(true);
+              }}
               className="flex-1 py-3.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-black text-xs shadow-md shadow-amber-600/20 transition-all flex items-center justify-center gap-2"
             >
               <Sparkles className="h-4 w-4" />
@@ -450,6 +458,17 @@ function PaymentsContent() {
                     <div className="text-right">
                       <span className="font-black text-xs text-slate-900 dark:text-white block">{tx.amount}</span>
                       <span className={`text-[10px] font-bold ${tx.status === "Payé" ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600'}`}>{tx.status}</span>
+                      {tx.status === "Paiement inachevé" && (
+                        <button 
+                          onClick={() => {
+                            setTargetUpgradePack(tx.pack as PackType);
+                            setShowUpgradeModal(true);
+                          }}
+                          className="mt-1.5 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 text-[9px] font-bold hover:bg-amber-200 transition-colors"
+                        >
+                          Reprendre
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -716,7 +735,7 @@ function PaymentsContent() {
         </div>
       )}
 
-      <UpgradePackModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
+      <UpgradePackModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} targetPack={targetUpgradePack} />
     </div>
   );
 }

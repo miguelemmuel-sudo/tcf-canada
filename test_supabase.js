@@ -1,24 +1,38 @@
 const { createClient } = require('@supabase/supabase-js');
+const fs = require('fs');
 
-const supabaseUrl = 'https://fgctytyvmhncrxqljjwz.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZnY3R5dHl2bWhuY3J4cWxqand6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ1ODY1ODgsImV4cCI6MjEwMDE2MjU4OH0.mH5Q5vSUzRi-smqhAmwlhGiF2lOwuglW1Sn94iYpb8A';
-
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-async function checkTable() {
-  console.log("Testing connection to Supabase...");
-  const { data, error } = await supabase
-    .from('active_sessions')
-    .select('*')
-    .limit(1);
-
-  if (error) {
-    console.error("Error accessing table active_sessions:", error.message);
-    process.exit(1);
-  } else {
-    console.log("Table active_sessions exists! Data:", data);
-    process.exit(0);
+const envContent = fs.readFileSync('.env.local', 'utf8');
+const lines = envContent.split('\n');
+const env = {};
+for (const line of lines) {
+  if (line && line.includes('=')) {
+    const parts = line.split('=');
+    env[parts[0].trim()] = parts.slice(1).join('=').trim();
   }
 }
 
-checkTable();
+const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
+const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
+
+const supabase = createClient(supabaseUrl, serviceKey, {
+  auth: { persistSession: false, autoRefreshToken: false },
+});
+
+async function run() {
+  const email = `test_admin_${Date.now()}@example.com`;
+  console.log("Testing RPC register_user_direct...");
+  const t0 = Date.now();
+  
+  const { data: rpcData, error: rpcError } = await supabase.rpc("register_user_direct", {
+    p_email: email,
+    p_password: "password123",
+    p_first_name: "Test",
+    p_last_name: "User",
+    p_sub_type: "standard"
+  });
+  console.log("RPC took:", Date.now() - t0, "ms");
+  console.log("RPC Data:", rpcData);
+  console.log("RPC Error:", rpcError);
+}
+
+run().catch(console.error);
