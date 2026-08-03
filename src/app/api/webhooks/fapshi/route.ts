@@ -167,18 +167,18 @@ export async function POST(request: Request) {
           .eq("user_id", userId)
           .eq("status", "active");
 
-        const { data: newSub, error: subErr } = await adminDb.from("subscriptions").insert({
+        const { data: newSub, error: subErr } = await adminDb.from("subscriptions").upsert({
           user_id: userId,
           pack: resolvedPack,
           plan: resolvedPack, // <-- FIXED: plan column is required
           amount: amountVal.toString(),
-          currency: "XAF",
+          currency: "XAF", // Fapshi use XAF mostly
           status: "active",
           started_at: startDate.toISOString(),
           expires_at: expiresAt.toISOString(),
           created_at: nowIso,
           updated_at: nowIso,
-        }).select("id").single();
+        }, { onConflict: 'user_id' }).select("id").single();
 
         if (subErr) {
           console.error(`[Fapshi Webhook ${reqId}] Erreur création abonnement Supabase:`, subErr);

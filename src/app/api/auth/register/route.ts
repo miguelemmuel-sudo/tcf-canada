@@ -319,9 +319,10 @@ export async function POST(request: Request) {
     // ── Abonnement en attente ──
     let subscriptionId: string | null = null;
     try {
-      const { data: subData } = await supabase.from("subscriptions").insert({
+      const { data: subData } = await supabase.from("subscriptions").upsert({
         user_id: userId,
         pack: packKey,
+        plan: packKey, // Add missing plan column
         amount: packConfig.amount.toString(),
         currency: packConfig.currency,
         status: "pending",
@@ -329,9 +330,9 @@ export async function POST(request: Request) {
         expires_at: null,
         created_at: now,
         updated_at: now,
-      }).select("id").single();
+      }, { onConflict: 'user_id' }).select("id").single();
       subscriptionId = subData?.id || null;
-    } catch (e) {
+    } catch (e: any) {
       console.error("[Register] Subscription error:", safeStr(e));
     }
 
