@@ -159,7 +159,7 @@ export default function CoursesPage() {
         const totalCount = dynamicLessons.length;
         const percentage = Math.min(100, Math.round((doneCount / totalCount) * 100));
 
-        const updatedLessonsList = dynamicLessons.map((l: any) => ({
+        const updatedLessonsList = dynamicLessons.slice(0, 15).map((l: any) => ({
           ...l,
           done: completedIds.has(l.id) || completedIds.has(l.id.toString()),
         }));
@@ -174,7 +174,7 @@ export default function CoursesPage() {
       return {
         ...c,
         lessons: `0 / ${dynamicLessons.length} leçons`,
-        lessons_list: dynamicLessons.map((l: any) => ({ ...l, done: false })),
+        lessons_list: dynamicLessons.slice(0, 15).map((l: any) => ({ ...l, done: false })),
       };
     });
 

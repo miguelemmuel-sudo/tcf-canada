@@ -215,18 +215,31 @@ export default function ReadingCoursePage() {
         </button>
 
         <div className="flex items-center gap-1.5 overflow-x-auto py-1 flex-1 justify-center">
-          {LESSONS.map((l, i) => (
-            <button key={l.id} onClick={() => { setCurrentLesson(i); setAnswers({}); setShowResults(false); }}
-              className={`px-3.5 py-1.5 rounded-lg text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
-                i === currentLesson
-                  ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/25 border border-emerald-400"
-                  : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 hover:border-emerald-400 hover:text-emerald-600 dark:text-slate-300 dark:hover:text-emerald-400"
-              }`}
-            >
-              {l.done && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />}
-              <span>Leçon {i + 1}</span>
-            </button>
-          ))}
+          {(() => {
+            const total = LESSONS.length;
+            const maxVisible = 5;
+            let start = Math.max(0, currentLesson - Math.floor(maxVisible / 2));
+            let end = Math.min(total, start + maxVisible);
+            if (end - start < maxVisible) start = Math.max(0, end - maxVisible);
+            const visibleIndices = [];
+            for (let i = start; i < end; i++) visibleIndices.push(i);
+
+            return visibleIndices.map((i) => {
+              const l = LESSONS[i];
+              return (
+                <button key={l.id || i} onClick={() => { setCurrentLesson(i); setAnswers({}); setShowResults(false); }}
+                  className={`px-3.5 py-1.5 rounded-lg text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                    i === currentLesson
+                      ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/25 border border-emerald-400"
+                      : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 hover:border-emerald-400 hover:text-emerald-600 dark:text-slate-300 dark:hover:text-emerald-400"
+                  }`}
+                >
+                  {l.done && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />}
+                  <span>Leçon {i + 1}</span>
+                </button>
+              );
+            });
+          })()}
         </div>
 
         <button
