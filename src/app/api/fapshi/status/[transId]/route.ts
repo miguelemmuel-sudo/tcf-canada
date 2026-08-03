@@ -46,7 +46,27 @@ export async function GET(request: Request, { params }: { params: Promise<{ tran
     // Appel à l'API Fapshi pour vérifier le statut réel avec le vrai transId
     const statusData = await getFapshiPaymentStatus(realTransId);
 
-
+    // Synchronisation d'urgence si le Webhook a été retardé
+    if (statusData.status === "SUCCESSFUL" && localStatus !== "completed" && adminDb) {
+      console.log(`[Status Route] Synchronisation d'urgence pour ${realTransId}`);
+      try {
+        // Appeler le Webhook localement pour forcer la mise à jour
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://griffondortcfcanada.com";
+        await fetch(`${baseUrl}/api/webhooks/fapshi`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            transId: statusData.transId,
+            status: "SUCCESSFUL",
+            amount: statusData.amount,
+            email: statusData.email || "",
+            externalId: statusData.externalId || transId
+          })
+        });
+      } catch (e) {
+        console.error("Erreur sync urgence", e);
+      }
+    }
 
     return NextResponse.json({
       success: true,

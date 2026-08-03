@@ -187,7 +187,7 @@ function PaymentsContent() {
       fetch(`/api/fapshi/status/${encodeURIComponent(reference)}`)
         .then(res => res.json())
         .then(data => {
-          if (data.success && (data.status === "complete" || data.status === "completed")) {
+          if (data.success && (data.status === "complete" || data.status === "completed" || data.status === "SUCCESSFUL" || data.localStatus === "completed")) {
             setPaymentSuccessModal({
               show: true,
               packName: "Abonnement Premium TCF",
