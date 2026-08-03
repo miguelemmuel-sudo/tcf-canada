@@ -6,6 +6,17 @@ const supabase = createClient(
 );
 
 async function check() {
+  const { data: subs } = await supabase
+    .from("subscriptions")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(5);
+  
+  console.log("\nRecent Subscriptions:");
+  subs?.forEach(s => {
+    console.log(JSON.stringify(s));
+  });
+
   const { data, error } = await supabase
     .from("transactions")
     .select("*")
@@ -24,10 +35,11 @@ async function check() {
   const { data: logs } = await supabase
     .from("payment_logs")
     .select("*")
+    .in("event_type", ["webhook_processed_completed", "webhook_received", "webhook_error"])
     .order("created_at", { ascending: false })
     .limit(10);
   
-  console.log("\nRecent Logs:");
+  console.log("\nRecent Webhook Logs:");
   logs?.forEach(l => {
     console.log(`- Event: ${l.event_type} | Ref: ${l.transaction_reference} | Payload: ${JSON.stringify(l.payload)}`);
   });

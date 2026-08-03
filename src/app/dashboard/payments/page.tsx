@@ -200,12 +200,18 @@ function PaymentsContent() {
           } else if (data.status === "failed" || data.status === "canceled") {
             alert(`Paiement non finalisé (${data.status}). Vous pouvez réessayer à tout moment.`);
             router.replace("/dashboard/payments");
+          } else {
+            // PENDING or other status: clear URL to avoid infinite loop
+            router.replace("/dashboard/payments");
           }
         })
-        .catch(err => console.error("Erreur vérification retour Fapshi:", err))
+        .catch(err => {
+          console.error("Erreur vérification retour Fapshi:", err);
+          router.replace("/dashboard/payments"); // clear URL on error to avoid loop
+        })
         .finally(() => setVerifyingPayment(false));
     }
-  }, [searchParams, router, verifyingPayment]);
+  }, [searchParams, router]);
 
   const totalSpent = userTransactions.reduce((acc, tx) => {
     if (tx.status === "Payé") {

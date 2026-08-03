@@ -170,6 +170,7 @@ export async function POST(request: Request) {
         const { data: newSub, error: subErr } = await adminDb.from("subscriptions").insert({
           user_id: userId,
           pack: resolvedPack,
+          plan: resolvedPack, // <-- FIXED: plan column is required
           amount: amountVal.toString(),
           currency: "XAF",
           status: "active",
