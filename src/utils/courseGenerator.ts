@@ -233,6 +233,12 @@ export function generateLessonsForPack(
       // Support for map, filter, etc. which some UI components might use:
       // Note: mapping over 5000 items still might be slow, so UI should be paginated
       return Reflect.get(target, prop);
+    },
+    has(target, prop) {
+      if (typeof prop === "string" && !isNaN(Number(prop))) {
+        return Number(prop) < targetCount;
+      }
+      return Reflect.has(target, prop);
     }
   });
 
