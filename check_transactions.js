@@ -17,19 +17,19 @@ async function check() {
   } else {
     console.log("Recent Transactions:");
     data.forEach(tx => {
-      console.log(`- Ref: ${tx.reference} | Status: ${tx.status} | Pack: ${tx.pack} | Amount: ${tx.amount} | Date: ${tx.created_at}`);
+      console.log(`- Ref: ${tx.reference} | ProviderTxId: ${tx.provider_transaction_id} | Status: ${tx.status} | Pack: ${tx.pack} | Date: ${tx.created_at}`);
     });
   }
 
-  const { data: subs } = await supabase
-    .from("subscriptions")
+  const { data: logs } = await supabase
+    .from("payment_logs")
     .select("*")
     .order("created_at", { ascending: false })
-    .limit(5);
+    .limit(10);
   
-  console.log("\nRecent Subscriptions:");
-  subs?.forEach(s => {
-    console.log(`- Pack: ${s.pack} | Status: ${s.status} | Expires: ${s.expires_at}`);
+  console.log("\nRecent Logs:");
+  logs?.forEach(l => {
+    console.log(`- Event: ${l.event_type} | Ref: ${l.transaction_reference} | Payload: ${JSON.stringify(l.payload)}`);
   });
 }
 

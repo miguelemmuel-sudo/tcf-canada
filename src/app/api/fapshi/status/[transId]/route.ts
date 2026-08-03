@@ -54,7 +54,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ tran
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://griffondortcfcanada.com";
         await fetch(`${baseUrl}/api/webhooks/fapshi`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "x-wh-secret": process.env.FAPSHI_WEBHOOK_SECRET || "123@Miguel"
+          },
           body: JSON.stringify({
             transId: statusData.transId,
             status: "SUCCESSFUL",
