@@ -198,7 +198,7 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
               return (
                 <div
                   key={pKey}
-                  onClick={() => !loading && setSelectedPack(pKey)}
+                  onClick={() => loadingProvider === null && setSelectedPack(pKey)}
                   className={`p-3.5 sm:p-4 rounded-2xl border-2 transition-all cursor-pointer relative ${
                     isSelected
                       ? "border-amber-500 bg-amber-50/50 dark:bg-amber-950/30 shadow-sm"
