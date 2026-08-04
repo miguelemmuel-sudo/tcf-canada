@@ -249,10 +249,10 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
               <button
                 type="button"
                 onClick={handleFapshiPayment}
-                disabled={loading}
+                disabled={loadingProvider !== null}
                 className="w-full py-3 sm:py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs sm:text-sm shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                {loading ? (
+                {loadingProvider === "fapshi" ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <>
@@ -266,10 +266,14 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
               <button
                 type="button"
                 onClick={handleAdminFreeBypass}
-                disabled={loading}
+                disabled={loadingProvider !== null}
                 className="w-full py-2.5 sm:py-3 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-700 dark:text-amber-300 border border-amber-500/30 font-bold text-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                {loadingProvider === "admin" ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
+                ) : (
+                  <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                )}
                 <span className="truncate">Confirmer gratuitement ({PACK_CONFIGS[selectedPack].name})</span>
               </button>
             </div>
