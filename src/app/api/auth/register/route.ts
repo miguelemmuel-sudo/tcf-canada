@@ -162,7 +162,7 @@ export async function POST(request: Request) {
           const msg = safeStr(adminError).toLowerCase();
           if (msg.includes("already") || msg.includes("exists") || msg.includes("user_exists")) {
             return NextResponse.json({
-              error: "Cette adresse e-mail est déjà utilisée. Veuillez vous connecter."
+              error: "Ce compte a déjà été créé ! Connectez-vous à votre compte, puis suivez le processus de mise à niveau pour obtenir votre accès définitif."
             }, { status: 400 });
           }
           console.warn("[Register] admin.createUser échoué:", safeStr(adminError));
@@ -229,7 +229,7 @@ export async function POST(request: Request) {
 
           if (lower.includes("already") || lower.includes("exists") || lower.includes("user_exists") || lower.includes("unique")) {
             return NextResponse.json({
-              error: "Cette adresse e-mail est déjà associée à un compte TCF Canada. Veuillez vous connecter."
+              error: "Ce compte a déjà été créé ! Connectez-vous à votre compte, puis suivez le processus de mise à niveau pour obtenir votre accès définitif."
             }, { status: 400 });
           }
           if (lower.includes("rate limit") || lower.includes("too many")) {
@@ -355,54 +355,15 @@ export async function POST(request: Request) {
       console.error("[Register] Transaction error:", safeStr(e));
     }
 
-    // ── Initiation Fapshi ──
-    const baseUrl =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      request.headers.get("origin") ||
-      "https://griffondortcfcanada.com";
-    const redirectUrl = `${baseUrl}/payment-verify?status=check&ref=${reference}&pack=${packKey}&_t=${Date.now()}`;
-    const fallbackCheckoutUrl = `${baseUrl}/payment-verify?pack=${packKey}&ref=${reference}&initiate=true&_t=${Date.now()}`;
-
-    try {
-      const { initiateFapshiPayment } = await import("@/lib/fapshi");
-      const fapshiRes = await initiateFapshiPayment({
-        amount: packConfig.amount,
-        email: cleanEmail,
-        externalId: reference,
-        message: `Abonnement ${packConfig.name} - TCF Canada Pro`,
-        redirectUrl: redirectUrl,
-        pack: packKey as any,
-        userId,
-      });
-
-      if (fapshiRes.transId) {
-        try {
-          await supabase.from("transactions")
-            .update({ provider_transaction_id: fapshiRes.transId })
-            .eq("reference", reference);
-        } catch (e) {
-          console.error("[Register] Fapshi transRef update:", safeStr(e));
-        }
-      }
-
-      return NextResponse.json({
-        success: true,
-        link: fapshiRes.paymentUrl || fallbackCheckoutUrl,
-        transId: fapshiRes.transId || reference,
-        reference,
-        user: { id: userId, email: cleanEmail },
-      });
-    } catch (fapshiErr) {
-      console.error("[Register] Fapshi initiation error:", safeStr(fapshiErr));
-      return NextResponse.json({
-        success: true,
-        link: fallbackCheckoutUrl,
-        transId: reference,
-        reference,
-        user: { id: userId, email: cleanEmail },
-        message: "Compte créé avec succès. Veuillez procéder au paiement.",
-      });
-    }
+    // ── Initiation Fapshi désactivée pour accélérer la création ──
+    // La logique SaaS veut maintenant que le compte soit créé rapidement,
+    // puis l'utilisateur se connecte et suit le processus de mise à niveau.
+    return NextResponse.json({
+      success: true,
+      reference,
+      user: { id: userId, email: cleanEmail },
+      message: "Votre compte a été créé ! Connectez-vous à votre compte, puis suivez le processus de mise à niveau pour obtenir votre accès définitif."
+    });
   } catch (err) {
     const msg = safeStr(err);
     console.error("[Register] Erreur globale:", msg);

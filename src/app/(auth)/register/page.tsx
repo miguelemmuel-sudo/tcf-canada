@@ -548,6 +548,8 @@ export default function RegisterPage() {
               </div>
             </div>
           )}
+          </>
+          )}
 
           {/* Toggle Login Link */}
           <div className="text-center pt-2 border-t border-slate-100 dark:border-slate-800">
