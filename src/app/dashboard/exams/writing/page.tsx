@@ -199,7 +199,7 @@ export default function WritingExamPage() {
   const task = TASKS[currentTask];
 
   const handleAICorrection = useCallback(async () => {
-    if (!texts[currentTask].trim()) return;
+    if (!(texts[currentTask] || "").trim()) return;
     setAiLoading(true);
     setAiFeedback(null);
     try {
@@ -396,7 +396,7 @@ export default function WritingExamPage() {
               }`}
             >
               Tâche {i + 1}
-              {texts[i].trim() && i !== currentTask && (
+              {(texts[i] || "").trim() && i !== currentTask && (
                 <CheckCircle2 className="h-3 w-3 inline ml-1.5 text-emerald-500" />
               )}
             </button>
@@ -465,7 +465,7 @@ export default function WritingExamPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <textarea
-              value={texts[currentTask]}
+              value={texts[currentTask] || ""}
               onChange={(e) => {
                 const newTexts = [...texts];
                 newTexts[currentTask] = e.target.value;
@@ -476,7 +476,7 @@ export default function WritingExamPage() {
               className="w-full h-64 resize-none rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-4 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
             />
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="flex-1" onClick={handleAICorrection} disabled={aiLoading || !texts[currentTask].trim()}>
+              <Button variant="outline" size="sm" className="flex-1" onClick={handleAICorrection} disabled={aiLoading || !(texts[currentTask] || "").trim()}>
                 {aiLoading
                   ? <><span className="animate-spin inline-block mr-2">⚙</span> Analyse en cours...</>
                   : <><BrainCircuit className="h-3.5 w-3.5 mr-1.5" /> Corriger par IA</>}
