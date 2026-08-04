@@ -175,7 +175,7 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
               </div>
             </div>
 
-            <button onClick={onClose} disabled={loading} className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 shrink-0 ml-2">
+            <button onClick={onClose} disabled={loadingProvider !== null} className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 shrink-0 ml-2">
               <X className="h-5 w-5" />
             </button>
           </div>
