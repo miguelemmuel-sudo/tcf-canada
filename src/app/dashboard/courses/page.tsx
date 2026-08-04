@@ -15,10 +15,10 @@ import { getModulesForPack } from "@/utils/curriculumEngine";
 
 const courseCategories = [
   { name: "Tous les cours", href: "/dashboard/courses" },
-  { name: "Compréhension orale", href: "/dashboard/courses/listening" },
-  { name: "Compréhension écrite", href: "/dashboard/courses/reading" },
-  { name: "Expression écrite", href: "/dashboard/courses/writing" },
-  { name: "Expression orale", href: "/dashboard/courses/speaking" }
+  { name: "Compréhension orale", href: "/dashboard/courses/listening?v=2" },
+  { name: "Compréhension écrite", href: "/dashboard/courses/reading?v=2" },
+  { name: "Expression écrite", href: "/dashboard/courses/writing?v=2" },
+  { name: "Expression orale", href: "/dashboard/courses/speaking?v=2" }
 ];
 
 const defaultCoursesList = [
@@ -31,7 +31,7 @@ const defaultCoursesList = [
     lessons: "0 / 8 leçons",
     bgColor: "bg-blue-600",
     icon: Volume2,
-    href: "/dashboard/courses/listening",
+    href: "/dashboard/courses/listening?v=2",
     color: "blue",
     lessons_list: [
       { id: 1, title: "Introduction à la CO TCF", duration: "12 min", done: false },
@@ -53,7 +53,7 @@ const defaultCoursesList = [
     lessons: "0 / 10 leçons",
     bgColor: "bg-emerald-600",
     icon: BookOpen,
-    href: "/dashboard/courses/reading",
+    href: "/dashboard/courses/reading?v=2",
     color: "emerald",
     lessons_list: [
       { id: 1, title: "Stratégies de lecture rapide", duration: "10 min", done: false },
@@ -77,7 +77,7 @@ const defaultCoursesList = [
     lessons: "0 / 10 leçons",
     bgColor: "bg-amber-500",
     icon: PenTool,
-    href: "/dashboard/courses/writing",
+    href: "/dashboard/courses/writing?v=2",
     color: "amber",
     lessons_list: [
       { id: 1, title: "Structure d'un courriel formel", duration: "12 min", done: false },
@@ -101,7 +101,7 @@ const defaultCoursesList = [
     lessons: "0 / 10 leçons",
     bgColor: "bg-purple-600",
     icon: Mic,
-    href: "/dashboard/courses/speaking",
+    href: "/dashboard/courses/speaking?v=2",
     color: "purple",
     lessons_list: [
       { id: 1, title: "Techniques de prise de parole", duration: "12 min", done: false },

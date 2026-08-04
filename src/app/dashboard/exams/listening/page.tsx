@@ -556,7 +556,7 @@ export default function ListeningExamPage() {
 
         <CardContent className="pt-6 space-y-6">
           <h3 className="font-extrabold text-base text-slate-900 dark:text-white leading-relaxed">
-            {currentQuestionData.text}
+            {currentQuestionData.text || (currentQuestionData as any).question}
           </h3>
 
           {/* Options */}

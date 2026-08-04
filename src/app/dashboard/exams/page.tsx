@@ -19,10 +19,10 @@ import { getCurrentUserPack, PACK_CONFIGS, getExamBadgeDurationText } from "@/ut
 
 const testsCategories = [
   { name: "Tous les tests", href: "/dashboard/exams" },
-  { name: "Compréhension orale", href: "/dashboard/exams/listening" },
-  { name: "Compréhension écrite", href: "/dashboard/exams/reading" },
-  { name: "Expression écrite", href: "/dashboard/exams/writing" },
-  { name: "Expression orale", href: "/dashboard/exams/speaking" }
+  { name: "Compréhension orale", href: "/dashboard/exams/listening?v=2" },
+  { name: "Compréhension écrite", href: "/dashboard/exams/reading?v=2" },
+  { name: "Expression écrite", href: "/dashboard/exams/writing?v=2" },
+  { name: "Expression orale", href: "/dashboard/exams/speaking?v=2" }
 ];
 
 export default function TestsPage() {
@@ -192,7 +192,7 @@ export default function TestsPage() {
             </p>
           </div>
 
-          <Link href="/dashboard/exams/listening" className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-2">
+          <Link href="/dashboard/exams/listening?v=2" className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-2">
             <span>Démarrer le test de Compréhension Orale</span>
             <ChevronRight className="h-4 w-4" />
           </Link>
@@ -215,7 +215,7 @@ export default function TestsPage() {
             </p>
           </div>
 
-          <Link href="/dashboard/exams/reading" className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-2">
+          <Link href="/dashboard/exams/reading?v=2" className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-2">
             <span>Démarrer le test de Compréhension Écrite</span>
             <ChevronRight className="h-4 w-4" />
           </Link>
@@ -238,7 +238,7 @@ export default function TestsPage() {
             </p>
           </div>
 
-          <Link href="/dashboard/exams/writing" className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs transition-colors flex items-center justify-center gap-2">
+          <Link href="/dashboard/exams/writing?v=2" className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs transition-colors flex items-center justify-center gap-2">
             <span>Démarrer l'Expression Écrite</span>
             <ChevronRight className="h-4 w-4" />
           </Link>
@@ -261,7 +261,7 @@ export default function TestsPage() {
             </p>
           </div>
 
-          <Link href="/dashboard/exams/speaking" className="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-2">
+          <Link href="/dashboard/exams/speaking?v=2" className="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-2">
             <span>Démarrer l'Expression Orale</span>
             <ChevronRight className="h-4 w-4" />
           </Link>

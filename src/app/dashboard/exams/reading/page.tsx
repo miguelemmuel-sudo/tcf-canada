@@ -433,7 +433,7 @@ export default function ReadingExamPage() {
                 <span>Total répondu : {answeredCount}/{totalQuestions}</span>
               </div>
               <CardTitle className="text-sm font-extrabold text-slate-900 dark:text-white leading-relaxed">
-                {question.text}
+                {question.text || (question as any).question}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">

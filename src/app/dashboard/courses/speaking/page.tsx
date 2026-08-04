@@ -301,7 +301,7 @@ export default function SpeakingCoursePage() {
         {/* Tips */}
         <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-4 space-y-2">
           <p className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Conseils</p>
-          {lesson.tips.map((tip, i) => (
+          {(lesson.tips || []).map((tip: string, i: number) => (
             <div key={i} className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400">
               <span className="text-purple-500 mt-0.5">•</span> {tip}
             </div>
