@@ -36,6 +36,10 @@ export async function initiateChariowPayment({
     email: email || "candidat@griffondortcfcanada.com",
     first_name: "Candidat",
     last_name: "TCF",
+    phone: {
+      number: "000000000",
+      country_code: "+237"
+    },
     redirect_url: redirectUrl,
     metadata: {
       user_id: userId,
