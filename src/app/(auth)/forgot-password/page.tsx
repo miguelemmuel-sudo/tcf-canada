@@ -69,7 +69,9 @@ export default function ForgotPasswordPage() {
     }
 
     try {
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim());
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
+      });
 
       if (resetError) throw resetError;
 
@@ -184,7 +186,7 @@ export default function ForgotPasswordPage() {
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
               {step === "email" && "Entrez votre e-mail pour recevoir un code de réinitialisation à 6 chiffres."}
-              {step === "code" && `Saisissez le code à 6 chiffres envoyé à ${email}.`}
+              {step === "code" && `Si cette adresse est associée à un compte, un e-mail a été envoyé. Saisissez le code reçu ou cliquez sur le lien dans l'e-mail.`}
               {step === "newPassword" && "Créez votre nouveau mot de passe sécurisé."}
               {step === "success" && "Votre mot de passe a été réinitialisé avec succès !"}
             </p>
@@ -297,7 +299,7 @@ export default function ForgotPasswordPage() {
                     required
                     value={inputCode}
                     onChange={(e) => setInputCode(e.target.value.replace(/\D/g, ""))}
-                    placeholder="123456"
+                    placeholder="123456 (ou cliquez sur le lien reçu)"
                     className="w-full pl-10 pr-4 py-3 text-center font-mono text-xl tracking-[0.4em] rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all"
                   />
                 </div>
