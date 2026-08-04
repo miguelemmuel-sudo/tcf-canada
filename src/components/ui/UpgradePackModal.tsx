@@ -62,6 +62,43 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
     }
   };
 
+  // 1b. Initialisation du paiement Chariow
+  const handleChariowPayment = async () => {
+    setLoading(true);
+    setErrorMsg(null);
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        onClose();
+        router.push(`/login?redirect=/dashboard/payments`);
+        return;
+      }
+
+      const res = await fetch("/api/chariow/initiate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pack: selectedPack,
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.paymentUrl) {
+        throw new Error(data.error || "Impossible d'initialiser le paiement avec Chariow.");
+      }
+
+      window.location.href = data.paymentUrl;
+
+    } catch (e: any) {
+      console.error("Erreur Chariow Initiate:", e);
+      setErrorMsg(e.message || "Erreur de communication avec la passerelle de paiement Chariow.");
+      setLoading(false);
+    }
+  };
+
   // 2. Contournement Admin gratuit pour vos tests rapides de contenu
   const handleAdminFreeBypass = async () => {
     setLoading(true);
@@ -189,7 +226,7 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
           <div className="bg-slate-50 dark:bg-slate-900/80 rounded-2xl p-3.5 border border-slate-200/60 dark:border-slate-800 flex items-center gap-3 text-[11px] sm:text-xs text-slate-600 dark:text-slate-400">
             <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600 shrink-0" />
             <p className="leading-relaxed">
-              <strong className="font-bold text-slate-900 dark:text-white block">Paiement 100% sécurisé via Fapshi :</strong>
+              <strong className="font-bold text-slate-900 dark:text-white block">Paiement 100% sécurisé via Fapshi ou Chariow :</strong>
               Accepte MTN Mobile Money, Orange Money. Conservation de tous vos acquis.
             </p>
           </div>
@@ -227,21 +264,12 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
               </button>
             </div>
           ) : (
-            <div className="flex gap-2 sm:gap-3">
-              <button
-                type="button"
-                onClick={onClose}
-                disabled={loading}
-                className="py-3 px-4 sm:px-5 rounded-2xl border border-slate-200 dark:border-slate-800 font-bold text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 shrink-0"
-              >
-                Annuler
-              </button>
-
+            <div className="flex flex-col gap-2 sm:gap-3">
               <button
                 type="button"
                 onClick={handleFapshiPayment}
                 disabled={loading}
-                className="flex-1 py-3 sm:py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-1.5 sm:gap-2 disabled:opacity-50 overflow-hidden"
+                className="w-full py-3 sm:py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-1.5 sm:gap-2 disabled:opacity-50 overflow-hidden"
               >
                 {loading ? (
                   <>
@@ -255,6 +283,35 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
                     <ArrowRight className="h-4 w-4 text-slate-950 shrink-0" />
                   </>
                 )}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleChariowPayment}
+                disabled={loading}
+                className="w-full py-3 sm:py-3.5 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-black text-xs sm:text-sm shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-1.5 sm:gap-2 disabled:opacity-50 overflow-hidden"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin text-white shrink-0" />
+                    <span className="truncate">Redirection Chariow...</span>
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="h-4 w-4 text-white shrink-0" />
+                    <span className="truncate">S'abonner via Chariow ({PACK_CONFIGS[selectedPack].price})</span>
+                    <ArrowRight className="h-4 w-4 text-white shrink-0" />
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={loading}
+                className="w-full mt-2 py-2 px-4 sm:px-5 rounded-2xl border border-slate-200 dark:border-slate-800 font-bold text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 shrink-0"
+              >
+                Annuler
               </button>
             </div>
           )}
