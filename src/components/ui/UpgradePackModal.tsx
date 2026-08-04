@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Crown, Sparkles, X, ArrowRight, ShieldCheck, CreditCard, AlertCircle, Loader2 } from "lucide-react";
 import { PackType, PACK_CONFIGS, setUserPack, isUserAdmin } from "@/utils/subscriptionEngine";
