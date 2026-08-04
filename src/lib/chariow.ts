@@ -65,9 +65,13 @@ export async function initiateChariowPayment({
       throw new Error(data.message || data.error || "Erreur de communication avec Chariow.");
     }
 
+    // L'API Chariow renvoie souvent un objet `data` imbriqué
+    const nestedData = data.data || data;
+    const paymentInfo = nestedData.payment || nestedData;
+
     return {
-      paymentUrl: data.checkout_url || data.url || data.paymentUrl || data.link, 
-      transId: data.transaction_id || data.id || externalId,
+      paymentUrl: paymentInfo.checkout_url || paymentInfo.url || paymentInfo.paymentUrl || paymentInfo.link, 
+      transId: paymentInfo.transaction_id || paymentInfo.id || externalId,
     };
   } catch (error: any) {
     console.error("[Chariow] Exception:", error.message);
