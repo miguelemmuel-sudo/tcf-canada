@@ -100,9 +100,8 @@ const AI_TIPS = [
 
 export default function ListeningCoursePage() {
   const { pack, mounted } = useUserPack();
-  const LESSONS = React.useMemo(() => generateLessonsForPack(BASE_LESSONS, pack, PACK_CONFIGS[pack], "listening"), [pack]);
-
   const [currentLesson, setCurrentLesson] = useState(0);
+  const LESSONS = React.useMemo(() => generateLessonsForPack(BASE_LESSONS, pack, PACK_CONFIGS[pack], "listening", currentLesson), [pack, currentLesson]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showAITips, setShowAITips] = useState(true);
@@ -312,20 +311,33 @@ export default function ListeningCoursePage() {
         </button>
 
         <div className="flex items-center gap-1.5 overflow-x-auto py-1 flex-1 justify-center">
-          {LESSONS.map((l: any, i: number) => {
-            return (
-              <button key={l.id || i} onClick={() => { setCurrentLesson(i); setAnswers({}); setShowResults(false); stopAudio(); }}
-                className={`px-3.5 py-1.5 rounded-lg text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
-                  i === currentLesson
-                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25 border border-blue-400"
-                    : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 hover:border-blue-400 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400"
-                }`}
-              >
-                {l.done && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />}
-                <span>Leçon {i + 1}</span>
-              </button>
-            );
-          })}
+          {(() => {
+            const total = LESSONS.length;
+            const getPages = () => {
+              if (total <= 7) return Array.from({length: total}, (_, i) => i);
+              if (currentLesson <= 3) return [0, 1, 2, 3, 4, -1, total - 1];
+              if (currentLesson >= total - 4) return [0, -1, total - 5, total - 4, total - 3, total - 2, total - 1];
+              return [0, -1, currentLesson - 1, currentLesson, currentLesson + 1, -1, total - 1];
+            };
+            
+            return getPages().map((i, idx) => {
+              if (i === -1) return <span key={`ellipsis-${idx}`} className="px-2 text-slate-400 font-bold">...</span>;
+              const l = LESSONS[i];
+              if (!l) return null;
+              return (
+                <button key={l.id || i} onClick={() => { setCurrentLesson(i); setAnswers({}); setShowResults(false); stopAudio(); }}
+                  className={`px-3.5 py-1.5 rounded-lg text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                    i === currentLesson
+                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25 border border-blue-400"
+                      : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 hover:border-blue-400 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400"
+                  }`}
+                >
+                  {l.done && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />}
+                  <span>Leçon {i + 1}</span>
+                </button>
+              );
+            });
+          })()}
         </div>
 
         <button

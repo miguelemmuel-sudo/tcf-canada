@@ -21,7 +21,8 @@ export function generateLessonsForPack(
   baseLessons: any[],
   currentPack: PackType,
   packConfig: PackPermissions,
-  type: "listening" | "reading" | "writing" | "speaking" = "listening"
+  type: "listening" | "reading" | "writing" | "speaking" = "listening",
+  currentLessonIndex?: number
 ) {
   let realData: any[] = [];
   if (baseLessons && baseLessons.length > 0) {
@@ -190,24 +191,36 @@ export function generateLessonsForPack(
     };
   };
   const generated = [...filtered];
-  let idCounter = filtered.length > 0 ? filtered[filtered.length - 1].id + 1 : 1;
 
   for (let i = filtered.length; i < targetCount; i++) {
-    const synthIndex = i - filtered.length;
-    const modIndex = (i % allowedModules.length);
-    const mod = allowedModules[modIndex];
-    
-    const uniqueLesson = generateUniqueLesson(
-      i + 1,
-      mod.id,
-      mod.cecrLevel as CECRLevel,
-      type as SkillType,
-      synthIndex
-    );
-    
-    const normalized = normalizeLesson(uniqueLesson, i);
-    normalized._normalized = true;
-    generated.push(sanitizeLessonOrExam(normalized));
+    // Si un index de leçon est spécifié, on génère complètement seulement cette leçon pour économiser la mémoire (JIT).
+    // Les autres leçons reçoivent des objets "bouchons" ultra-légers pour la UI de pagination.
+    if (currentLessonIndex === undefined || i === currentLessonIndex || i < 15) {
+      const synthIndex = i - filtered.length;
+      const modIndex = (i % allowedModules.length);
+      const mod = allowedModules[modIndex];
+      
+      const uniqueLesson = generateUniqueLesson(
+        i + 1,
+        mod.id,
+        mod.cecrLevel as CECRLevel,
+        type as SkillType,
+        synthIndex
+      );
+      
+      const normalized = normalizeLesson(uniqueLesson, i);
+      normalized._normalized = true;
+      generated.push(sanitizeLessonOrExam(normalized));
+    } else {
+      // Bouchon ultra-léger pour ne pas saturer la RAM du mobile
+      generated.push({
+        id: i + 1,
+        title: `Leçon ${i + 1}`,
+        duration: "20 min",
+        isGenerated: true,
+        done: false
+      });
+    }
   }
 
   return generated;
