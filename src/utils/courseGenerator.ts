@@ -195,7 +195,9 @@ export function generateLessonsForPack(
   for (let i = filtered.length; i < targetCount; i++) {
     // Si un index de leçon est spécifié, on génère complètement seulement cette leçon pour économiser la mémoire (JIT).
     // Les autres leçons reçoivent des objets "bouchons" ultra-légers pour la UI de pagination.
-    if (currentLessonIndex === undefined || i === currentLessonIndex || i < 15) {
+    const shouldGenerateFull = (currentLessonIndex !== undefined && i === currentLessonIndex) || (currentLessonIndex === undefined && i < 15);
+    
+    if (shouldGenerateFull) {
       const synthIndex = i - filtered.length;
       const modIndex = (i % allowedModules.length);
       const mod = allowedModules[modIndex];
