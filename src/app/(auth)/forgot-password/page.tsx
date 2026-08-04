@@ -93,7 +93,7 @@ export default function ForgotPasswordPage() {
     const cleanCode = inputCode.replace(/\s/g, "").trim();
 
     if (!cleanCode || cleanCode.length < 6) {
-      setError("Veuillez saisir le code à 6 chiffres reçu par e-mail.");
+      setError("Veuillez saisir le code complet reçu par e-mail.");
       setLoading(false);
       return;
     }
@@ -185,7 +185,7 @@ export default function ForgotPasswordPage() {
               Mot de passe oublié
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              {step === "email" && "Entrez votre e-mail pour recevoir un code de réinitialisation à 6 chiffres."}
+              {step === "email" && "Entrez votre e-mail pour recevoir un code de réinitialisation sécurisé."}
               {step === "code" && `Si cette adresse est associée à un compte, un e-mail a été envoyé. Saisissez le code reçu ou cliquez sur le lien dans l'e-mail.`}
               {step === "newPassword" && "Créez votre nouveau mot de passe sécurisé."}
               {step === "success" && "Votre mot de passe a été réinitialisé avec succès !"}
@@ -251,7 +251,7 @@ export default function ForgotPasswordPage() {
               </div>
 
               <div className="p-3.5 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 rounded-2xl text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                📧 Vous recevrez un <strong>code à 6 chiffres</strong> par e-mail à saisir à l'étape suivante. Ce code fonctionne sur mobile et ordinateur.
+                📧 Vous recevrez un <strong>code de sécurité</strong> par e-mail à saisir à l'étape suivante. Ce code fonctionne sur mobile et ordinateur.
               </div>
 
               <button
@@ -282,25 +282,25 @@ export default function ForgotPasswordPage() {
                   <ShieldCheck className="h-4 w-4" /> Code envoyé à <span className="underline">{email}</span>
                 </p>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-                  Ouvrez votre boîte de réception et saisissez le <strong>code à 6 chiffres</strong> figurant dans l'e-mail de réinitialisation.
+                  Ouvrez votre boîte de réception et saisissez le <strong>code de sécurité</strong> figurant dans l'e-mail de réinitialisation.
                 </p>
               </div>
 
               <div>
-                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 block mb-1.5">
-                  Code de confirmation (6 chiffres)
+                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 block mb-2 text-center">
+                  Code de confirmation
                 </label>
                 <div className="relative">
-                  <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <input
                     type="text"
                     inputMode="numeric"
-                    maxLength={6}
+                    autoComplete="one-time-code"
                     required
                     value={inputCode}
                     onChange={(e) => setInputCode(e.target.value.replace(/\D/g, ""))}
-                    placeholder="123456 (ou cliquez sur le lien reçu)"
-                    className="w-full pl-10 pr-4 py-3 text-center font-mono text-xl tracking-[0.4em] rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all"
+                    maxLength={10}
+                    placeholder="Ex: 25661091 (ou cliquez sur le lien reçu)"
+                    className="w-full pl-4 pr-4 py-3 text-center font-mono text-xl tracking-[0.2em] sm:tracking-[0.4em] rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all"
                   />
                 </div>
               </div>
