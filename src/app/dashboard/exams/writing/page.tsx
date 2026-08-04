@@ -103,7 +103,7 @@ function Timer({ seconds }: { seconds: number }) {
 }
 
 function countWords(text: string): number {
-  return text.trim().split(/\s+/).filter(Boolean).length;
+  return (text || "").trim().split(/\s+/).filter(Boolean).length;
 }
 
 export default function WritingExamPage() {
@@ -116,6 +116,18 @@ export default function WritingExamPage() {
 
   const [currentTask, setCurrentTask] = useState(0);
   const [texts, setTexts] = useState<string[]>(Array(TASKS.length).fill(""));
+
+  // Sécurité : resynchroniser la taille du tableau si le pack change après l'hydratation
+  useEffect(() => {
+    setTexts((prev) => {
+      if (prev.length === TASKS.length) return prev;
+      const newTexts = Array(TASKS.length).fill("");
+      for (let i = 0; i < Math.min(prev.length, TASKS.length); i++) {
+        newTexts[i] = prev[i];
+      }
+      return newTexts;
+    });
+  }, [TASKS.length]);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiFeedback, setAiFeedback] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);

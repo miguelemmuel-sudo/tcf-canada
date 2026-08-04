@@ -162,6 +162,18 @@ export default function ListeningExamPage() {
 
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<(number | null)[]>(Array(QUESTIONS.length).fill(null));
+
+  // Sécurité : resynchroniser la taille du tableau si le pack change après l'hydratation
+  useEffect(() => {
+    setAnswers((prev) => {
+      if (prev.length === QUESTIONS.length) return prev;
+      const newAnswers = Array(QUESTIONS.length).fill(null);
+      for (let i = 0; i < Math.min(prev.length, QUESTIONS.length); i++) {
+        newAnswers[i] = prev[i];
+      }
+      return newAnswers;
+    });
+  }, [QUESTIONS.length]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioProgress, setAudioProgress] = useState(0);
   const [submitted, setSubmitted] = useState(false);
@@ -311,7 +323,7 @@ export default function ListeningExamPage() {
     localStorage.removeItem("tcf_session_listening_exam");
     if (intervalRef.current) clearInterval(intervalRef.current);
 
-    const correctCount = answers.filter((a, i) => a === QUESTIONS[i].correct).length;
+    const correctCount = answers.slice(0, QUESTIONS.length).filter((a, i) => a === QUESTIONS[i]?.correct).length;
     const tcfEvaluation = calculateTcfScore(correctCount, QUESTIONS.length);
 
     try {
@@ -338,7 +350,7 @@ export default function ListeningExamPage() {
     }
   };
 
-  const correctCount = answers.filter((a, i) => a === QUESTIONS[i].correct).length;
+  const correctCount = answers.slice(0, QUESTIONS.length).filter((a, i) => a === QUESTIONS[i]?.correct).length;
   const tcfRes = calculateTcfScore(correctCount, QUESTIONS.length);
   const answeredCount = answers.filter((a) => a !== null).length;
 

@@ -106,6 +106,18 @@ export default function SpeakingExamPage() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiFeedback, setAiFeedback] = useState<string | null>(null);
   const [hasRecording, setHasRecording] = useState<boolean[]>(Array(ORAL_TASKS.length).fill(false));
+
+  // Sécurité : resynchroniser la taille du tableau si le pack change après l'hydratation
+  useEffect(() => {
+    setHasRecording((prev) => {
+      if (prev.length === ORAL_TASKS.length) return prev;
+      const newArr = Array(ORAL_TASKS.length).fill(false);
+      for (let i = 0; i < Math.min(prev.length, ORAL_TASKS.length); i++) {
+        newArr[i] = prev[i];
+      }
+      return newArr;
+    });
+  }, [ORAL_TASKS.length]);
   const [submitted, setSubmitted] = useState(false);
   const [isSpeakingPrompt, setIsSpeakingPrompt] = useState(false);
 
