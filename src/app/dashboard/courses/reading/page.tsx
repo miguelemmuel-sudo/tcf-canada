@@ -87,8 +87,6 @@ export default function ReadingCoursePage() {
   return () => clearInterval(timer);
   }, []);
 
-  if (!mounted) return null;
-
   // Detect Saved Session on Mount
   useEffect(() => {
     const rawSaved = localStorage.getItem("tcf_session_reading_course");
@@ -160,6 +158,8 @@ export default function ReadingCoursePage() {
     tcfScore = "350 / 699 pts";
     tcfBadgeBg = "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300";
   }
+
+  if (!mounted) return null;
 
   return (
     <div className="space-y-6 pb-12 max-w-4xl mx-auto px-2 sm:px-4">

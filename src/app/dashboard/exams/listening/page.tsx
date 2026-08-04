@@ -154,7 +154,6 @@ function Timer({ seconds }: { seconds: number }) {
 // ─── Page principale ──────────────────────────────────────────────────────────
 export default function ListeningExamPage() {
   const { pack, mounted } = useUserPack();
-  if (!mounted) return null;
   const [timeLeft, setTimeLeft] = useState(() => getExamDurationSecondsForPack("griffon", TOTAL_TIME));
   useEffect(() => {
     setTimeLeft(getExamDurationSecondsForPack(pack, TOTAL_TIME));
@@ -342,6 +341,8 @@ export default function ListeningExamPage() {
   const correctCount = answers.filter((a, i) => a === QUESTIONS[i].correct).length;
   const tcfRes = calculateTcfScore(correctCount, QUESTIONS.length);
   const answeredCount = answers.filter((a) => a !== null).length;
+
+  if (!mounted) return null;
 
   // ── Vue résultats (Attestation Officielle TCF Style) ──
   if (showResult) {

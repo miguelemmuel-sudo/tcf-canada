@@ -91,7 +91,6 @@ function Timer({ seconds, color = "text-foreground" }: { seconds: number; color?
 
 export default function SpeakingExamPage() {
   const { pack, mounted } = useUserPack();
-  if (!mounted) return null;
   const [globalTimeLeft, setGlobalTimeLeft] = useState(() => getExamDurationSecondsForPack(getCurrentUserPack(), 40 * 60));
   useEffect(() => {
     const p = getCurrentUserPack();
@@ -440,6 +439,8 @@ export default function SpeakingExamPage() {
       console.warn("Erreur sauvegarde db:", err);
     }
   };
+
+  if (!mounted) return null;
 
   if (submitted) {
     return (

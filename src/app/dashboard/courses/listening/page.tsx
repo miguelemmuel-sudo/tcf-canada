@@ -207,8 +207,6 @@ export default function ListeningCoursePage() {
     return () => stopAudio();
   }, [currentLesson]);
 
-  if (!mounted) return null;
-
   const score = (lesson.questions || []).filter((q: any, i: number) => answers[i] === (typeof q.answer === "number" ? q.answer : q.correct)).length;
   const totalQuestions = (lesson.questions || []).length;
   const percentage = totalQuestions > 0 ? (score / totalQuestions) * 100 : 0;
@@ -235,6 +233,8 @@ export default function ListeningCoursePage() {
     tcfScore = "350 / 699 pts";
     tcfBadgeBg = "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300";
   }
+
+  if (!mounted) return null;
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-12 px-2 sm:px-4">

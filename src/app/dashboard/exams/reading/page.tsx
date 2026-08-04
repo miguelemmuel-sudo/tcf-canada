@@ -104,7 +104,6 @@ function Timer({ seconds }: { seconds: number }) {
 
 export default function ReadingExamPage() {
   const { pack, mounted } = useUserPack();
-  if (!mounted) return null;
   const [timeLeft, setTimeLeft] = useState(() => getExamDurationSecondsForPack("griffon", TOTAL_TIME));
   useEffect(() => {
     setTimeLeft(getExamDurationSecondsForPack(pack, TOTAL_TIME));
@@ -235,6 +234,8 @@ export default function ReadingExamPage() {
   const score = showResult
     ? allQuestions.filter((q) => allAnswers[q.id] === q.correct).length
     : 0;
+
+  if (!mounted) return null;
 
   if (showResult) {
     return (

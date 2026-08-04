@@ -131,8 +131,6 @@ export default function WritingCoursePage() {
   return () => clearInterval(timer);
   }, []);
 
-  if (!mounted) return null;
-
   const lesson = LESSONS[currentLesson];
   const wordCount = countWords(text);
   const wordStatus = wordCount < lesson.minWords ? "under" : wordCount > lesson.maxWords ? "over" : "ok";
@@ -165,6 +163,8 @@ export default function WritingCoursePage() {
   }, [text, pack, lesson, currentLesson, LESSONS.length]);
 
   const reset = () => { setText(""); setAiFeedback(null); setShowModel(false); };
+
+  if (!mounted) return null;
 
   return (
     <div className="space-y-6 pb-12 max-w-4xl mx-auto">

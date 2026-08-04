@@ -117,8 +117,6 @@ export default function SpeakingCoursePage() {
   return () => clearInterval(timer);
   }, []);
 
-  if (!mounted) return null;
-
   const lesson = LESSONS[currentLesson];
 
   const speakPrompt = useCallback(() => {
@@ -176,6 +174,8 @@ export default function SpeakingCoursePage() {
     setRecordState("idle");
     setAiFeedback(null);
   };
+
+  if (!mounted) return null;
 
   return (
     <div className="space-y-6 pb-12 max-w-4xl mx-auto">
