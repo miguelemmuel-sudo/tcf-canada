@@ -1,5 +1,11 @@
 import { PACK_PRICES, PACK_NAMES } from "./fapshi";
 
+export const CHARIOW_PRODUCT_IDS: Record<string, string> = {
+  standard: "prd_2z2jdzpe",
+  griffon: "prd_fr3hvruv",
+  vip: "prd_9djo3fww",
+};
+
 export async function initiateChariowPayment({
   amount,
   email,
@@ -18,27 +24,24 @@ export async function initiateChariowPayment({
   pack: string;
 }) {
   const chariowSecretKey = process.env.CHARIOW_SECRET_KEY;
-  const storeId = process.env.CHARIOW_STORE_ID;
   
   if (!chariowSecretKey) {
     throw new Error("Clé secrète Chariow non configurée.");
   }
 
-  // Construct payload based on standard payment gateways for Chariow
+  const productId = CHARIOW_PRODUCT_IDS[pack] || CHARIOW_PRODUCT_IDS.griffon;
+
   const payload = {
-    amount: amount,
-    currency: "XAF", // Or let it be dynamically passed
-    customer_email: email,
-    customer_name: "Candidat TCF", // Could be dynamically passed
-    description: message,
-    return_url: redirectUrl, // Where user is redirected after payment (Success)
-    cancel_url: `${redirectUrl}&status=canceled`, // Where user is redirected after cancellation
-    reference: externalId,
+    product_id: productId,
+    email: email || "candidat@griffondortcfcanada.com",
+    first_name: "Candidat",
+    last_name: "TCF",
+    redirect_url: redirectUrl,
     metadata: {
       user_id: userId,
       pack: pack,
-    },
-    store_id: storeId, // Often required
+      reference: externalId
+    }
   };
 
   try {
