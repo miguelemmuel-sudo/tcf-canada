@@ -112,6 +112,7 @@ export default function RegisterPage() {
   const [step, setStep] = useState<1 | 2>(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [termsAccepted, setTermsAccepted] = useState(true);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
@@ -243,9 +244,15 @@ export default function RegisterPage() {
         return;
       }
 
-      // Candidat -> Redirection OBLIGATOIRE vers Fapshi / Checkout de paiement
+      // Candidat -> Inscription ultra rapide -> Affichage du message de succès
+      if (data.message) {
+        setSuccessMessage(data.message);
+        setLoading(false);
+        return;
+      }
+
+      // Fallback s'il n'y a pas de message
       const checkoutUrl = data.link || data.redirectTo || `/payment-verify?pack=${selectedPlan}&initiate=true`;
-      console.log("[Inscription] Redirection vers paiement obligatoire:", checkoutUrl);
       window.location.href = checkoutUrl;
 
     } catch (err: any) {
