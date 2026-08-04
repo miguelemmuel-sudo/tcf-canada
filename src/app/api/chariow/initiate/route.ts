@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     const { data: { user: sessionUser } } = await supabase.auth.getUser();
 
     const body = await request.json();
-    const { pack, returnUrl, customMessage, userId: bodyUserId, email: bodyEmail } = body;
+    const { pack, returnUrl, customMessage, userId: bodyUserId, email: bodyEmail, phoneNumber } = body;
 
     let user = sessionUser;
     if (!user && bodyUserId && bodyEmail) {
@@ -92,6 +92,7 @@ export async function POST(request: Request) {
       redirectUrl: finalReturnUrl,
       pack: selectedPackKey,
       userId: user.id,
+      phoneNumber: phoneNumber || "677123456",
     });
 
     if (adminDb && chariowRes.transId) {

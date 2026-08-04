@@ -17,6 +17,7 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
   const [loadingProvider, setLoadingProvider] = useState<"fapshi" | "chariow" | "admin" | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [selectedPack, setSelectedPack] = useState<PackType>(targetPack);
+  const [phoneNumber, setPhoneNumber] = useState("");
   const adminMode = isUserAdmin();
 
   useEffect(() => {
@@ -76,6 +77,12 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
     setLoadingProvider("chariow");
     setErrorMsg(null);
     try {
+      if (!phoneNumber || phoneNumber.trim().length < 9) {
+        setErrorMsg("Veuillez entrer un numéro de téléphone (sans indicatif) pour utiliser Chariow.");
+        setLoadingProvider(null);
+        return;
+      }
+
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
 
@@ -90,6 +97,7 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           pack: selectedPack,
+          phoneNumber: phoneNumber.trim()
         })
       });
 
@@ -298,6 +306,20 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
                   </>
                 )}
               </button>
+
+              <div className="space-y-1 mt-1">
+                <label className="text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 ml-1">
+                  Numéro de téléphone (Requis par Chariow)
+                </label>
+                <input
+                  type="tel"
+                  placeholder="Ex: 690000000 (sans indicatif)"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  disabled={loadingProvider !== null}
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                />
+              </div>
 
               <button
                 type="button"

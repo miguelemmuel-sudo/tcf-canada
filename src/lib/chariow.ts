@@ -14,6 +14,7 @@ export async function initiateChariowPayment({
   redirectUrl,
   userId,
   pack,
+  phoneNumber,
 }: {
   amount: number;
   email: string;
@@ -22,6 +23,7 @@ export async function initiateChariowPayment({
   redirectUrl: string;
   userId: string;
   pack: string;
+  phoneNumber?: string;
 }) {
   const chariowSecretKey = process.env.CHARIOW_SECRET_KEY;
   
@@ -37,7 +39,7 @@ export async function initiateChariowPayment({
     first_name: "Candidat",
     last_name: "TCF",
     phone: {
-      number: "677123456",
+      number: phoneNumber || "677123456",
       country_code: "CM"
     },
     redirect_url: redirectUrl,
