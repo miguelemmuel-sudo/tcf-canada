@@ -37,8 +37,8 @@ export async function initiateChariowPayment({
     first_name: "Candidat",
     last_name: "TCF",
     phone: {
-      number: "690000000",
-      country_code: "+237"
+      number: "677123456",
+      country_code: "CM"
     },
     redirect_url: redirectUrl,
     metadata: {
