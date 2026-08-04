@@ -189,60 +189,28 @@ export function generateLessonsForPack(
       done: !!l.done
     };
   };
-  // Retourner un Proxy Array pour générer paresseusement (lazy loading) les cours
-  // Cela permet d'afficher 5000+ cours sans crasher ou bloquer le navigateur
-  const lazyArray = new Proxy(filtered, {
-    get(target, prop) {
-      if (prop === "length") return targetCount;
-      if (typeof prop === "string" && !isNaN(Number(prop))) {
-        const idx = Number(prop);
-        if (idx < targetCount) {
-          if (idx < target.length) {
-            // S'il est déjà généré ou fait partie des données de base
-            let baseItem = target[idx];
-            if (!baseItem._normalized) {
-              baseItem = normalizeLesson(baseItem, idx);
-              baseItem._normalized = true;
-              target[idx] = sanitizeLessonOrExam(baseItem);
-            }
-            return target[idx];
-          }
-          
-          // Génération paresseuse (à la volée)
-          const synthIndex = idx - target.length;
-          const modIndex = (idx % allowedModules.length);
-          const mod = allowedModules[modIndex];
-          
-          const uniqueLesson = generateUniqueLesson(
-            idx + 1,
-            mod.id,
-            mod.cecrLevel as CECRLevel,
-            type as SkillType,
-            synthIndex
-          );
-          
-          const normalized = normalizeLesson(uniqueLesson, idx);
-          normalized._normalized = true;
-          const sanitized = sanitizeLessonOrExam(normalized);
-          
-          // Mettre en cache
-          target[idx] = sanitized;
-          return sanitized;
-        }
-      }
-      // Support for map, filter, etc. which some UI components might use:
-      // Note: mapping over 5000 items still might be slow, so UI should be paginated
-      return Reflect.get(target, prop);
-    },
-    has(target, prop) {
-      if (typeof prop === "string" && !isNaN(Number(prop))) {
-        return Number(prop) < targetCount;
-      }
-      return Reflect.has(target, prop);
-    }
-  });
+  const generated = [...filtered];
+  let idCounter = filtered.length > 0 ? filtered[filtered.length - 1].id + 1 : 1;
 
-  return lazyArray;
+  for (let i = filtered.length; i < targetCount; i++) {
+    const synthIndex = i - filtered.length;
+    const modIndex = (i % allowedModules.length);
+    const mod = allowedModules[modIndex];
+    
+    const uniqueLesson = generateUniqueLesson(
+      i + 1,
+      mod.id,
+      mod.cecrLevel as CECRLevel,
+      type as SkillType,
+      synthIndex
+    );
+    
+    const normalized = normalizeLesson(uniqueLesson, i);
+    normalized._normalized = true;
+    generated.push(sanitizeLessonOrExam(normalized));
+  }
+
+  return generated;
 }
 
 /**

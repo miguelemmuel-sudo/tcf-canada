@@ -365,6 +365,13 @@ export default function CoursesPage() {
                         </div>
                       </div>
                     ))}
+                    {course.lessons && parseInt(course.lessons.split(" / ")[1]) > course.lessons_list.length && (
+                      <div className="flex justify-center p-3 mt-2">
+                        <Link href={course.href} className={`text-sm font-bold ${c.text} hover:underline`}>
+                          + {parseInt(course.lessons.split(" / ")[1]) - course.lessons_list.length} autres leçons (Voir tout)
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
