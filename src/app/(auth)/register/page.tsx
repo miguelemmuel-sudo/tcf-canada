@@ -289,20 +289,39 @@ export default function RegisterPage() {
           transition={{ duration: 0.4 }}
           className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-8 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-200/80 dark:border-slate-800 space-y-5 sm:space-y-6"
         >
-          {/* Card Header Icon & Title */}
-          <div className="flex items-start gap-4">
-            <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-2xl bg-gradient-to-br from-amber-400/20 via-yellow-500/20 to-amber-600/10 border border-amber-400/60 flex items-center justify-center text-amber-500 dark:text-yellow-400 shadow-lg shadow-amber-500/25 shrink-0">
-              <User className="h-5 w-5 sm:h-6 sm:w-6 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
-            </div>
-            <div>
-              <h2 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-                Créez votre compte <span className="text-lg sm:text-xl">👋</span>
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                {step === 1 ? "Étape 1 sur 2 : Vos informations personnelles" : "Étape 2 sur 2 : Choix de votre formule"}
+          {successMessage ? (
+            <div className="py-8 flex flex-col items-center text-center space-y-5 animate-in fade-in zoom-in duration-500">
+              <div className="h-24 w-24 rounded-full bg-emerald-100 dark:bg-emerald-950/50 flex items-center justify-center text-emerald-600 mb-2 ring-8 ring-emerald-50 dark:ring-emerald-900/20">
+                <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-black text-slate-900 dark:text-white">Félicitations !</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-300 font-medium max-w-sm mx-auto leading-relaxed">
+                {successMessage}
               </p>
+              <div className="pt-6 w-full">
+                <Link href="/login" className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold text-sm shadow-xl transition-all">
+                  Se connecter à mon compte
+                </Link>
+              </div>
             </div>
-          </div>
+          ) : (
+            <>
+              {/* Card Header Icon & Title */}
+              <div className="flex items-start gap-4">
+                <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-2xl bg-gradient-to-br from-amber-400/20 via-yellow-500/20 to-amber-600/10 border border-amber-400/60 flex items-center justify-center text-amber-500 dark:text-yellow-400 shadow-lg shadow-amber-500/25 shrink-0">
+                  <User className="h-5 w-5 sm:h-6 sm:w-6 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
+                </div>
+                <div>
+                  <h2 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                    Créez votre compte <span className="text-lg sm:text-xl">👋</span>
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                    {step === 1 ? "Étape 1 sur 2 : Vos informations personnelles" : "Étape 2 sur 2 : Choix de votre formule"}
+                  </p>
+                </div>
+              </div>
 
           {/* Stepper Indicator */}
           <div className="flex items-center gap-2 sm:gap-3 pt-1 pb-2">
