@@ -14,23 +14,32 @@ interface UpgradePackModalProps {
 
 export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: UpgradePackModalProps) {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [loadingProvider, setLoadingProvider] = useState<"fapshi" | "chariow" | "admin" | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [selectedPack, setSelectedPack] = useState<PackType>(targetPack);
   const adminMode = isUserAdmin();
+
+  useEffect(() => {
+    if (isOpen) {
+      setErrorMsg(null);
+      setLoadingProvider(null);
+      if (targetPack) {
+        setSelectedPack(targetPack);
+      }
+    }
+  }, [isOpen, targetPack]);
 
   if (!isOpen) return null;
 
   // 1. Initialisation officielle du paiement Fapshi (Mode Candidat et Mode Test Réel Admin)
   const handleFapshiPayment = async () => {
-    setLoading(true);
+    setLoadingProvider("fapshi");
     setErrorMsg(null);
     try {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) {
-        // Si l'utilisateur n'est pas connecté, on le redirige vers la connexion / inscription
         onClose();
         router.push(`/login?redirect=/dashboard/payments`);
         return;
@@ -58,13 +67,13 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
     } catch (e: any) {
       console.error("Erreur Fapshi Initiate:", e);
       setErrorMsg(e.message || "Erreur de communication avec la passerelle de paiement Fapshi.");
-      setLoading(false);
+      setLoadingProvider(null);
     }
   };
 
   // 1b. Initialisation du paiement Chariow
   const handleChariowPayment = async () => {
-    setLoading(true);
+    setLoadingProvider("chariow");
     setErrorMsg(null);
     try {
       const supabase = createClient();
@@ -87,7 +96,7 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
       const data = await res.json();
 
       if (!res.ok || !data.paymentUrl) {
-        throw new Error(data.error || "Impossible d'initialiser le paiement avec Chariow.");
+        throw new Error(data.error || "Impossible d'initialiser le paiement Chariow : " + (data.error || ""));
       }
 
       window.location.href = data.paymentUrl;
@@ -95,13 +104,13 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
     } catch (e: any) {
       console.error("Erreur Chariow Initiate:", e);
       setErrorMsg(e.message || "Erreur de communication avec la passerelle de paiement Chariow.");
-      setLoading(false);
+      setLoadingProvider(null);
     }
   };
 
   // 2. Contournement Admin gratuit pour vos tests rapides de contenu
   const handleAdminFreeBypass = async () => {
-    setLoading(true);
+    setLoadingProvider("admin");
     setErrorMsg(null);
     try {
       setUserPack(selectedPack);
@@ -109,33 +118,34 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        await supabase
-          .from("profiles")
-          .update({ subscription_type: selectedPack, updated_at: new Date().toISOString() })
-          .eq("id", user.id);
-
-        await supabase
-          .from("subscriptions")
-          .insert({
+        const profRes = await supabase.from("profiles").select("is_admin").eq("id", user.id).single();
+        if (profRes.data?.is_admin) {
+          const { error } = await supabase.from("subscriptions").upsert({
             user_id: user.id,
             pack: selectedPack,
+            plan: selectedPack,
             amount: "0",
-            currency: "FCFA",
+            currency: "XAF",
             status: "active",
             started_at: new Date().toISOString(),
-            expires_at: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString()
-          });
+            expires_at: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(),
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'user_id' });
+          
+          await supabase.from("profiles").update({ subscription_type: selectedPack }).eq("id", user.id);
+          
+          if (!error) {
+            window.dispatchEvent(new Event("storage_user_pack_updated"));
+            window.location.reload();
+            return;
+          }
+        }
+        setErrorMsg("Seul un administrateur peut utiliser cette fonction gratuite.");
       }
-
-      // Notifier le tableau de bord et fermer
-      window.dispatchEvent(new Event("storage_user_pack_updated"));
-      setLoading(false);
-      onClose();
-      router.refresh();
     } catch (e: any) {
-      console.error("Erreur bypass admin:", e);
-      setErrorMsg(e.message || "Erreur lors de l'activation.");
-      setLoading(false);
+      setErrorMsg(e.message || "Erreur admin bypass.");
+    } finally {
+      setLoadingProvider(null);
     }
   };
 
@@ -268,10 +278,10 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
               <button
                 type="button"
                 onClick={handleFapshiPayment}
-                disabled={loading}
+                disabled={loadingProvider !== null}
                 className="w-full py-3 sm:py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-1.5 sm:gap-2 disabled:opacity-50 overflow-hidden"
               >
-                {loading ? (
+                {loadingProvider === "fapshi" ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin text-slate-950 shrink-0" />
                     <span className="truncate">Redirection Fapshi...</span>
@@ -288,10 +298,10 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
               <button
                 type="button"
                 onClick={handleChariowPayment}
-                disabled={loading}
+                disabled={loadingProvider !== null}
                 className="w-full py-3 sm:py-3.5 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-black text-xs sm:text-sm shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-1.5 sm:gap-2 disabled:opacity-50 overflow-hidden"
               >
-                {loading ? (
+                {loadingProvider === "chariow" ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin text-white shrink-0" />
                     <span className="truncate">Redirection Chariow...</span>
@@ -308,7 +318,7 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
               <button
                 type="button"
                 onClick={onClose}
-                disabled={loading}
+                disabled={loadingProvider !== null}
                 className="w-full mt-2 py-2 px-4 sm:px-5 rounded-2xl border border-slate-200 dark:border-slate-800 font-bold text-xs text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900 shrink-0"
               >
                 Annuler
