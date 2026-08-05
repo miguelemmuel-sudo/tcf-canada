@@ -55,7 +55,7 @@ function PaymentsContent() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [verifyingPayment, setVerifyingPayment] = useState(false);
-  const [paymentSuccessModal, setPaymentSuccessModal] = useState<{ show: boolean; packName?: string; expiresAt?: string }>({ show: false });
+  const [paymentSuccessModal, setPaymentSuccessModal] = useState<{ show: boolean; packName?: string; expiresAt?: string; countdown?: number }>({ show: false });
 
   // Dynamic user & Fapshi data
   const [userTransactions, setUserTransactions] = useState<Transaction[]>([]);
@@ -177,40 +177,76 @@ function PaymentsContent() {
     loadData();
   }, []);
 
-  // 3. Vérification automatique au retour du paiement Fapshi
+  // 3. Vérification automatique au retour du paiement
   useEffect(() => {
     const reference = searchParams?.get("reference") || searchParams?.get("trxref") || searchParams?.get("ref");
     const statusParam = searchParams?.get("status");
+    let pollingInterval: NodeJS.Timeout;
+    let pollCount = 0;
+    const MAX_POLLS = 10; // 30 seconds (3s * 10)
 
-    if (reference && statusParam === "check" && !verifyingPayment) {
-      setVerifyingPayment(true);
-      fetch(`/api/fapshi/status/${encodeURIComponent(reference)}`)
+    const checkStatus = () => {
+      fetch(`/api/transactions/status/${encodeURIComponent(reference as string)}`)
         .then(res => res.json())
         .then(data => {
           if (data.success && (data.status === "complete" || data.status === "completed" || data.status === "SUCCESSFUL" || data.localStatus === "completed")) {
             setPaymentSuccessModal({
               show: true,
-              packName: "Abonnement Premium TCF",
-              expiresAt: data.paid_at ? "dans 1 ou 2 mois" : "selon le pack"
+              packName: "Abonnement TCF Canada",
+              expiresAt: "selon le pack",
+              countdown: 3
             });
+            clearInterval(pollingInterval);
+            
+            // Lancer le décompte avant redirection automatique
+            let ticks = 3;
+            const timer = setInterval(() => {
+              ticks--;
+              if (ticks <= 0) {
+                clearInterval(timer);
+                window.location.href = "/dashboard";
+              } else {
+                setPaymentSuccessModal(prev => ({ ...prev, countdown: ticks }));
+              }
+            }, 1000);
+
             // Nettoyer l'URL sans recharger la page
             router.replace("/dashboard/payments");
             // Déclencher une actualisation des accès
             window.dispatchEvent(new Event("storage_user_pack_updated"));
-          } else if (data.status === "failed" || data.status === "canceled") {
+          } else if (data.status === "failed" || data.status === "canceled" || data.status === "cancelled") {
+            clearInterval(pollingInterval);
             alert(`Paiement non finalisé (${data.status}). Vous pouvez réessayer à tout moment.`);
             router.replace("/dashboard/payments");
-          } else {
-            // PENDING or other status: clear URL to avoid infinite loop
-            router.replace("/dashboard/payments");
+          } else if (data.status === "pending" || !data.success) {
+            // Continuer le polling
+            pollCount++;
+            if (pollCount >= MAX_POLLS) {
+              clearInterval(pollingInterval);
+              router.replace("/dashboard/payments"); // Stop polling after max attempts
+            }
           }
         })
         .catch(err => {
-          console.error("Erreur vérification retour Fapshi:", err);
-          router.replace("/dashboard/payments"); // clear URL on error to avoid loop
+          console.error("Erreur vérification retour transaction:", err);
+          pollCount++;
+          if (pollCount >= MAX_POLLS) {
+            clearInterval(pollingInterval);
+            router.replace("/dashboard/payments"); // clear URL on error to avoid loop
+          }
         })
         .finally(() => setVerifyingPayment(false));
+    };
+
+    if (reference && statusParam === "check" && !verifyingPayment) {
+      setVerifyingPayment(true);
+      checkStatus(); // Initial check
+      pollingInterval = setInterval(checkStatus, 3000); // Poll every 3 seconds
     }
+
+    return () => {
+      if (pollingInterval) clearInterval(pollingInterval);
+    };
   }, [searchParams, router]);
 
   const totalSpent = userTransactions.reduce((acc, tx) => {
@@ -611,10 +647,15 @@ function PaymentsContent() {
               <Check className="h-8 w-8 stroke-[3]" />
             </div>
             <div className="space-y-2">
-              <h3 className="font-black text-xl text-slate-900 dark:text-white">Paiement Fapshi Confirmé !</h3>
+              <h3 className="font-black text-xl text-slate-900 dark:text-white">Paiement Confirmé !</h3>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                Félicitations ! Votre souscription au <strong>{paymentSuccessModal.packName}</strong> a été validée officiellement par Fapshi. Vos droits d'accès et corrections IA sont débloqués.
+                Félicitations ! Votre souscription au <strong>{paymentSuccessModal.packName}</strong> a été validée officiellement. Vos droits d'accès et corrections IA sont débloqués.
               </p>
+              {paymentSuccessModal.countdown !== undefined && paymentSuccessModal.countdown > 0 && (
+                <p className="text-sm font-bold text-blue-600 mt-2">
+                  Redirection automatique dans {paymentSuccessModal.countdown} seconde(s)...
+                </p>
+              )}
             </div>
             <button
               onClick={() => {
