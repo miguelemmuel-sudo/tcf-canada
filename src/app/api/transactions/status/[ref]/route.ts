@@ -78,7 +78,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ ref:
       status: finalStatus,
       localStatus: localStatus,
       amount: tx.amount,
-      provider: tx.provider
+      provider: tx.provider,
+      pack: tx.pack
     }, { status: 200 });
 
   } catch (err: any) {

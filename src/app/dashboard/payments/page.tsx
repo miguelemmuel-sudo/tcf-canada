@@ -219,6 +219,10 @@ function PaymentsContent() {
 
             // Nettoyer l'URL sans recharger la page
             router.replace("/dashboard/payments");
+            // Mettre à jour le pack en local pour éviter d'attendre le Webhook complet
+            if (typeof window !== "undefined" && data.pack) {
+              localStorage.setItem("griffon_user_plan", data.pack);
+            }
             // Déclencher une actualisation des accès
             window.dispatchEvent(new Event("storage_user_pack_updated"));
           } else if (data.status === "failed" || data.status === "canceled" || data.status === "cancelled") {
