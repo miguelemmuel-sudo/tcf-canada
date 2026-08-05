@@ -179,7 +179,7 @@ function PaymentsContent() {
 
   // 3. Vérification automatique au retour du paiement
   useEffect(() => {
-    const reference = searchParams?.get("reference") || searchParams?.get("trxref") || searchParams?.get("ref");
+    const reference = searchParams?.get("reference") || searchParams?.get("trxref") || searchParams?.get("ref") || searchParams?.get("transaction_id") || searchParams?.get("id");
     const statusParam = searchParams?.get("status");
     let pollingInterval: NodeJS.Timeout;
     let pollCount = 0;
@@ -238,7 +238,7 @@ function PaymentsContent() {
         .finally(() => setVerifyingPayment(false));
     };
 
-    if (reference && statusParam === "check" && !verifyingPayment) {
+    if (reference && !verifyingPayment) {
       setVerifyingPayment(true);
       checkStatus(); // Initial check
       pollingInterval = setInterval(checkStatus, 3000); // Poll every 3 seconds
