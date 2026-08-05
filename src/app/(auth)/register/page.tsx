@@ -15,7 +15,7 @@ const subscriptionPlans = [
   {
     id: "standard",
     name: "Pack Standard",
-    price: "100 FCFA", // TEST MODE
+    price: "15.000 FCFA",
     period: " (Accès 30 jours)",
     description: "La formule idéale pour démarrer votre préparation au TCF Canada.",
     features: [
@@ -29,8 +29,8 @@ const subscriptionPlans = [
   {
     id: "griffon",
     name: "Pack Griffon d'Or",
-    price: "100 FCFA", // TEST MODE
-    period: " (Accès illimité)",
+    price: "25.000 FCFA",
+    period: " (Accès 30 jours)",
     description: "Le pack le plus populaire pour maximiser votre score au TCF.",
     features: [
       "Accès plateforme 30 jours",
