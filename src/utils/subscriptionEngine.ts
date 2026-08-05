@@ -29,7 +29,6 @@ export const PACK_CONFIGS: Record<PackType, PackPermissions> = {
   standard: {
     name: "Pack Standard - Test TCF",
     price: "100 FCFA",
-    priceValue: 100,
     modulesCount: 2,
     coursesCount: 20, // 2 modules x 10 cours exactement = 20 cours au total
     testsCount: 20, // 20 véritables tests d'entraînement (5 CE, 5 CO, 5 EE, 5 EO)
