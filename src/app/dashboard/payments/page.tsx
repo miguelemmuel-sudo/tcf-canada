@@ -189,7 +189,7 @@ function PaymentsContent() {
     const statusParam = searchParams?.get("status");
     let pollingInterval: NodeJS.Timeout;
     let pollCount = 0;
-    const MAX_POLLS = 10; // 30 seconds (3s * 10)
+    const MAX_POLLS = 40; // 2 minutes (3s * 40)
 
     const checkStatus = () => {
       fetch(`/api/transactions/status/${encodeURIComponent(reference as string)}`)
@@ -203,6 +203,7 @@ function PaymentsContent() {
               countdown: 3
             });
             clearInterval(pollingInterval);
+            setVerifyingPayment(false);
             
             // Lancer le décompte avant redirection automatique
             let ticks = 3;
@@ -230,13 +231,16 @@ function PaymentsContent() {
             if (typeof window !== "undefined") localStorage.removeItem("pending_tx_ref");
             alert(`Paiement non finalisé (${data.status}). Vous pouvez réessayer à tout moment.`);
             router.replace("/dashboard/payments");
+            setVerifyingPayment(false);
           } else if (data.status === "pending" || !data.success) {
             // Continuer le polling
             pollCount++;
             if (pollCount >= MAX_POLLS) {
               clearInterval(pollingInterval);
               if (typeof window !== "undefined") localStorage.removeItem("pending_tx_ref");
+              alert("Le paiement est toujours en cours de validation par l'opérateur. Si votre compte a été débité, le pack sera activé d'ici quelques minutes. Contactez le support en cas de besoin.");
               router.replace("/dashboard/payments"); // Stop polling after max attempts
+              setVerifyingPayment(false);
             }
           }
         })
@@ -246,10 +250,11 @@ function PaymentsContent() {
           if (pollCount >= MAX_POLLS) {
             clearInterval(pollingInterval);
             if (typeof window !== "undefined") localStorage.removeItem("pending_tx_ref");
+            alert("Erreur de connexion. Veuillez rafraîchir la page pour vérifier si votre paiement a abouti.");
             router.replace("/dashboard/payments"); // clear URL on error to avoid loop
+            setVerifyingPayment(false);
           }
-        })
-        .finally(() => setVerifyingPayment(false));
+        });
     };
 
     if (reference && !verifyingPayment) {
@@ -797,6 +802,18 @@ function PaymentsContent() {
       )}
 
       <UpgradePackModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} targetPack={targetUpgradePack} />
+
+      {verifyingPayment && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-2xl flex flex-col items-center max-w-sm w-full mx-4 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500 mb-4"></div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Validation du paiement...</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+              Nous vérifions l'état de votre transaction. Veuillez ne pas quitter cette page.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
