@@ -56,6 +56,8 @@ function PaymentsContent() {
   const [loading, setLoading] = useState(true);
   const [verifyingPayment, setVerifyingPayment] = useState(false);
   const [paymentSuccessModal, setPaymentSuccessModal] = useState<{ show: boolean; packName?: string; expiresAt?: string; countdown?: number }>({ show: false });
+  const [paymentErrorModal, setPaymentErrorModal] = useState<{ show: boolean; message: string }>({ show: false, message: "" });
+  const [paymentTimeoutModal, setPaymentTimeoutModal] = useState<{ show: boolean }>({ show: false });
 
   // Dynamic user & Fapshi data
   const [userTransactions, setUserTransactions] = useState<Transaction[]>([]);
@@ -196,51 +198,32 @@ function PaymentsContent() {
         .then(res => res.json())
         .then(data => {
           if (data.success && (data.status === "complete" || data.status === "completed" || data.status === "SUCCESSFUL" || data.localStatus === "completed")) {
-            setPaymentSuccessModal({
-              show: true,
-              packName: "Abonnement TCF Canada",
-              expiresAt: "selon le pack",
-              countdown: 3
-            });
             clearInterval(pollingInterval);
             setVerifyingPayment(false);
+            if (typeof window !== "undefined") localStorage.removeItem("pending_tx_ref");
             
-            // Lancer le décompte avant redirection automatique
-            let ticks = 3;
-            const timer = setInterval(() => {
-              ticks--;
-              if (ticks <= 0) {
-                clearInterval(timer);
-                if (typeof window !== "undefined") localStorage.removeItem("pending_tx_ref");
-                window.location.href = "/dashboard";
-              } else {
-                setPaymentSuccessModal(prev => ({ ...prev, countdown: ticks }));
-              }
-            }, 1000);
-
-            // Nettoyer l'URL sans recharger la page
-            router.replace("/dashboard/payments");
-            // Mettre à jour le pack en local pour éviter d'attendre le Webhook complet
+            // Mettre à jour le pack en local
             if (typeof window !== "undefined" && data.pack) {
               localStorage.setItem("griffon_user_plan", data.pack);
             }
-            // Déclencher une actualisation des accès
             window.dispatchEvent(new Event("storage_user_pack_updated"));
+            
+            // Redirection immédiate sans compte à rebours
+            window.location.href = "/dashboard";
           } else if (data.status === "failed" || data.status === "canceled" || data.status === "cancelled") {
             clearInterval(pollingInterval);
             if (typeof window !== "undefined") localStorage.removeItem("pending_tx_ref");
-            alert(`Paiement non finalisé (${data.status}). Vous pouvez réessayer à tout moment.`);
-            router.replace("/dashboard/payments");
             setVerifyingPayment(false);
+            setPaymentErrorModal({ show: true, message: `Paiement non finalisé (${data.status}). Votre compte n'a pas été débité.` });
+            router.replace("/dashboard/payments");
           } else if (data.status === "pending" || !data.success) {
             // Continuer le polling
             pollCount++;
             if (pollCount >= MAX_POLLS) {
               clearInterval(pollingInterval);
-              if (typeof window !== "undefined") localStorage.removeItem("pending_tx_ref");
-              alert("Le paiement est toujours en cours de validation par l'opérateur. Si votre compte a été débité, le pack sera activé d'ici quelques minutes. Contactez le support en cas de besoin.");
-              router.replace("/dashboard/payments"); // Stop polling after max attempts
               setVerifyingPayment(false);
+              setPaymentTimeoutModal({ show: true });
+              router.replace("/dashboard/payments"); // Arrêter de chercher
             }
           }
         })
@@ -249,10 +232,9 @@ function PaymentsContent() {
           pollCount++;
           if (pollCount >= MAX_POLLS) {
             clearInterval(pollingInterval);
-            if (typeof window !== "undefined") localStorage.removeItem("pending_tx_ref");
-            alert("Erreur de connexion. Veuillez rafraîchir la page pour vérifier si votre paiement a abouti.");
-            router.replace("/dashboard/payments"); // clear URL on error to avoid loop
             setVerifyingPayment(false);
+            setPaymentTimeoutModal({ show: true });
+            router.replace("/dashboard/payments"); // Arrêter de chercher
           }
         });
     };
@@ -260,7 +242,7 @@ function PaymentsContent() {
     if (reference && !verifyingPayment) {
       setVerifyingPayment(true);
       checkStatus(); // Initial check
-      pollingInterval = setInterval(checkStatus, 3000); // Poll every 3 seconds
+      pollingInterval = setInterval(checkStatus, 1500); // Poll every 1.5 seconds
     }
 
     return () => {
@@ -811,6 +793,63 @@ function PaymentsContent() {
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
               Nous vérifions l'état de votre transaction. Veuillez ne pas quitter cette page.
             </p>
+          </div>
+        </div>
+      )}
+
+      {paymentErrorModal.show && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-2xl flex flex-col items-center max-w-md w-full mx-4 text-center">
+            <div className="h-16 w-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4">
+              <X className="h-8 w-8 text-red-600 dark:text-red-500" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Paiement Échoué</h3>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
+              {paymentErrorModal.message}
+            </p>
+            <button 
+              onClick={() => {
+                setPaymentErrorModal({ show: false, message: "" });
+                window.location.href = "/dashboard/packs";
+              }}
+              className="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold transition-all"
+            >
+              Réessayer le paiement
+            </button>
+          </div>
+        </div>
+      )}
+
+      {paymentTimeoutModal.show && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-2xl flex flex-col items-center max-w-md w-full mx-4 text-center">
+            <div className="h-16 w-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mb-4">
+              <Clock className="h-8 w-8 text-amber-600 dark:text-amber-500" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Délai d'attente dépassé</h3>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
+              La confirmation de votre opérateur prend plus de temps que prévu. Si vous avez été débité, votre pack sera activé automatiquement dans quelques minutes.
+            </p>
+            <div className="flex gap-3 w-full">
+              <button 
+                onClick={() => {
+                  setPaymentTimeoutModal({ show: false });
+                  window.location.reload();
+                }}
+                className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 font-bold transition-all text-sm"
+              >
+                Vérifier à nouveau
+              </button>
+              <button 
+                onClick={() => {
+                  setPaymentTimeoutModal({ show: false });
+                  window.location.href = "/dashboard/packs";
+                }}
+                className="flex-1 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold transition-all text-sm"
+              >
+                Reprendre
+              </button>
+            </div>
           </div>
         </div>
       )}
