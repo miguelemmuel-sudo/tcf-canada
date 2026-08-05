@@ -31,9 +31,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ received: true, error: "Invalid JSON format" }, { status: 200 });
     }
 
-    const transaction = payload;
-    const reference = transaction.reference || transaction.transaction_id || transaction.id || null;
-    const rawStatus = (transaction.status || "").toUpperCase();
+    // Chariow (Moneroo) enveloppe souvent l'objet transaction dans une clé "data"
+    const transaction = payload.data || payload;
+    const reference = transaction.reference || transaction.transaction_id || transaction.id || payload.transaction_id || null;
+    const rawStatus = (transaction.status || payload.status || "").toUpperCase();
     const amount = typeof transaction.amount === "number" ? transaction.amount : parseFloat(transaction.amount || 0);
     const payerEmail = (transaction.customer_email || transaction.email || "").toLowerCase().trim();
     const paymentChannel = "Chariow";
