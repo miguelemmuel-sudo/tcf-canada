@@ -48,22 +48,26 @@ export async function GET(request: Request, { params }: { params: Promise<{ ref:
         
         if (fapshiStatus.status === "SUCCESSFUL") {
           finalStatus = "completed";
-          // Déclencher le webhook manuellement pour accélérer
+          // Déclencher le webhook manuellement pour accélérer et l'attendre pour éviter les race conditions
           const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://griffondortcfcanada.com";
-          fetch(`${baseUrl}/api/webhooks/fapshi`, {
-            method: "POST",
-            headers: { 
-              "Content-Type": "application/json",
-              "x-wh-secret": process.env.FAPSHI_WEBHOOK_SECRET || "123@Miguel"
-            },
-            body: JSON.stringify({
-              transId: fapshiStatus.transId,
-              status: "SUCCESSFUL",
-              amount: fapshiStatus.amount,
-              email: fapshiStatus.email || "",
-              externalId: fapshiStatus.externalId || ref
-            })
-          }).catch(e => console.error("Webhook trigger failed", e));
+          try {
+            await fetch(`${baseUrl}/api/webhooks/fapshi`, {
+              method: "POST",
+              headers: { 
+                "Content-Type": "application/json",
+                "x-wh-secret": process.env.FAPSHI_WEBHOOK_SECRET || "123@Miguel"
+              },
+              body: JSON.stringify({
+                transId: fapshiStatus.transId,
+                status: "SUCCESSFUL",
+                amount: fapshiStatus.amount,
+                email: fapshiStatus.email || "",
+                externalId: fapshiStatus.externalId || ref
+              })
+            });
+          } catch(e) {
+            console.error("Webhook trigger failed", e);
+          }
         } else if (fapshiStatus.status === "FAILED") {
           finalStatus = "failed";
         }
