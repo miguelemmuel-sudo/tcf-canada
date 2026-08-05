@@ -38,6 +38,13 @@ export default function DashboardLayout({
           return;
         }
 
+        // Si l'utilisateur revient d'un paiement externe (Chariow), on le redirige vers l'écran de vérification
+        const pendingTxRef = localStorage.getItem("pending_tx_ref");
+        if (pendingTxRef && !pathname?.includes("/dashboard/payments")) {
+          window.location.href = `/dashboard/payments?status=check`;
+          return;
+        }
+
         let profile: any = null;
         if (user?.id) {
           try {
