@@ -179,7 +179,13 @@ function PaymentsContent() {
 
   // 3. Vérification automatique au retour du paiement
   useEffect(() => {
-    const reference = searchParams?.get("reference") || searchParams?.get("trxref") || searchParams?.get("ref") || searchParams?.get("transaction_id") || searchParams?.get("id");
+    let reference = searchParams?.get("reference") || searchParams?.get("trxref") || searchParams?.get("ref") || searchParams?.get("transaction_id") || searchParams?.get("id");
+    
+    // Fallback to localStorage for Chariow because it might strip query params
+    if (!reference && typeof window !== "undefined") {
+      reference = localStorage.getItem("pending_tx_ref");
+    }
+    
     const statusParam = searchParams?.get("status");
     let pollingInterval: NodeJS.Timeout;
     let pollCount = 0;
@@ -204,6 +210,7 @@ function PaymentsContent() {
               ticks--;
               if (ticks <= 0) {
                 clearInterval(timer);
+                if (typeof window !== "undefined") localStorage.removeItem("pending_tx_ref");
                 window.location.href = "/dashboard";
               } else {
                 setPaymentSuccessModal(prev => ({ ...prev, countdown: ticks }));
@@ -216,6 +223,7 @@ function PaymentsContent() {
             window.dispatchEvent(new Event("storage_user_pack_updated"));
           } else if (data.status === "failed" || data.status === "canceled" || data.status === "cancelled") {
             clearInterval(pollingInterval);
+            if (typeof window !== "undefined") localStorage.removeItem("pending_tx_ref");
             alert(`Paiement non finalisé (${data.status}). Vous pouvez réessayer à tout moment.`);
             router.replace("/dashboard/payments");
           } else if (data.status === "pending" || !data.success) {
@@ -223,6 +231,7 @@ function PaymentsContent() {
             pollCount++;
             if (pollCount >= MAX_POLLS) {
               clearInterval(pollingInterval);
+              if (typeof window !== "undefined") localStorage.removeItem("pending_tx_ref");
               router.replace("/dashboard/payments"); // Stop polling after max attempts
             }
           }
@@ -232,6 +241,7 @@ function PaymentsContent() {
           pollCount++;
           if (pollCount >= MAX_POLLS) {
             clearInterval(pollingInterval);
+            if (typeof window !== "undefined") localStorage.removeItem("pending_tx_ref");
             router.replace("/dashboard/payments"); // clear URL on error to avoid loop
           }
         })

@@ -107,6 +107,9 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
         throw new Error(data.error || "Impossible d'initialiser le paiement Chariow : " + (data.error || ""));
       }
 
+      if (data.transactionRef || data.reference) {
+        localStorage.setItem("pending_tx_ref", data.transactionRef || data.reference);
+      }
       window.location.href = data.paymentUrl;
 
     } catch (e: any) {
