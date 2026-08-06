@@ -192,7 +192,7 @@ function PaymentsContent() {
     const MAX_POLLS = 20; // 30 secondes d'attente max (1.5s * 20) pour palier aux lenteurs réseau
 
     const checkStatus = () => {
-      fetch(`/api/transactions/status/${encodeURIComponent(reference as string)}`)
+      fetch(`/api/transactions/status/${encodeURIComponent(reference as string)}`, { cache: 'no-store' })
         .then(res => res.json())
         .then(data => {
           if (data.success && (data.status === "complete" || data.status === "completed" || data.status === "SUCCESSFUL" || data.localStatus === "completed")) {
