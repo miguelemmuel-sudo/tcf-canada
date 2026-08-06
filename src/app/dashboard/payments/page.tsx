@@ -183,10 +183,6 @@ function PaymentsContent() {
   useEffect(() => {
     let reference = searchParams?.get("reference") || searchParams?.get("trxref") || searchParams?.get("ref") || searchParams?.get("transaction_id") || searchParams?.get("id");
     
-    if (!reference && typeof window !== "undefined") {
-      reference = localStorage.getItem("pending_tx_ref");
-    }
-    
     if (!reference || verifyingPayment) return;
 
     setVerifyingPayment(true);
@@ -786,7 +782,7 @@ function PaymentsContent() {
             <button 
               onClick={() => {
                 setPaymentErrorModal({ show: false, message: "" });
-                window.location.href = "/dashboard/packs";
+                setShowUpgradeModal(true);
               }}
               className="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-bold transition-all"
             >
@@ -819,7 +815,7 @@ function PaymentsContent() {
               <button 
                 onClick={() => {
                   setPaymentTimeoutModal({ show: false });
-                  window.location.href = "/dashboard/packs";
+                  setShowUpgradeModal(true);
                 }}
                 className="flex-1 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold transition-all text-sm"
               >
