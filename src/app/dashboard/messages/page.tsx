@@ -40,10 +40,6 @@ export default function MessagesPage() {
 
 
 
-  if (!isFeatureAccessible("messages", pack)) {
-    return <LockedFeatureBanner featureName="Messagerie directe avec votre Coach" />;
-  }
-
   const [selectedConv, setSelectedConv] = useState(conversations[0]);
   const [msgInput, setMsgInput] = useState("");
   const [showMobileChat, setShowMobileChat] = useState(false);
@@ -65,6 +61,12 @@ export default function MessagesPage() {
       coachName: selectedConv.name
     });
   };
+
+  if (!mounted) return null;
+
+  if (!isFeatureAccessible("messages", pack)) {
+    return <LockedFeatureBanner featureName="Messagerie directe avec votre Coach" />;
+  }
 
   const handleSendMessage = () => {
     if (!msgInput.trim()) return;
@@ -95,8 +97,6 @@ export default function MessagesPage() {
       setIsAiTyping(false);
     }, 1000);
   };
-
-  if (!mounted) return null;
 
   return (
     <div className="space-y-4 pb-6">
