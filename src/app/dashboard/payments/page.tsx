@@ -179,75 +179,51 @@ function PaymentsContent() {
     loadData();
   }, []);
 
-  // 3. Vérification automatique au retour du paiement
+  // 3. Vérification active et unique au retour du paiement
   useEffect(() => {
     let reference = searchParams?.get("reference") || searchParams?.get("trxref") || searchParams?.get("ref") || searchParams?.get("transaction_id") || searchParams?.get("id");
     
-    // Fallback to localStorage for Chariow because it might strip query params
     if (!reference && typeof window !== "undefined") {
       reference = localStorage.getItem("pending_tx_ref");
     }
     
-    const statusParam = searchParams?.get("status");
-    let pollingInterval: NodeJS.Timeout;
-    let pollCount = 0;
-    const MAX_POLLS = 40; // 2 minutes (3s * 40)
+    if (!reference || verifyingPayment) return;
 
-    const checkStatus = () => {
-      fetch(`/api/transactions/status/${encodeURIComponent(reference as string)}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.success && (data.status === "complete" || data.status === "completed" || data.status === "SUCCESSFUL" || data.localStatus === "completed")) {
-            clearInterval(pollingInterval);
-            setVerifyingPayment(false);
-            if (typeof window !== "undefined") localStorage.removeItem("pending_tx_ref");
-            
-            // Mettre à jour le pack en local
-            if (typeof window !== "undefined" && data.pack) {
-              localStorage.setItem("griffon_user_plan", data.pack);
-            }
-            window.dispatchEvent(new Event("storage_user_pack_updated"));
-            
-            // Redirection immédiate sans compte à rebours
-            window.location.href = "/dashboard";
-          } else if (data.status === "failed" || data.status === "canceled" || data.status === "cancelled") {
-            clearInterval(pollingInterval);
-            if (typeof window !== "undefined") localStorage.removeItem("pending_tx_ref");
-            setVerifyingPayment(false);
-            setPaymentErrorModal({ show: true, message: `Paiement non finalisé (${data.status}). Votre compte n'a pas été débité.` });
-            router.replace("/dashboard/payments");
-          } else if (data.status === "pending" || !data.success) {
-            // Continuer le polling
-            pollCount++;
-            if (pollCount >= MAX_POLLS) {
-              clearInterval(pollingInterval);
-              setVerifyingPayment(false);
-              setPaymentTimeoutModal({ show: true });
-              router.replace("/dashboard/payments"); // Arrêter de chercher
-            }
+    setVerifyingPayment(true);
+
+    fetch(`/api/transactions/status/${encodeURIComponent(reference as string)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && (data.status === "complete" || data.status === "completed" || data.status === "SUCCESSFUL" || data.localStatus === "completed")) {
+          setVerifyingPayment(false);
+          if (typeof window !== "undefined") localStorage.removeItem("pending_tx_ref");
+          
+          if (typeof window !== "undefined" && data.pack) {
+            localStorage.setItem("griffon_user_plan", data.pack);
           }
-        })
-        .catch(err => {
-          console.error("Erreur vérification retour transaction:", err);
-          pollCount++;
-          if (pollCount >= MAX_POLLS) {
-            clearInterval(pollingInterval);
-            setVerifyingPayment(false);
-            setPaymentTimeoutModal({ show: true });
-            router.replace("/dashboard/payments"); // Arrêter de chercher
-          }
-        });
-    };
-
-    if (reference && !verifyingPayment) {
-      setVerifyingPayment(true);
-      checkStatus(); // Initial check
-      pollingInterval = setInterval(checkStatus, 1500); // Poll every 1.5 seconds
-    }
-
-    return () => {
-      if (pollingInterval) clearInterval(pollingInterval);
-    };
+          window.dispatchEvent(new Event("storage_user_pack_updated"));
+          
+          // Redirection immédiate
+          window.location.href = "/dashboard";
+        } else if (data.status === "failed" || data.status === "canceled" || data.status === "cancelled") {
+          if (typeof window !== "undefined") localStorage.removeItem("pending_tx_ref");
+          setVerifyingPayment(false);
+          setPaymentErrorModal({ show: true, message: `Paiement non finalisé (${data.status}). Votre compte n'a pas été débité.` });
+          router.replace("/dashboard/payments");
+        } else {
+          // Status est pending, et la vérification active n'a pas pu confirmer le paiement.
+          // On ne fait plus de boucle. On informe l'utilisateur.
+          setVerifyingPayment(false);
+          setPaymentTimeoutModal({ show: true });
+          router.replace("/dashboard/payments");
+        }
+      })
+      .catch(err => {
+        console.error("Erreur vérification retour transaction:", err);
+        setVerifyingPayment(false);
+        setPaymentTimeoutModal({ show: true });
+        router.replace("/dashboard/payments");
+      });
   }, [searchParams, router]);
 
   const totalSpent = userTransactions.reduce((acc, tx) => {

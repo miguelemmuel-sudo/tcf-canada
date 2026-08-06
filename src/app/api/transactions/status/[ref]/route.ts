@@ -41,38 +41,73 @@ export async function GET(request: Request, { params }: { params: Promise<{ ref:
     const localStatus = tx.status;
     let finalStatus = localStatus;
 
-    // 2. Si la transaction n'est pas encore terminée et que c'est Fapshi, on peut faire un double check
-    if (localStatus !== "completed" && tx.provider?.toLowerCase() === "fapshi" && tx.provider_transaction_id) {
-      try {
-        const fapshiStatus = await getFapshiPaymentStatus(tx.provider_transaction_id);
-        
-        if (fapshiStatus.status === "SUCCESSFUL") {
-          finalStatus = "completed";
-          // Déclencher le webhook manuellement pour accélérer et l'attendre pour éviter les race conditions
-          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://griffondortcfcanada.com";
-          try {
-            await fetch(`${baseUrl}/api/webhooks/fapshi`, {
-              method: "POST",
-              headers: { 
-                "Content-Type": "application/json",
-                "x-wh-secret": process.env.FAPSHI_WEBHOOK_SECRET || "123@Miguel"
-              },
-              body: JSON.stringify({
-                transId: fapshiStatus.transId,
-                status: "SUCCESSFUL",
-                amount: fapshiStatus.amount,
-                email: fapshiStatus.email || "",
-                externalId: fapshiStatus.externalId || ref
-              })
-            });
-          } catch(e) {
-            console.error("Webhook trigger failed", e);
+    // 2. Si la transaction n'est pas encore terminée, on tente une vérification active (Server-to-Server)
+    if (localStatus !== "completed") {
+      const provider = tx.provider?.toLowerCase() || "";
+      
+      if (provider === "fapshi" && tx.provider_transaction_id) {
+        try {
+          const fapshiStatus = await getFapshiPaymentStatus(tx.provider_transaction_id);
+          
+          if (fapshiStatus.status === "SUCCESSFUL") {
+            finalStatus = "completed";
+            // Déclencher le webhook manuellement pour accélérer et l'attendre pour éviter les race conditions
+            const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://griffondortcfcanada.com";
+            try {
+              await fetch(`${baseUrl}/api/webhooks/fapshi`, {
+                method: "POST",
+                headers: { 
+                  "Content-Type": "application/json",
+                  "x-wh-secret": process.env.FAPSHI_WEBHOOK_SECRET || "123@Miguel"
+                },
+                body: JSON.stringify({
+                  transId: fapshiStatus.transId,
+                  status: "SUCCESSFUL",
+                  amount: fapshiStatus.amount,
+                  email: fapshiStatus.email || "",
+                  externalId: fapshiStatus.externalId || ref
+                })
+              });
+            } catch(e) {
+              console.error("Webhook trigger failed", e);
+            }
+          } else if (fapshiStatus.status === "FAILED") {
+            finalStatus = "failed";
           }
-        } else if (fapshiStatus.status === "FAILED") {
-          finalStatus = "failed";
+        } catch (e) {
+          console.error("Fapshi double check failed:", e);
         }
-      } catch (e) {
-        console.error("Fapshi double check failed:", e);
+      } else if (provider === "chariow" && tx.provider_transaction_id) {
+        try {
+          const { verifyChariowPayment } = await import("@/lib/chariow");
+          const chariowStatus = await verifyChariowPayment(tx.provider_transaction_id);
+          
+          if (chariowStatus.success) {
+            finalStatus = "completed";
+            // Déclencher le traitement manuel pour accélérer
+            const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://griffondortcfcanada.com";
+            try {
+              await fetch(`${baseUrl}/api/webhooks/chariow`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  data: {
+                    payment: chariowStatus.data || {},
+                    transaction_id: tx.provider_transaction_id,
+                    reference: tx.reference,
+                    status: "SUCCESSFUL"
+                  }
+                })
+              });
+            } catch(e) {
+              console.error("Chariow manual webhook trigger failed", e);
+            }
+          } else if (chariowStatus.status === "failed") {
+            finalStatus = "failed";
+          }
+        } catch (e) {
+          console.error("Chariow active check failed:", e);
+        }
       }
     }
 
