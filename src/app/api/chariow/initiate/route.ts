@@ -61,8 +61,18 @@ export async function POST(request: Request) {
     const timestamp = Date.now();
     const reference = `TCF_${selectedPackKey.toUpperCase()}_${user.id.slice(0, 8)}_${timestamp}`;
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.headers.get("origin") || "https://griffondortcfcanada.com";
-    const finalReturnUrl = returnUrl || `${baseUrl}/dashboard/payments?status=check&ref=${reference}&pack=${selectedPackKey}`;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.headers.get("origin") || request.headers.get("referer") || "https://griffondortcfcanada.com";
+    
+    // Normalize baseUrl if it came from referer
+    let resolvedBaseUrl = baseUrl;
+    try {
+      if (resolvedBaseUrl.startsWith("http")) {
+        const urlObj = new URL(resolvedBaseUrl);
+        resolvedBaseUrl = urlObj.origin;
+      }
+    } catch(e) {}
+
+    const finalReturnUrl = returnUrl || `${resolvedBaseUrl}/dashboard/payments?status=check&ref=${reference}&pack=${selectedPackKey}`;
 
     const adminDb = getAdminSupabase();
 
@@ -93,6 +103,7 @@ export async function POST(request: Request) {
       pack: selectedPackKey,
       userId: user.id,
       phoneNumber: phoneNumber || "677123456",
+      baseUrl: resolvedBaseUrl,
     });
 
     if (adminDb && chariowRes.transId) {

@@ -189,7 +189,7 @@ function PaymentsContent() {
     
     let pollingInterval: NodeJS.Timeout;
     let pollCount = 0;
-    const MAX_POLLS = 10; // 15 secondes d'attente max (1.5s * 10)
+    const MAX_POLLS = 20; // 30 secondes d'attente max (1.5s * 20) pour palier aux lenteurs réseau
 
     const checkStatus = () => {
       fetch(`/api/transactions/status/${encodeURIComponent(reference as string)}`)

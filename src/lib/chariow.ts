@@ -15,6 +15,7 @@ export async function initiateChariowPayment({
   userId,
   pack,
   phoneNumber,
+  baseUrl,
 }: {
   amount: number;
   email: string;
@@ -24,6 +25,7 @@ export async function initiateChariowPayment({
   userId: string;
   pack: string;
   phoneNumber?: string;
+  baseUrl?: string;
 }) {
   const chariowSecretKey = process.env.CHARIOW_SECRET_KEY;
   
@@ -33,7 +35,7 @@ export async function initiateChariowPayment({
 
   const productId = CHARIOW_PRODUCT_IDS[pack] || CHARIOW_PRODUCT_IDS.griffon;
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://griffondortcfcanada.com";
+  const resolvedBaseUrl = baseUrl || process.env.NEXT_PUBLIC_APP_URL || "https://griffondortcfcanada.com";
   const payload = {
     product_id: productId,
     email: email || "candidat@griffondortcfcanada.com",
@@ -44,7 +46,7 @@ export async function initiateChariowPayment({
       country_code: "CM"
     },
     redirect_url: redirectUrl,
-    webhook_url: `${baseUrl}/api/webhooks/chariow`,
+    webhook_url: `${resolvedBaseUrl}/api/webhooks/chariow`,
     metadata: {
       user_id: userId,
       pack: pack,
