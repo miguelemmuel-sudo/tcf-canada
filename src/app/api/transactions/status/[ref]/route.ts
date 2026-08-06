@@ -78,35 +78,59 @@ export async function GET(request: Request, { params }: { params: Promise<{ ref:
           console.error("Fapshi double check failed:", e);
         }
       } else if (provider === "chariow" && tx.provider_transaction_id) {
-        try {
-          const { verifyChariowPayment } = await import("@/lib/chariow");
-          const chariowStatus = await verifyChariowPayment(tx.provider_transaction_id);
-          
-          if (chariowStatus.success) {
-            finalStatus = "completed";
-            // Déclencher le traitement manuel pour accélérer
-            const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://griffondortcfcanada.com";
-            try {
-              await fetch(`${baseUrl}/api/webhooks/chariow`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  data: {
-                    payment: chariowStatus.data || {},
-                    transaction_id: tx.provider_transaction_id,
-                    reference: tx.reference,
-                    status: "SUCCESSFUL"
-                  }
-                })
-              });
-            } catch(e) {
-              console.error("Chariow manual webhook trigger failed", e);
-            }
-          } else if (chariowStatus.status === "failed") {
-            finalStatus = "failed";
+        if (process.env.NODE_ENV === "development") {
+          console.log("[Dev Mode] Auto-validating Chariow transaction to bypass localhost webhook limitation.");
+          finalStatus = "completed";
+          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+          try {
+            await fetch(`${baseUrl}/api/webhooks/chariow`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                data: {
+                  transaction_id: tx.provider_transaction_id,
+                  reference: tx.reference,
+                  status: "SUCCESSFUL",
+                  amount: tx.amount,
+                  email: "candidat@localhost.com",
+                  metadata: { pack: tx.pack, user_id: tx.user_id }
+                }
+              })
+            });
+          } catch(e) {
+            console.error("Chariow dev webhook trigger failed", e);
           }
-        } catch (e) {
-          console.error("Chariow active check failed:", e);
+        } else {
+          try {
+            const { verifyChariowPayment } = await import("@/lib/chariow");
+            const chariowStatus = await verifyChariowPayment(tx.provider_transaction_id);
+            
+            if (chariowStatus.success) {
+              finalStatus = "completed";
+              // Déclencher le traitement manuel pour accélérer
+              const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://griffondortcfcanada.com";
+              try {
+                await fetch(`${baseUrl}/api/webhooks/chariow`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    data: {
+                      payment: chariowStatus.data || {},
+                      transaction_id: tx.provider_transaction_id,
+                      reference: tx.reference,
+                      status: "SUCCESSFUL"
+                    }
+                  })
+                });
+              } catch(e) {
+                console.error("Chariow manual webhook trigger failed", e);
+              }
+            } else if (chariowStatus.status === "failed") {
+              finalStatus = "failed";
+            }
+          } catch (e) {
+            console.error("Chariow active check failed:", e);
+          }
         }
       }
     }
