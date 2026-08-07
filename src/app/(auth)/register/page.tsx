@@ -52,7 +52,7 @@ const subscriptionPlans = [
       "Tout le Pack Griffon d'Or inclus (30 jours)",
       "Simulations et tests de 2h 00 (max)",
       "Coaching 1-on-1 avec un expert certifié",
-      "Suivi personnalisé du dossier d'immigration",
+      "Plus de 10 000 cours et 100 tests sur-mesure pour vous garantir une réussite absolue au TCF Canada !",
     ],
     badge: "VIP & Accompagnement",
     popular: false,

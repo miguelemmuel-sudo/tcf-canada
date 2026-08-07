@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabaseClient";
+import { createClient } from "@/utils/supabase/server";
 import { initiateNotchPayPayment } from "@/lib/notchpay";
 import { randomUUID } from "crypto";
 import { PACK_CONFIGS, PackType } from "@/utils/subscriptionEngine";
@@ -14,7 +14,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Pack invalide." }, { status: 400 });
     }
 
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
