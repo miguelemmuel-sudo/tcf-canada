@@ -368,7 +368,7 @@ export async function POST(request: Request) {
           amount: packConfig.amount,
           reference: reference,
           description: `Souscription au ${packConfig.name}`,
-          callback: `${baseUrl}/api/webhooks/notchpay`
+          callback: `${baseUrl}/dashboard/payments?status=check&ref=${reference}&pack=${packKey}`
         };
         const responseData = await initiateNotchPayPayment(payload);
         if (responseData.status === "Accepted" || responseData.authorization_url) {

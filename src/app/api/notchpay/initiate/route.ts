@@ -41,7 +41,7 @@ export async function POST(request: Request) {
       amount: amount,
       reference: reference,
       description: `Souscription au ${PACK_CONFIGS[packKey].name}`,
-      callback: `${baseUrl}/api/webhooks/notchpay` // Or redirect url? The docs say callback can be the success page or webhook, but let's use webhook and configure success via return url if they have one. Actually Notch Pay might need a return URL. We can pass it in the payload maybe? But we will let it use the one in dashboard settings or use `callback` as return url depending on API spec.
+      callback: `${baseUrl}/dashboard/payments?status=check&ref=${reference}&pack=${packKey}`
     };
     
     // In Notch Pay API, the initialization returns a checkout URL (authorization_url)
