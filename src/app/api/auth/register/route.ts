@@ -56,8 +56,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Corps de la requête invalide." }, { status: 400 });
   }
 
-  const { email, password, firstName, lastName, pack } = body as {
-    email?: string; password?: string; firstName?: string; lastName?: string; pack?: string;
+  const { email, password, firstName, lastName, pack, aggregator } = body as {
+    email?: string; password?: string; firstName?: string; lastName?: string; pack?: string; aggregator?: string;
   };
 
   // ── Validation ──
@@ -355,15 +355,61 @@ export async function POST(request: Request) {
       console.error("[Register] Transaction error:", safeStr(e));
     }
 
-    // ── Initiation Fapshi désactivée pour accélérer la création ──
-    // La logique SaaS veut maintenant que le compte soit créé rapidement,
-    // puis l'utilisateur se connecte et suit le processus de mise à niveau.
-    return NextResponse.json({
-      success: true,
-      reference,
-      user: { id: userId, email: cleanEmail },
-      message: "Votre compte a été créé ! Connectez-vous à votre compte, puis suivez le processus de mise à niveau pour obtenir votre accès définitif."
-    });
+    // ── Initiation du paiement ──
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+      let paymentUrl = "";
+
+      if (aggregator === "notchpay") {
+        const { initiateNotchPayPayment } = await import("@/lib/notchpay");
+        const payload = {
+          email: cleanEmail,
+          currency: "XAF",
+          amount: packConfig.amount,
+          reference: reference,
+          description: `Souscription au ${packConfig.name}`,
+          callback: `${baseUrl}/api/webhooks/notchpay`
+        };
+        const responseData = await initiateNotchPayPayment(payload);
+        if (responseData.status === "Accepted" || responseData.authorization_url) {
+          paymentUrl = responseData.authorization_url;
+          
+          await supabase.from("transactions").update({ 
+            provider: "notchpay",
+            payment_method: "notchpay",
+            provider_transaction_id: responseData.transaction?.reference || reference
+          }).eq("reference", reference);
+        } else {
+          throw new Error("Erreur d'initialisation Notch Pay");
+        }
+      } else {
+        // Fapshi par défaut
+        const { initiateFapshiPayment } = await import("@/lib/fapshi");
+        const fapshiRes = await initiateFapshiPayment({
+          amount: packConfig.amount,
+          email: cleanEmail,
+          userId: userId,
+          externalId: reference,
+          message: `Paiement pour ${packConfig.name}`,
+        });
+        
+        if (fapshiRes && fapshiRes.paymentUrl) {
+          paymentUrl = fapshiRes.paymentUrl;
+        } else {
+          throw new Error("Erreur d'initialisation Fapshi");
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        reference,
+        user: { id: userId, email: cleanEmail },
+        link: paymentUrl
+      });
+    } catch (e: any) {
+      console.error("[Register] Payment initiation error:", safeStr(e));
+      return NextResponse.json({ error: "Le compte a été créé mais le paiement a échoué. Veuillez vous connecter pour réessayer le paiement." }, { status: 500 });
+    }
   } catch (err) {
     const msg = safeStr(err);
     console.error("[Register] Erreur globale:", msg);

@@ -14,10 +14,9 @@ interface UpgradePackModalProps {
 
 export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: UpgradePackModalProps) {
   const router = useRouter();
-  const [loadingProvider, setLoadingProvider] = useState<"fapshi" | "chariow" | "admin" | null>(null);
+  const [loadingProvider, setLoadingProvider] = useState<"fapshi" | "notchpay" | "admin" | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [selectedPack, setSelectedPack] = useState<PackType>(targetPack);
-  const [phoneNumber, setPhoneNumber] = useState("");
   const adminMode = isUserAdmin();
 
   useEffect(() => {
@@ -72,17 +71,11 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
     }
   };
 
-  // 1b. Initialisation du paiement Chariow
-  const handleChariowPayment = async () => {
-    setLoadingProvider("chariow");
+  // 1b. Initialisation du paiement Notch Pay
+  const handleNotchPayPayment = async () => {
+    setLoadingProvider("notchpay");
     setErrorMsg(null);
     try {
-      if (!phoneNumber || phoneNumber.trim().length < 9) {
-        setErrorMsg("Veuillez entrer un numéro de téléphone (sans indicatif) pour utiliser Chariow.");
-        setLoadingProvider(null);
-        return;
-      }
-
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
 
@@ -92,29 +85,28 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
         return;
       }
 
-      const res = await fetch("/api/chariow/initiate", {
+      const res = await fetch("/api/notchpay/initiate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          pack: selectedPack,
-          phoneNumber: phoneNumber.trim()
+          pack: selectedPack
         })
       });
 
       const data = await res.json();
 
       if (!res.ok || !data.paymentUrl) {
-        throw new Error(data.error || "Impossible d'initialiser le paiement Chariow : " + (data.error || ""));
+        throw new Error(data.error || "Impossible d'initialiser le paiement Notch Pay.");
       }
 
-      if (data.transactionRef || data.reference) {
-        localStorage.setItem("pending_tx_ref", data.transactionRef || data.reference);
+      if (data.reference) {
+        localStorage.setItem("pending_tx_ref", data.reference);
       }
       window.location.href = data.paymentUrl;
 
     } catch (e: any) {
-      console.error("Erreur Chariow Initiate:", e);
-      setErrorMsg(e.message || "Erreur de communication avec la passerelle de paiement Chariow.");
+      console.error("Erreur Notch Pay Initiate:", e);
+      setErrorMsg(e.message || "Erreur de communication avec la passerelle de paiement Notch Pay.");
       setLoadingProvider(null);
     }
   };
@@ -247,7 +239,7 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
           <div className="bg-slate-50 dark:bg-slate-900/80 rounded-2xl p-3.5 border border-slate-200/60 dark:border-slate-800 flex items-center gap-3 text-[11px] sm:text-xs text-slate-600 dark:text-slate-400">
             <ShieldCheck className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600 shrink-0" />
             <p className="leading-relaxed">
-              <strong className="font-bold text-slate-900 dark:text-white block">Paiement 100% sécurisé via Fapshi ou Chariow :</strong>
+              <strong className="font-bold text-slate-900 dark:text-white block">Paiement 100% sécurisé via Fapshi ou Notch Pay :</strong>
               Accepte MTN Mobile Money, Orange Money. Conservation de tous vos acquis.
             </p>
           </div>
@@ -310,35 +302,21 @@ export function UpgradePackModal({ isOpen, onClose, targetPack = "griffon" }: Up
                 )}
               </button>
 
-              <div className="space-y-1 mt-1">
-                <label className="text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 ml-1">
-                  Numéro de téléphone (Requis par Chariow)
-                </label>
-                <input
-                  type="tel"
-                  placeholder="Ex: 690000000 (sans indicatif)"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  disabled={loadingProvider !== null}
-                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                />
-              </div>
-
               <button
                 type="button"
-                onClick={handleChariowPayment}
+                onClick={handleNotchPayPayment}
                 disabled={loadingProvider !== null}
-                className="w-full py-3 sm:py-3.5 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-black text-xs sm:text-sm shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-1.5 sm:gap-2 disabled:opacity-50 overflow-hidden"
+                className="w-full py-3 sm:py-3.5 rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-black text-xs sm:text-sm shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-1.5 sm:gap-2 disabled:opacity-50 overflow-hidden mt-3"
               >
-                {loadingProvider === "chariow" ? (
+                {loadingProvider === "notchpay" ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin text-white shrink-0" />
-                    <span className="truncate">Redirection Chariow...</span>
+                    <span className="truncate">Redirection Notch Pay...</span>
                   </>
                 ) : (
                   <>
                     <CreditCard className="h-4 w-4 text-white shrink-0" />
-                    <span className="truncate">S'abonner via Chariow ({PACK_CONFIGS[selectedPack].price})</span>
+                    <span className="truncate">S'abonner via Notch Pay ({PACK_CONFIGS[selectedPack].price})</span>
                     <ArrowRight className="h-4 w-4 text-white shrink-0" />
                   </>
                 )}

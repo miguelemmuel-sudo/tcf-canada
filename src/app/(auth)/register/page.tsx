@@ -109,7 +109,7 @@ function formatAuthError(err: any): string {
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -128,6 +128,7 @@ export default function RegisterPage() {
     confirmPassword: "",
   });
   const [selectedPlan, setSelectedPlan] = useState<string>("griffon");
+  const [selectedAggregator, setSelectedAggregator] = useState<"fapshi" | "notchpay">("fapshi");
 
   const handleStep1Submit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -197,6 +198,7 @@ export default function RegisterPage() {
             email: formDataState.email,
             password: formDataState.password,
             pack: selectedPlan,
+            aggregator: selectedAggregator,
           }),
         });
       } catch (fetchErr: any) {
@@ -325,27 +327,36 @@ export default function RegisterPage() {
                     Créez votre compte <span className="text-lg sm:text-xl">👋</span>
                   </h2>
                   <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                    {step === 1 ? "Étape 1 sur 2 : Vos informations personnelles" : "Étape 2 sur 2 : Choix de votre formule"}
+                    {step === 1 ? "Étape 1 sur 3 : Vos informations personnelles" : step === 2 ? "Étape 2 sur 3 : Choix de votre formule" : "Étape 3 sur 3 : Paiement"}
                   </p>
                 </div>
               </div>
 
           {/* Stepper Indicator */}
-          <div className="flex items-center gap-2 sm:gap-3 pt-1 pb-2">
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <span className={`h-6 w-6 sm:h-7 sm:w-7 rounded-full text-[11px] sm:text-xs font-extrabold flex items-center justify-center ${step === 1 ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-md shadow-amber-500/40 border border-yellow-300/40" : "bg-emerald-600 text-white"}`}>
+          <div className="flex items-center justify-between gap-1 sm:gap-2 pt-1 pb-2">
+            <div className="flex items-center gap-1 sm:gap-1.5 flex-1">
+              <span className={`h-5 w-5 sm:h-6 sm:w-6 rounded-full text-[10px] sm:text-xs font-extrabold flex items-center justify-center ${step === 1 ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-md shadow-amber-500/40 border border-yellow-300/40" : "bg-emerald-600 text-white"}`}>
                 1
               </span>
-              <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200">Informations personnelles</span>
+              <span className="text-[10px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 hidden sm:block">Informations</span>
             </div>
 
-            <div className={`h-0.5 flex-1 rounded-full transition-all ${step === 2 ? "bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 shadow-[0_0_8px_rgba(245,158,11,0.6)]" : "bg-slate-200 dark:bg-slate-800"}`} />
+            <div className={`h-0.5 flex-1 rounded-full transition-all ${step >= 2 ? "bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 shadow-[0_0_8px_rgba(245,158,11,0.6)]" : "bg-slate-200 dark:bg-slate-800"}`} />
 
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <span className={`h-6 w-6 sm:h-7 sm:w-7 rounded-full text-[11px] sm:text-xs font-extrabold flex items-center justify-center transition-all ${step === 2 ? "bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 text-white shadow-lg shadow-amber-500/60 border border-yellow-200 ring-4 ring-amber-400/30 animate-pulse" : "bg-slate-200 dark:bg-slate-800 text-slate-500"}`}>
+            <div className="flex items-center gap-1 sm:gap-1.5 flex-1 justify-center">
+              <span className={`h-5 w-5 sm:h-6 sm:w-6 rounded-full text-[10px] sm:text-xs font-extrabold flex items-center justify-center transition-all ${step === 2 ? "bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 text-white shadow-lg shadow-amber-500/60 border border-yellow-200 ring-4 ring-amber-400/30 animate-pulse" : step > 2 ? "bg-emerald-600 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-500"}`}>
                 2
               </span>
-              <span className={`text-[11px] sm:text-xs transition-all ${step === 2 ? "text-amber-600 dark:text-yellow-400 font-black drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]" : "font-bold text-slate-500"}`}>Choix de la formule</span>
+              <span className={`text-[10px] sm:text-xs transition-all hidden sm:block ${step === 2 ? "text-amber-600 dark:text-yellow-400 font-black" : step > 2 ? "font-bold text-slate-800 dark:text-slate-200" : "font-bold text-slate-500"}`}>Formule</span>
+            </div>
+
+            <div className={`h-0.5 flex-1 rounded-full transition-all ${step === 3 ? "bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 shadow-[0_0_8px_rgba(245,158,11,0.6)]" : "bg-slate-200 dark:bg-slate-800"}`} />
+
+            <div className="flex items-center gap-1 sm:gap-1.5 flex-1 justify-end">
+              <span className={`h-5 w-5 sm:h-6 sm:w-6 rounded-full text-[10px] sm:text-xs font-extrabold flex items-center justify-center transition-all ${step === 3 ? "bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600 text-white shadow-lg shadow-amber-500/60 border border-yellow-200 ring-4 ring-amber-400/30 animate-pulse" : "bg-slate-200 dark:bg-slate-800 text-slate-500"}`}>
+                3
+              </span>
+              <span className={`text-[10px] sm:text-xs transition-all hidden sm:block ${step === 3 ? "text-amber-600 dark:text-yellow-400 font-black drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]" : "font-bold text-slate-500"}`}>Paiement</span>
             </div>
           </div>
 
@@ -555,6 +566,54 @@ export default function RegisterPage() {
                 </button>
                 <button
                   type="button"
+                  onClick={() => setStep(3)}
+                  className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-600 hover:via-yellow-600 hover:to-amber-700 text-white font-black text-sm shadow-xl shadow-amber-500/40 hover:shadow-amber-500/60 border border-yellow-300/40 transition-all flex items-center justify-center gap-2"
+                >
+                  <span>Suivant</span>
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ÉTAPE 3: Paiement */}
+          {step === 3 && (
+            <div className="space-y-5">
+              <div>
+                <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-3">Choisissez votre moyen de paiement :</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div 
+                    onClick={() => setSelectedAggregator("fapshi")}
+                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex flex-col items-center justify-center gap-2 ${selectedAggregator === "fapshi" ? "border-amber-500 bg-amber-50 dark:bg-amber-950/40" : "border-slate-200 dark:border-slate-800 hover:border-amber-300"}`}
+                  >
+                    <div className="h-10 w-10 bg-slate-900 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-md">
+                      Fapshi
+                    </div>
+                    <span className={`text-xs font-bold ${selectedAggregator === "fapshi" ? "text-amber-600 dark:text-amber-400" : "text-slate-500"}`}>Payer avec Fapshi</span>
+                  </div>
+
+                  <div 
+                    onClick={() => setSelectedAggregator("notchpay")}
+                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex flex-col items-center justify-center gap-2 ${selectedAggregator === "notchpay" ? "border-amber-500 bg-amber-50 dark:bg-amber-950/40" : "border-slate-200 dark:border-slate-800 hover:border-amber-300"}`}
+                  >
+                    <div className="h-10 w-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-md">
+                      Notch
+                    </div>
+                    <span className={`text-xs font-bold ${selectedAggregator === "notchpay" ? "text-amber-600 dark:text-amber-400" : "text-slate-500"}`}>Payer avec Notch Pay</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setStep(2)}
+                  className="py-3 px-4 rounded-2xl border border-slate-200 dark:border-slate-800 font-bold text-xs text-slate-600 hover:border-amber-400"
+                >
+                  ← Retour
+                </button>
+                <button
+                  type="button"
                   onClick={handleFinalSubmit}
                   disabled={loading}
                   className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-600 hover:via-yellow-600 hover:to-amber-700 text-white font-black text-sm shadow-xl shadow-amber-500/40 hover:shadow-amber-500/60 border border-yellow-300/40 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
@@ -562,11 +621,11 @@ export default function RegisterPage() {
                   {loading ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Création du compte...</span>
+                      <span>Redirection...</span>
                     </>
                   ) : (
                     <>
-                      <span>S'inscrire et commencer la préparation</span>
+                      <span>S'inscrire et Payer</span>
                       <ArrowRight className="h-4 w-4" />
                     </>
                   )}

@@ -23,6 +23,7 @@ export interface PackPermissions {
   upsellBannerText?: string;
   nextPack?: PackType;
   nextPackName?: string;
+  durationDays: number;
 }
 
 export const PACK_CONFIGS: Record<PackType, PackPermissions> = {
@@ -46,6 +47,7 @@ export const PACK_CONFIGS: Record<PackType, PackPermissions> = {
     upsellBannerText: "Passez au Pack Griffon D'OR pour multiplier vos chances d'immigrer au Canada : accédez à plus de 500 cours par compétence, des examens blancs de 80 questions et aux corrections IA pour l'Expression Orale et Écrite du TCF.",
     nextPack: "griffon",
     nextPackName: "Pack Griffon D'OR TCF",
+    durationDays: 30,
   },
   griffon: {
     name: "Pack Griffon D'OR - Préparation TCF Canada",
@@ -68,6 +70,7 @@ export const PACK_CONFIGS: Record<PackType, PackPermissions> = {
     upsellBannerText: "Passez au Pack VIP & Coaching pour bénéficier d'un accompagnement personnalisé vers le niveau NCLC 9. Accédez à la préparation TCF la plus complète : simulateur d'examinateur IA, 10 000 cours et examens blancs certifiés.",
     nextPack: "vip",
     nextPackName: "Pack VIP & Coaching TCF",
+    durationDays: 30,
   },
   vip: {
     name: "Pack VIP & Coaching - Réussite Entrée Express",
@@ -87,6 +90,7 @@ export const PACK_CONFIGS: Record<PackType, PackPermissions> = {
     coachingActive: true,
     reservationsActive: true,
     messagingActive: true,
+    durationDays: 60,
   },
 };
 

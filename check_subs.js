@@ -1,0 +1,1 @@
+const { createClient } = require('@supabase/supabase-js'); const supabase = createClient('', ''); supabase.from('subscriptions').select('*').order('updated_at', {ascending: false}).limit(5).then(res => console.log(JSON.stringify(res.data, null, 2)));

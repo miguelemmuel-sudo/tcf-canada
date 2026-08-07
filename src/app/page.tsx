@@ -323,7 +323,7 @@ export default function Home() {
               <Card className="border-border/50 bg-white dark:bg-slate-900 shadow-sm">
                 <CardHeader className="text-center pb-8">
                   <CardTitle className="text-2xl mb-2 text-[#0e2238] dark:text-white">Pack Standard</CardTitle>
-                  <div className="text-4xl font-bold text-amber-600">100<span className="text-lg text-muted-foreground font-normal"> FCFA</span></div>
+                  <div className="text-4xl font-bold text-amber-600">15.000<span className="text-lg text-muted-foreground font-normal"> FCFA</span></div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <ul className="space-y-3 text-sm">
@@ -365,7 +365,7 @@ export default function Home() {
                     <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Tout le Pack Griffon d'Or inclus</li>
                     <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Simulations et tests de 2h 00 (max)</li>
                     <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Coaching 1-on-1 avec expert</li>
-                    <li className="flex items-center"><CheckCircle2 className="h-4 w-4 mr-2 text-amber-600" /> Suivi dossier d'immigration</li>
+                    <li className="flex items-start"><CheckCircle2 className="h-4 w-4 mr-2 mt-0.5 text-amber-600 shrink-0" /> <span>Plus de 10 000 cours et 100 tests sur-mesure pour vous garantir une réussite absolue au TCF Canada !</span></li>
                   </ul>
                   <Button variant="outline" className="w-full mt-6 border-amber-600 text-amber-600 hover:bg-amber-50" asChild><Link href="/register">Postuler au VIP</Link></Button>
                 </CardContent>

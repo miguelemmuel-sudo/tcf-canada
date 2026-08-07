@@ -1,0 +1,1 @@
+require('dotenv').config({path: '.env.local'}); const charsKey = process.env.CHARIOW_SECRET_KEY; const transId = 'py_isk5dm8i2icd'; fetch('https://api.chariow.com/v1/payments/' + transId + '/verify', { headers: { 'Authorization': 'Bearer ' + charsKey } }).then(r => r.json()).then(console.log).catch(console.error);
