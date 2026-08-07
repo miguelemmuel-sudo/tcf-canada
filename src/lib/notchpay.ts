@@ -13,7 +13,7 @@ export async function initiateNotchPayPayment(payload: NotchPayPaymentPayload) {
   const response = await fetch(url, {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${process.env.NOTCHPAY_PUBLIC_KEY}`,
+      "Authorization": process.env.NOTCHPAY_PUBLIC_KEY || "",
       "Content-Type": "application/json",
       "Accept": "application/json"
     },
@@ -30,7 +30,7 @@ export async function verifyNotchPayPayment(reference: string) {
   const response = await fetch(url, {
     method: "GET",
     headers: {
-      "Authorization": `Bearer ${process.env.NOTCHPAY_PRIVATE_KEY}`,
+      "Authorization": process.env.NOTCHPAY_PRIVATE_KEY || "",
       "Accept": "application/json"
     }
   });
