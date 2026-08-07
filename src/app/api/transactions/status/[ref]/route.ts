@@ -10,6 +10,40 @@ function getAdminSupabase() {
   return createSupabaseJsClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 
+async function activateSubscription(adminDb: any, tx: any) {
+  if (tx.status === "completed") return;
+  await adminDb.from("transactions").update({ status: "completed" }).eq("id", tx.id);
+  const { PACK_CONFIGS } = await import("@/utils/subscriptionEngine");
+  const packConfig = PACK_CONFIGS[tx.pack as keyof typeof PACK_CONFIGS];
+  if (!packConfig) return;
+
+  const durationDays = packConfig.durationDays || 30;
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + durationDays * 24 * 3600 * 1000);
+
+  await adminDb.from("subscriptions").upsert({
+    user_id: tx.user_id,
+    pack: tx.pack,
+    plan: tx.pack,
+    amount: tx.amount.toString(),
+    currency: tx.currency,
+    status: "active",
+    started_at: now.toISOString(),
+    expires_at: expiresAt.toISOString(),
+    updated_at: now.toISOString(),
+  }, { onConflict: 'user_id' });
+
+  await adminDb.from("profiles").update({ subscription_type: tx.pack }).eq("id", tx.user_id);
+  const message = `Votre paiement a été confirmé avec succès. Votre Pack ${packConfig.name} est maintenant actif jusqu'au ${expiresAt.toLocaleDateString("fr-FR")}.`;
+  await adminDb.from("notifications").insert({
+    user_id: tx.user_id,
+    title: "Paiement confirmé",
+    message: message,
+    type: "success",
+    read: false
+  });
+}
+
 export async function GET(request: Request, { params }: { params: Promise<{ ref: string }> }) {
   const { ref } = await params;
 
@@ -52,25 +86,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ ref:
           
           if (fapshiStatus.status === "SUCCESSFUL") {
             finalStatus = "completed";
-            // Déclencher le webhook manuellement pour accélérer et l'attendre pour éviter les race conditions
-            const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://griffondortcfcanada.com";
             try {
-              await fetch(`${baseUrl}/api/webhooks/fapshi`, {
-                method: "POST",
-                headers: { 
-                  "Content-Type": "application/json",
-                  "x-wh-secret": process.env.FAPSHI_WEBHOOK_SECRET || "123@Miguel"
-                },
-                body: JSON.stringify({
-                  transId: fapshiStatus.transId,
-                  status: "SUCCESSFUL",
-                  amount: fapshiStatus.amount,
-                  email: fapshiStatus.email || "",
-                  externalId: fapshiStatus.externalId || ref
-                })
-              });
+              await activateSubscription(adminDb, tx);
             } catch(e) {
-              console.error("Webhook trigger failed", e);
+              console.error("Direct activation failed for Fapshi", e);
             }
           } else if (fapshiStatus.status === "FAILED") {
             finalStatus = "failed";
@@ -85,26 +104,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ ref:
           
           if (notchPayStatus?.transaction?.status === "complete") {
             finalStatus = "completed";
-            // Déclencher le webhook manuellement pour accélérer
-            const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://griffondortcfcanada.com";
             try {
-              await fetch(`${baseUrl}/api/webhooks/notchpay`, {
-                method: "POST",
-                headers: { 
-                  "Content-Type": "application/json",
-                  "x-notchpay-signature": "manual-trigger" 
-                },
-                body: JSON.stringify({
-                  event: "payment.complete",
-                  data: {
-                    reference: tx.reference,
-                    status: "complete",
-                    amount: tx.amount
-                  }
-                })
-              });
+              await activateSubscription(adminDb, tx);
             } catch(e) {
-              console.error("Notch Pay manual webhook trigger failed", e);
+              console.error("Direct activation failed for Notch Pay", e);
             }
           } else if (notchPayStatus?.transaction?.status === "failed" || notchPayStatus?.transaction?.status === "canceled") {
             finalStatus = "failed";
