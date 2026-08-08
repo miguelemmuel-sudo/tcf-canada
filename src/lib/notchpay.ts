@@ -30,7 +30,7 @@ export async function verifyNotchPayPayment(reference: string) {
   const response = await fetch(url, {
     method: "GET",
     headers: {
-      "Authorization": process.env.NOTCHPAY_PRIVATE_KEY || "",
+      "Authorization": process.env.NOTCHPAY_PUBLIC_KEY || "",
       "Accept": "application/json"
     }
   });
