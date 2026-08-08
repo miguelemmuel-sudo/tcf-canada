@@ -13,7 +13,7 @@ export const FAPSHI_API_KEY = process.env.FAPSHI_API_KEY || "";
 export const FAPSHI_WEBHOOK_SECRET = process.env.FAPSHI_WEBHOOK_SECRET || "";
 
 export const PACK_PRICES: Record<string, number> = {
-  standard: 10000,
+  standard: 100,
   griffon: 17500,
   vip: 50000,
 };

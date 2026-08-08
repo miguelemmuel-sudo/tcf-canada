@@ -15,7 +15,7 @@ const subscriptionPlans = [
   {
     id: "standard",
     name: "Pack Standard",
-    price: "10.000 FCFA",
+    price: "100 FCFA",
     period: " (Accès 30 jours)",
     description: "La formule idéale pour démarrer votre préparation au TCF Canada.",
     features: [
