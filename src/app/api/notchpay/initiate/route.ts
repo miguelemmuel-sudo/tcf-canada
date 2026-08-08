@@ -27,7 +27,7 @@ export async function POST(request: Request) {
       .eq("id", user.id)
       .single();
 
-    const amount = PACK_PRICES[packKey] || 15000;
+    const amount = PACK_PRICES[packKey] || 10000;
     // Generate a unique reference for the transaction
     const reference = `notchpay_${randomUUID().replace(/-/g, "").substring(0, 16)}`;
 

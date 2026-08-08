@@ -324,7 +324,7 @@ export default function Home() {
               <Card className="border-border/50 bg-white dark:bg-slate-900 shadow-sm">
                 <CardHeader className="text-center pb-8">
                   <CardTitle className="text-2xl mb-2 text-[#0e2238] dark:text-white">Pack Standard</CardTitle>
-                  <div className="text-4xl font-bold text-amber-600">15.000<span className="text-lg text-muted-foreground font-normal"> FCFA</span></div>
+                  <div className="text-4xl font-bold text-amber-600">10.000<span className="text-lg text-muted-foreground font-normal"> FCFA</span></div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <ul className="space-y-3 text-sm">
@@ -342,7 +342,7 @@ export default function Home() {
                 </div>
                 <CardHeader className="text-center pb-8 pt-10">
                   <CardTitle className="text-2xl mb-2 text-[#0e2238] dark:text-white">Pack Griffon d'Or</CardTitle>
-                  <div className="text-4xl font-bold text-amber-600">25.000<span className="text-lg text-muted-foreground font-normal"> FCFA</span></div>
+                  <div className="text-4xl font-bold text-amber-600">17.500<span className="text-lg text-muted-foreground font-normal"> FCFA</span></div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <ul className="space-y-3 text-sm font-medium">
@@ -359,7 +359,7 @@ export default function Home() {
               <Card className="border-border/50 bg-white dark:bg-slate-900 shadow-sm">
                 <CardHeader className="text-center pb-8">
                   <CardTitle className="text-2xl mb-2 text-[#0e2238] dark:text-white">Pack VIP & Coaching</CardTitle>
-                  <div className="text-4xl font-bold text-amber-600">100.000<span className="text-lg text-muted-foreground font-normal"> FCFA</span></div>
+                  <div className="text-4xl font-bold text-amber-600">50.000<span className="text-lg text-muted-foreground font-normal"> FCFA</span></div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <ul className="space-y-3 text-sm">

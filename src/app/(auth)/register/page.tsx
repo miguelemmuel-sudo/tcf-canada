@@ -15,7 +15,7 @@ const subscriptionPlans = [
   {
     id: "standard",
     name: "Pack Standard",
-    price: "15.000 FCFA",
+    price: "10.000 FCFA",
     period: " (Accès 30 jours)",
     description: "La formule idéale pour démarrer votre préparation au TCF Canada.",
     features: [
@@ -29,7 +29,7 @@ const subscriptionPlans = [
   {
     id: "griffon",
     name: "Pack Griffon d'Or",
-    price: "25.000 FCFA",
+    price: "17.500 FCFA",
     period: " (Accès 30 jours)",
     description: "Le pack le plus populaire pour maximiser votre score au TCF.",
     features: [
@@ -45,7 +45,7 @@ const subscriptionPlans = [
   {
     id: "vip",
     name: "Pack VIP & Coaching",
-    price: "100.000 FCFA",
+    price: "50.000 FCFA",
     period: " (Accès 30 jours)",
     description: "Accompagnement d'excellence individuel avec suivi complet.",
     features: [

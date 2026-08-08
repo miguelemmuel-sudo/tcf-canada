@@ -121,7 +121,7 @@ function PaymentsContent() {
               status: subData.status,
               started_at: subData.started_at,
               expires_at: subData.expires_at,
-              amount: subData.amount || "25000"
+              amount: subData.amount || "17500"
             });
           } else {
             // Par défaut, formule Griffon initiale
@@ -130,7 +130,7 @@ function PaymentsContent() {
               pack: "griffon",
               status: "active",
               started_at: new Date().toISOString(),
-              amount: "25000"
+              amount: "17500"
             });
           }
 
@@ -147,7 +147,7 @@ function PaymentsContent() {
               reference: tx.reference,
               provider_transaction_id: tx.provider_transaction_id,
               payment_method: tx.payment_method || "Fapshi",
-              amount: tx.amount ? `${parseInt(tx.amount).toLocaleString("fr-FR")} FCFA` : "25 000 FCFA",
+              amount: tx.amount ? `${parseInt(tx.amount).toLocaleString("fr-FR")} FCFA` : "17 500 FCFA",
               currency: tx.currency || "XAF",
               status: tx.status === "completed" || tx.status === "complete" ? "Payé" : tx.status === "pending" ? "Paiement inachevé" : "Échoué",
               created_at: new Date(tx.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }),

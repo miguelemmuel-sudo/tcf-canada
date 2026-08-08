@@ -3,9 +3,9 @@ import { createClient as createSupabaseJsClient } from "@supabase/supabase-js";
 import { createHash, randomUUID } from "crypto";
 
 const SERVER_PRICING: Record<string, { amount: number; name: string; currency: string }> = {
-  standard: { amount: 15000, name: "Pack Standard", currency: "FCFA" },
-  griffon: { amount: 25000, name: "Pack Griffon D'OR", currency: "FCFA" },
-  vip: { amount: 100000, name: "Pack VIP & Coaching", currency: "FCFA" },
+  standard: { amount: 10000, name: "Pack Standard", currency: "FCFA" },
+  griffon: { amount: 17500, name: "Pack Griffon D'OR", currency: "FCFA" },
+  vip: { amount: 50000, name: "Pack VIP & Coaching", currency: "FCFA" },
 };
 
 const PACK_ALIASES: Record<string, string> = {

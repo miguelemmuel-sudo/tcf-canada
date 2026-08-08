@@ -136,7 +136,7 @@ export default function AdminFinancePage() {
             reference: tx.reference || "TX_FAPSHI",
             provider_transaction_id: tx.provider_transaction_id,
             payment_method: tx.payment_method || "Fapshi Mobile / Carte",
-            amount: tx.amount ? `${parseInt(tx.amount).toLocaleString("fr-FR")} FCFA` : "25 000 FCFA",
+            amount: tx.amount ? `${parseInt(tx.amount).toLocaleString("fr-FR")} FCFA` : "17 500 FCFA",
             currency: tx.currency || "XAF",
             status: tx.status || "pending",
             created_at: new Date(tx.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }),
@@ -158,7 +158,7 @@ export default function AdminFinancePage() {
             user_id: sub.user_id,
             user_email: profileMap[sub.user_id]?.email || sub.user_id.slice(0, 8) + "...",
             pack: sub.pack || "griffon",
-            amount: sub.amount ? `${parseInt(sub.amount).toLocaleString("fr-FR")} FCFA` : "25 000 FCFA",
+            amount: sub.amount ? `${parseInt(sub.amount).toLocaleString("fr-FR")} FCFA` : "17 500 FCFA",
             status: sub.status || "active",
             started_at: new Date(sub.started_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" }),
             expires_at: sub.expires_at ? new Date(sub.expires_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" }) : "Illimité"
