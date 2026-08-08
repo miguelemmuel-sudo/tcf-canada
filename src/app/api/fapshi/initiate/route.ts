@@ -11,7 +11,7 @@ import { createClient as createSupabaseJsClient } from "@supabase/supabase-js";
 
 const SERVER_PRICING: Record<string, { amount: number; name: string; currency: string }> = {
   standard: {
-    amount: PACK_PRICES.standard || 100,
+    amount: PACK_PRICES.standard || 10000,
     name: PACK_NAMES.standard || "Pack Standard",
     currency: "XAF",
   },

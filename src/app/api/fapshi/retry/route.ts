@@ -45,7 +45,7 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/login?error=UserNotFound", request.url));
   }
 
-  const amount = PACK_PRICES[pack.toLowerCase()] || 100;
+  const amount = PACK_PRICES[pack.toLowerCase()] || 10000;
   const newRef = `TCF_${txData.user_id.slice(0, 8)}_${Date.now()}`;
 
   // 3. Mettre à jour la transaction avec la nouvelle ref (ou créer une nouvelle)
