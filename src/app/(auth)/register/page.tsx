@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { AuthRightPanel } from "@/components/auth/AuthRightPanel";
+import PhoneInput from "react-phone-number-input";
+import "react-phone-number-input/style.css";
 
 const subscriptionPlans = [
   {
@@ -124,6 +126,7 @@ export default function RegisterPage() {
     firstName: "",
     lastName: "",
     email: "",
+    phone: "",
     password: "",
     confirmPassword: "",
   });
@@ -147,6 +150,11 @@ export default function RegisterPage() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formDataState.email)) {
       setError("❌ L'adresse e-mail saisie n'est pas valide.");
+      return;
+    }
+
+    if (!formDataState.phone || formDataState.phone.length < 5) {
+      setError("❌ Veuillez renseigner un numéro de téléphone valide avec l'indicatif de votre pays.");
       return;
     }
 
@@ -196,6 +204,7 @@ export default function RegisterPage() {
             firstName: formDataState.firstName.trim(),
             lastName: formDataState.lastName.trim(),
             email: formDataState.email,
+            phone: formDataState.phone,
             password: formDataState.password,
             pack: selectedPlan,
             aggregator: selectedAggregator,
@@ -421,6 +430,24 @@ export default function RegisterPage() {
                     onChange={(e) => setFormDataState({ ...formDataState, email: e.target.value })}
                     placeholder="nom@exemple.com"
                     className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:bg-white transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Téléphone */}
+              <div>
+                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 block mb-1.5">
+                  Numéro de téléphone
+                </label>
+                <div className="relative">
+                  <PhoneInput
+                    defaultCountry="CM"
+                    international
+                    required
+                    value={formDataState.phone}
+                    onChange={(val) => setFormDataState({ ...formDataState, phone: val || "" })}
+                    placeholder="+237 600 00 00 00"
+                    className="w-full !px-4 !py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-sm font-medium text-slate-900 dark:text-white focus-within:ring-2 focus-within:ring-amber-500 focus-within:border-amber-500 focus-within:bg-white transition-all PhoneInputOverride"
                   />
                 </div>
               </div>

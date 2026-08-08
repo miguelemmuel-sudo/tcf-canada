@@ -56,8 +56,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Corps de la requête invalide." }, { status: 400 });
   }
 
-  const { email, password, firstName, lastName, pack, aggregator } = body as {
-    email?: string; password?: string; firstName?: string; lastName?: string; pack?: string; aggregator?: string;
+  const { email, password, firstName, lastName, phone, pack, aggregator } = body as {
+    email?: string; password?: string; firstName?: string; lastName?: string; phone?: string; pack?: string; aggregator?: string;
   };
 
   // ── Validation ──
@@ -69,6 +69,9 @@ export async function POST(request: Request) {
   }
   if (!firstName || typeof firstName !== "string" || !firstName.trim() || !lastName || typeof lastName !== "string" || !lastName.trim()) {
     return NextResponse.json({ error: "Veuillez renseigner votre nom et votre prénom." }, { status: 400 });
+  }
+  if (!phone || typeof phone !== "string" || !phone.trim()) {
+    return NextResponse.json({ error: "Veuillez renseigner votre numéro de téléphone." }, { status: 400 });
   }
   
   const fullName = `${firstName.trim()} ${lastName.trim()}`;
@@ -154,7 +157,7 @@ export async function POST(request: Request) {
         const { data: adminData, error: adminError } = await supabase.auth.admin.createUser({
           email: cleanEmail,
           password,
-          user_metadata: { first_name: firstName.trim(), last_name: lastName.trim(), full_name: fullName, subscription_type: isAdmin ? "vip" : packKey },
+          user_metadata: { first_name: firstName.trim(), last_name: lastName.trim(), full_name: fullName, phone: phone.trim(), subscription_type: isAdmin ? "vip" : packKey },
           email_confirm: true,
         });
 
@@ -216,7 +219,7 @@ export async function POST(request: Request) {
         const { data: signUpData, error: signUpError } = await clientFallback.auth.signUp({
           email: cleanEmail,
           password,
-          options: { data: { first_name: firstName.trim(), last_name: lastName.trim(), full_name: fullName, subscription_type: isAdmin ? "vip" : packKey } },
+          options: { data: { first_name: firstName.trim(), last_name: lastName.trim(), full_name: fullName, phone: phone.trim(), subscription_type: isAdmin ? "vip" : packKey } },
         });
 
         if (signUpData?.user?.id) {
@@ -287,6 +290,7 @@ export async function POST(request: Request) {
         first_name: firstName.trim(),
         last_name: lastName.trim(),
         full_name: fullName,
+        phone: phone.trim(),
         subscription_type: isAdmin ? "vip" : packKey,
         is_admin: isAdmin,
         created_at: now,
